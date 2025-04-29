@@ -1,0 +1,84 @@
+﻿@inherits LayoutComponentBase
+@using SorceryClans3.Components.Pages
+@using SorceryClans3.Data.Users
+@inject AuthenticationStateProvider authProvider
+@inject UserService userService
+<MudThemeProvider @bind-IsDarkMode="DarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Color="Color.Info">
+        <MudIconButton Icon="@Icons.Material.TwoTone.Menu" OnClick="MenuToggle" />
+        <MudSpacer />
+        @if (!String.IsNullOrEmpty(UserName))
+        {
+            <MudText>Welcome, @UserName!</MudText>
+        }
+        <ThemeMode Toggle="ToggleTheme" />
+        <LogInOut />
+    </MudAppBar>
+    <MudDrawer @bind-Open="MenuView">
+        <MudNavMenu Color="Color.Info">
+            @* Put logo here?*@
+            <br />
+            <MudNavLink Href="/">Home</MudNavLink>
+            <MudNavLink Href="/email">Email</MudNavLink>
+            <MudNavLink Href="/timer">Timer</MudNavLink>
+            <MudNavLink Href="/files">Files</MudNavLink>
+            <MudNavLink Href="/auth">Auth</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        <CascadingValue Value="User">
+            @Body
+        </CascadingValue>
+    </MudMainContent>
+</MudLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private MudThemeProvider? Provider { get; set; }
+    private bool DarkMode { get; set; }
+    private bool MenuView { get; set; } = true;
+    private Guid UserID { get; set; }
+    private string? UserName { get; set; } = null;
+    private Auth0User? User { get; set; } = null;
+    private void MenuToggle()
+    {
+        MenuView = !MenuView;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if (Provider != null)
+            DarkMode = await Provider.GetSystemPreference();
+        var result = await authProvider.GetAuthenticationStateAsync();
+        if (result != null)
+        {
+            UserName = result.User?.Identity?.Name ?? null;
+            if (result.User?.Claims != null)
+            {
+                foreach (var claim in result.User.Claims)
+                {
+                    if (claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                        User = userService.GetUserByKey(claim.Value);
+                }
+            }
+            if (User != null)
+            {
+                userService.RecordLogin(User.UserID);
+            }
+        }
+    }
+    private void ToggleTheme()
+    {
+        DarkMode = !DarkMode;
+        StateHasChanged();
+    }
+}

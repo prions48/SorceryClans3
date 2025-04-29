@@ -1,0 +1,117 @@
+@page "/files"
+@using AppTemplate3.Data.Files
+@using AppTemplate3.Data.Users
+@inject FileService fileService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject UserService userService
+
+<AuthorizeView>
+    <Authorized>
+        @if (User != null)
+        {
+
+            <InputFile OnChange="Upload" />
+            <MudSimpleTable Striped>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>View</th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Auth0UserFile file in UserFiles)
+                    {
+                        <tr>
+                            <td>@file.DisplayName</td>
+                            <td>
+                                @if (file.ImageFile)
+                                {
+                                    <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.RemoveRedEye" OnClick="() => View(file)" />
+                                }
+                            </td>
+                            <td>
+                                <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.Download" OnClick="() => Download(file)" />
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(ImageString))
+                    {
+                        <tr>
+                            <td colspan="3">
+                                <img src="data:image/png;base64, @ImageString" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>        
+        }
+        else
+        {
+            <i>Error in authentication.</i>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <i>You must be logged in to view files.</i>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [CascadingParameter] public Auth0User? User { get; set; }
+    private List<Auth0UserFile> UserFiles { get; set; } = [];
+    private string? ImageString { get; set; } = null;
+    private bool loaded = false;
+    protected override void OnParametersSet()
+    {
+        if (!loaded && User != null)
+        {
+            UserFiles = userService.GetFilesByUser(User.UserID);
+            loaded = true;
+        }
+    }
+    private async Task Upload(InputFileChangeEventArgs args)
+    {
+        if (args.File != null && !string.IsNullOrEmpty(args.File.Name))
+        {
+            try
+            {
+                var file = args.File.OpenReadStream();
+                MemoryStream stream = new();
+                await file.CopyToAsync(stream);
+                var result = await fileService.UploadFile(User!.UserID,$"{args.File.Name}",stream);
+                if (result.Item2 == "Success")
+                    UserFiles.Add(result.Item1!);
+                else
+                    Snackbar.Add(result.Item2,Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+
+        }
+    }
+    private async Task Download(Auth0UserFile file)
+    {
+        var results = await fileService.DownloadFromBlob(file);
+        if (results != "Success")
+            Snackbar.Add(results,Severity.Error);
+    }
+    private async Task View(Auth0UserFile file)
+    {
+        if (file.ImageFile)
+        {
+            var result = await fileService.DownloadFile(file.UserID.ToString(),file.BlobName);
+            if (result.Item2 == "Success")
+            {
+                ImageString = Convert.ToBase64String(result.Item1!.ToArray());
+            }
+            else
+            {
+                Snackbar.Add(result.Item2,Severity.Error);
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+<MudToggleIconButton Icon="@Icons.Material.TwoTone.ModeNight" Color="Color.Dark"
+    ToggledIcon="@Icons.Material.TwoTone.WbSunny" ToggledColor="Color.Warning" ToggledChanged="ToggleButton" />
+
+@code {
+    [Parameter] public EventCallback Toggle { get; set; }
+    private async Task ToggleButton()
+    {
+        await Toggle.InvokeAsync();
+    }
+}

@@ -1,0 +1,22 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<MudText>This is the V3 App Template for prions. To do list:</MudText>
+
+<MudTreeView AutoExpand="true" ExpandOnClick="true" T="string" ReadOnly>
+    <MudTreeViewItem Text="Completed" Expanded>
+        <MudTreeViewItem Text="MudBlazor w/theme & darkmode" />
+        <MudTreeViewItem Text="Auth0 authentication" />
+        <MudTreeViewItem Text="Emails" />
+        <MudTreeViewItem Text="SQL user system" />
+        <MudTreeViewItem Text="Audit Logins" />
+        <MudTreeViewItem Text="Timer component" />
+        <MudTreeViewItem Text="User Secrets" />
+    </MudTreeViewItem>
+    <MudTreeViewItem Text="Stretch Goals" Expanded>
+        <MudTreeViewItem Text="Stripe payments..." />
+    </MudTreeViewItem>
+</MudTreeView> 

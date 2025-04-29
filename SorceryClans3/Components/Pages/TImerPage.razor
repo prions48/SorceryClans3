@@ -1,0 +1,77 @@
+@page "/timer"
+@using MudBlazor
+@using AppTemplate3.Data.Users
+@using System.Timers
+<MudCard Elevation="1">
+    <MudCardHeader>
+        Timer
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText>@DisplayTime</MudText>
+        <MudSimpleTable Striped>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Lap</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (string lap in Laps)
+                {
+                    <tr>
+                        <td>@lap.Split("|")[0]</td>
+                        <td>@lap.Split("|")[1]</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudCardContent>
+    <MudCardActions>
+        <MudIconButton OnClick="StartTimer" Icon="@Icons.Material.TwoTone.PlayCircle" Color="Color.Info" />
+        <MudIconButton OnClick="StopTimer" Icon="@Icons.Material.TwoTone.StopCircle" Color="Color.Error" />
+        <MudIconButton OnClick="LapTimer" Icon="@Icons.Material.TwoTone.Watch" Color="Color.Warning" />
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [CascadingParameter] public Auth0User? User { get; set; }
+    private string DisplayTime { get; set; } = "00:00:00";
+    private Timer Timer { get; set; }
+    protected override void OnInitialized()
+    {
+        Timer = new Timer(33);
+        Timer.Elapsed += OnTimedEvent;
+    }
+    private DateTime? StartTime { get; set; }= null;
+    private List<string> Laps = new List<string>();
+    private void LapTimer()
+    {
+        Laps.Add(DateTime.Now + "|" + DisplayTime);
+    }
+    private void StartTimer()
+    {
+        StartTime = DateTime.UtcNow;
+        Timer.Enabled = true;
+    }
+    private void StopTimer()
+    {
+        if (StartTime == null)
+            return;
+        Spans.Add(DateTime.UtcNow.Subtract(StartTime.Value));
+        StartTime = null;
+    }
+    private async void OnTimedEvent(Object? source, ElapsedEventArgs args)
+    {
+        if (StartTime == null)
+            return;
+        await InvokeAsync(() => {
+            TimeSpan sum = new TimeSpan(0);
+            foreach (TimeSpan span in Spans)
+                sum = sum.Add(span);
+            TimeSpan ts = DateTime.UtcNow.Subtract(StartTime.Value).Add(sum);
+            DisplayTime = ts.ToString(@"hh\:mm\:ss\:ff");
+            StateHasChanged();
+        });
+    }
+    private List<TimeSpan> Spans { get; set; } = new List<TimeSpan>();
+}

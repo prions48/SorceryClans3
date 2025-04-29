@@ -1,0 +1,43 @@
+﻿@page "/email"
+@using AppTemplate3.Data
+@using AppTemplate3.Data.Email
+@inject EmailService emailService
+@inject ISnackbar Snackbar
+<PageTitle>Email</PageTitle>
+
+<h1>Email</h1>
+
+@if (Sending)
+{
+    <MudProgressCircular Indeterminate />
+}
+else
+{
+    <p role="status">Current count: @currentCount</p>
+}
+<br />
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="IncrementCount">Send an email to app owner</MudButton>
+
+@code {
+    private int currentCount = 0;
+    private bool Sending = false;
+    private async Task IncrementCount()
+    {
+        Sending = true;
+        try
+        {
+            string result = await emailService.SendEmail(KeyChain.OwnerEmail, "Test email from template", "Enjoy this email!");
+            Snackbar.Add(result, result == "Succeeded" ? Severity.Success : Severity.Error);
+            currentCount++;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            Sending = false;
+            StateHasChanged();
+        }
+    }
+}
