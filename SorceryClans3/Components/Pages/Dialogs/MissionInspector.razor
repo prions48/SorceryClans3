@@ -1,0 +1,64 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable Striped Bordered>
+    <thead>
+        <tr>
+            <th>Score</th>
+            <th>Requirement</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Mission.CScore != null)
+        {
+            <tr>
+                <td>Combat</td>
+                <td>@Mission.CDisp</td>
+            </tr>
+        }
+        @if (Mission.MScore != null)
+        {
+            <tr>
+                <td>Magic</td>
+                <td>@Mission.MDisp</td>
+            </tr>
+        }
+        @if (Mission.SScore != null)
+        {
+            <tr>
+                <td>Subtlety</td>
+                <td>@Mission.SDisp</td>
+            </tr>
+        }
+        @if (Mission.KScore != null)
+        {
+            <tr>
+                <td>Healing</td>
+                <td>@Mission.KDisp</td>
+            </tr>
+        }
+        @if (Mission.ColorReqs.Count > 0)
+        {
+            <tr>
+                <td>Magic Type@(Mission.ColorReqs.Count==1 ? "" : "s")</td>
+                <td>
+                    <MagicIcons Colors="Mission.ColorReqs" />
+                </td>
+            </tr>
+        }
+        <tr>
+            <td>Reward@(Mission.Rewards.Count == 1 ? "" : "s")</td>
+            <td>
+                <MudStack>
+                    @foreach (string reward in Mission.Rewards)
+                    {
+                        <span>@reward</span>
+                    }
+                </MudStack>
+            </td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@code{
+    [Parameter] public Mission Mission { get; set; }
+}

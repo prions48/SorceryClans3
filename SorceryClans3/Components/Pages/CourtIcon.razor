@@ -1,0 +1,39 @@
+@namespace SorceryClans3.Components.Pages
+
+<span @onclick="Select" style="@($"position: absolute; top:{@Court.Location.X*2+200}px; left:{@Court.Location.Y*2+200+LeftPad}px; color:{IconColor}; font-weight:{(Selected?"bold":"normal")}")">
+    @if (Selected)
+    {
+        <MudTooltip Text="@Court.CourtName">
+            @Court.CourtLevel    
+        </MudTooltip>
+    }
+    else
+    {
+        @Court.CourtLevel
+    }
+</span>
+@code {
+    [Parameter] public FaerieCourt Court { get; set; }
+    [Parameter] public int LeftPad { get; set; } = 20;
+    [Parameter] public Action<FaerieCourt> SelectCourt { get; set; }
+    [Parameter] public bool Selected { get; set; } = false;
+    private string IconColor
+    {
+        get
+        {
+            switch (Court?.Color)
+            {
+                case MudBlazor.Color.Info: return "blue";
+                case MudBlazor.Color.Success: return "green";
+                case MudBlazor.Color.Warning: return "orange";
+                case MudBlazor.Color.Error: return "red";
+                case null: return "black";
+                default: return "black";
+            }
+        }
+    }
+    private void Select()
+    {
+        SelectCourt.Invoke(Court);
+    }
+}

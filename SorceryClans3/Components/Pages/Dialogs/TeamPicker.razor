@@ -1,0 +1,77 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Striped Bordered Outlined>
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    @if (CScore || AllScores)
+                    {
+                        <th>Combat</th>
+                    }
+                    @if (MScore || AllScores)
+                    {
+                        <th>Magic</th>
+                    }
+                    @if (SScore || AllScores)
+                    {
+                        <th>Subtlety</th>
+                    }
+                    @if (KScore || AllScores)
+                    {
+                        <th>Healing</th>
+                    }
+                    <th>Color</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Team team in AvailableTeams)
+                {
+                    <tr>
+                        <td>@team.TeamName</td>
+                        @if (CScore || AllScores)
+                        {
+                            <td>@team.CScore</td>
+                        }
+                        @if (MScore || AllScores)
+                        {
+                            <td>@team.MScore</td>
+                        }
+                        @if (SScore || AllScores)
+                        {
+                            <td>@team.SScore</td>
+                        }
+                        @if (KScore || AllScores)
+                        {
+                            <td>@team.KScore</td>
+                        }
+                        <td>
+                            <MagicIcons Colors="@(team.GetColors)" />
+                        </td>
+                        <td>
+                            <MudIconButton OnClick="() => Submit(team)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Info" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public IList<Team> AvailableTeams { get; set; }
+    [Parameter] public bool AllScores { get; set; } = false;
+    [Parameter] public bool CScore { get; set; } = false;
+    [Parameter] public bool MScore { get; set; } = false;
+    [Parameter] public bool SScore { get; set; } = false;
+    [Parameter] public bool KScore { get; set; } = false;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Submit(Team team)
+    {
+        MudDialog.Close(DialogResult.Ok(team));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

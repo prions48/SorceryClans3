@@ -1,0 +1,96 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Models
+<MudDialog>
+    <DialogContent>
+
+        <MudSimpleTable>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Com</th>
+                    <th>Mag</th>
+                    <th>Sub</th>
+                    <th>HP</th>
+                    <th>Heal</th>
+                    <th>Travel</th>
+                    <th>Travel Boost</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Power?.IsTemplate == false)
+                {
+                    <tr>
+                        <td>Current</td>
+                        <td>@Power?.CBonus</td>
+                        <td>@Power?.MBonus</td>
+                        <td>@Power?.SBonus</td>
+                        <td>@Power?.HBonus</td>
+                        <td>@Power?.KBonus</td>
+                        <td>@Power?.DBonus</td>
+                        <td>@Power?.GBonus</td>
+                    </tr>
+                }
+                <tr>
+                    <td>Max</td>
+                    <td>@Power?.CBonusMax</td>
+                    <td>@Power?.MBonusMax</td>
+                    <td>@Power?.SBonusMax</td>
+                    <td>@Power?.HBonusMax</td>
+                    <td>@Power?.KBonusMax</td>
+                    <td>@Power?.DBonusMax</td>
+                    <td>@Power?.GBonusMax</td>
+                </tr>
+                @if (Power != null)
+                {
+                    <tr>
+                        <td colspan="8">
+                            <MudStack Row=true>
+                                <MudText>
+                                    @Power.DisplayType @Power.DisplayPercent
+                                </MudText>
+                                <MudSpacer />
+                                <MudText>
+                                    Color:
+                                </MudText>
+                                @if (Power != null)
+                                {
+                                    <MagicIcons Colors="Power.GetColors(Powerlevel ?? 99999)" />
+                                }
+                            </MudStack>
+                        </td>
+                    </tr>
+                    @if (Power.Color != MagicColor.None)
+                    {
+                        <tr> 
+                            <td colspan="8">
+                                <MudStack Row=true>
+                                    <MudText>Min Power: @Power.MinPowerForColor</MudText>
+                                    <MudSpacer />
+                                    @if (Power.MaxColors > 1)
+                                    {
+                                        <MudText>Increment: @Power.PowerIncrementForColor</MudText>
+                                    }
+                                </MudStack>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code{
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
+    [Parameter] public IPower? Power { get; set; }
+    [Parameter] public int? Powerlevel { get; set; }
+    private void Cancel() => MudDialog.Cancel();
+    protected override void OnInitialized()
+    {
+
+    }
+}

@@ -1,0 +1,7 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Abstractions
+
+<MudText Color="@Soldier.Health.Color()">@Soldier.HPCurrent / @Soldier.HPMax (@Soldier.Health.ToString())</MudText>
+@code{
+    [Parameter] public IHP Soldier { get; set; }
+}

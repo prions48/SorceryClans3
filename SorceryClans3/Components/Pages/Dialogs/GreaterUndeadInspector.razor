@@ -1,0 +1,36 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable Striped Bordered Outlined>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Power</th>
+            <th>Com</th>
+            <th>Mag</th>
+            <th>Sub</th>
+            <th>HP</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>REQ</td>
+            <td>@Undead.preq</td>
+            <td>@Undead.creq</td>
+            <td>@Undead.mreq</td>
+            <td>@Undead.sreq</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>BOOST</td>
+            <td>+@Undead.pbonus</td>
+            <td>+@Undead.cbonus</td>
+            <td>+@Undead.mbonus</td>
+            <td>+@Undead.sbonus</td>
+            <td>+@Undead.hbonus</td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public GreaterUndead Undead { get; set; }
+}

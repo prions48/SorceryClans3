@@ -1,0 +1,72 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable>
+    <thead>
+        <tr>
+            <th>View</th>
+            <th>Team</th>
+            <th>Research Pts</th>
+            <th>Color</th>
+            <th>Cycle</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (ResearchMission mission in Project.Missions)
+        {
+            @if (mission.Team != null)
+            {
+                <tr>
+                    <td>
+                        <MudIconButton OnClick="() => mission.ShowTeam = !mission.ShowTeam" Color="Color.Default" Icon="@(mission.ShowTeam ? Icons.Material.Filled.KeyboardArrowDown : Icons.Material.Filled.KeyboardArrowRight)" />
+                    </td>
+                    <td>@mission.Team.TeamName</td>
+                    <td>@mission.Team.ResearchPower(Project.GetColor).ToString()</td>
+                    <td>
+                        <MagicIcons Colors="@(mission.Team.GetColors.Where(e => e == Project.GetColor).ToList())" />
+                    </td>
+                    <td>
+                        <MudIconButton OnClick="() => mission.Cycle = !mission.Cycle" Icon="@Icons.Material.Filled.Refresh" Color="@(mission.Cycle ? Color.Success : Color.Error)" />
+                    </td>
+                </tr>
+                @if (mission.ShowTeam)
+                {
+                    <tr>
+                        <td colspan="2">Name</td>
+                        <td>Affinity</td>
+                        <td colspan="2">Skill</td>
+                    </tr>
+                    @foreach (Soldier sold in mission.Team.Leaders)
+                    {
+                        <tr>
+                            <td colspan="2">
+                                <MudStack Row=true>
+                                    <MudText>@sold.SoldierName</MudText>
+                                    <MudIcon Color="Color.Success" Icon="@Icons.Material.Filled.Person" />
+                                </MudStack>
+                            </td>
+                            <td>@sold.ResearchDisplay</td>
+                            <td colspan="2">@sold.GetSkillDisplay(Project.GetColor)</td>
+                        </tr>
+                    }
+                    @foreach (Soldier sold in mission.Team.Soldiers.Where(e => e.IsLeading))
+                    {
+                        <tr>
+                            <td colspan="2">
+                                <MudStack Row=true>
+                                    <MudText>@sold.SoldierName</MudText>
+                                    <MudIcon Color="Color.Warning" Icon="@Icons.Material.Filled.PersonOff" />
+                                </MudStack>
+                            </td>
+                            <td>Affinity: @sold.ResearchDisplay</td>
+                            <td colspan="2">Skill: @sold.GetSkillDisplay(Project.GetColor)</td>
+                        </tr>
+                    }
+                }
+            }
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public ResearchProject Project { get; set; }
+}

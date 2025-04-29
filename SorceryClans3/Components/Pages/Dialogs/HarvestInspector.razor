@@ -1,0 +1,161 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+
+<MudSimpleTable Striped Bordered Outlined>
+    <thead>
+        <tr>
+            <th>Stat</th>
+            <th>Boost</th>
+            <th>Max</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Harvest != null)
+        {
+            @if (Harvest.cbonus > 0 || Harvest.MaxStats.Com != null)
+            {
+                <tr>
+                    <td>Combat</td>
+                    <td>@Harvest.cbonus</td>
+                    <td>@Harvest.MaxStats.Com.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.mbonus > 0 || Harvest.MaxStats.Mag != null)
+            {
+                <tr>
+                    <td>Magic</td>
+                    <td>@Harvest.mbonus</td>
+                    <td>@Harvest.MaxStats.Mag.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.sbonus > 0 || Harvest.MaxStats.Sub != null)
+            {
+                <tr>
+                    <td>Subtlety</td>
+                    <td>@Harvest.sbonus</td>
+                    <td>@Harvest.MaxStats.Sub.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.hbonus > 0 || Harvest.MaxStats.HP != null)
+            {
+                <tr>
+                    <td>HP</td>
+                    <td>@Harvest.hbonus</td>
+                    <td>@Harvest.MaxStats.HP.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.kbonus > 0 || Harvest.MaxStats.Heal != null)
+            {
+                <tr>
+                    <td>Heal</td>
+                    <td>@Harvest.kbonus</td>
+                    <td>@Harvest.MaxStats.Heal.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.dbonus > 0 || Harvest.MaxStats.Travel != null)
+            {
+                <tr>
+                    <td>Travel</td>
+                    <td>@Harvest.dbonus</td>
+                    <td>@Harvest.MaxStats.Travel.ToString()</td>
+                </tr>
+            }
+            
+            @if (Harvest.zbonus > 0 || Harvest.MaxStats.Cha != null)
+            {
+                <tr>
+                    <td>Charisma</td>
+                    <td>@Harvest.zbonus</td>
+                    <td>@Harvest.MaxStats.Cha.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.lbonus > 0 || Harvest.MaxStats.Log != null)
+            {
+                <tr>
+                    <td>Logistics</td>
+                    <td>@Harvest.lbonus</td>
+                    <td>@Harvest.MaxStats.Log.ToString()</td>
+                </tr>
+            }
+            @if (Harvest.tbonus > 0 || Harvest.MaxStats.Tac != null)
+            {
+                <tr>
+                    <td>Tactics</td>
+                    <td>@Harvest.tbonus</td>
+                    <td>@Harvest.MaxStats.Tac.ToString()</td>
+                </tr>
+            }
+            <tr>
+                <td>
+                    <b>Raw @Spell.ConsumablePrint: </b> @Spell.Consumables
+                </td>
+                <td>
+                     <b>Processed @Spell.ConsumablePrint:</b> @Spell.ProcessedConsumables
+                </td>
+                <td>
+                    @if (AvailableSoldiers != null)
+                    {
+                        <MudButton OnClick="ApplyHarvest" Variant="Variant.Filled" Color="Color.Info">Apply</MudButton>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td>Yield: @Harvest.yield</td>
+                <td>Drop Rate: @Harvest.dropPrint()</td>
+                <td>Danger: @Harvest.dangerPrint()</td>
+            </tr>
+            @if (Harvest.pwr)
+            {
+                <tr>
+                    <td colspan="3">
+                        <PowerInspector Power="Harvest.GeneratePower()" />
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public Spell Spell { get; set; }
+    [Parameter] public IList<Soldier> AvailableSoldiers { get; set; }
+    private BeastHarvest? Harvest { get { return Spell?.Harvest; } }
+    private async Task ApplyHarvest()
+    {
+        if (Harvest == null)
+            return;
+        if (Spell.ProcessedConsumables <= 0)
+        {
+            Snackbar.Add("No processed " + Spell.ConsumablePrint + " prepared!", Severity.Warning);
+            return;
+        }
+        if (AvailableSoldiers == null)
+        {
+            Snackbar.Add("Soldiers not available.", Severity.Warning);
+            return;
+        }
+        IList<Soldier> eligible = AvailableSoldiers.Where(e => Harvest.IsEligible(e)).ToList();
+        if (eligible.Count == 0)
+        {
+            Snackbar.Add("No eligible soldiers available!", Severity.Warning);
+            return;
+        }
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Soldiers", eligible);
+        var dialog = dialogService.Show<SoldierPicker>("Select Soldier", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Soldier? soldier = result.Data as Soldier;
+            if (soldier != null)
+            {
+                Harvest.Apply(soldier);
+                Snackbar.Add(Harvest.HarvestName + " applied to " + soldier.SoldierName + "!", Severity.Success);
+                Spell.ProcessedConsumables--;
+            }
+        }
+    }
+}

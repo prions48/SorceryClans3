@@ -1,0 +1,81 @@
+namespace SorceryClans3.Data.Models
+{
+    public enum Direction
+    {
+        Xpos,
+        Xneg,
+        Ypos,
+        Yneg
+    }
+    public class MapLocation
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public MapLocation()
+        {
+            Random r = new Random();
+            X = r.NextDouble() * 200 - 100;
+            Y = r.NextDouble() * 200 - 100;
+        }
+        public MapLocation(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+        public void MoveUp(double step = 1.0)
+        {
+            Y += step;
+            if (Y > 100)
+                Y = 100;
+        }
+        public void MoveDown(double step = 1.0)
+        {
+            Y -= step;
+            if (Y < -100)
+                Y = -100;
+        }
+        public void MoveLeft(double step = 1.0)
+        {
+            X -= step;
+            if (X < -100)
+                X = -100;
+        }
+        public void MoveRight(double step = 1.0)
+        {
+            X += step;
+            if (X > 100)
+                X = 100;
+        }
+    }
+    public static class MapUtils
+    {
+        private static Random random = new Random();
+        public static double GetDistance(this MapLocation location1, MapLocation location2)
+        {
+            return Math.Sqrt(SQ(location1.X - location2.X) + SQ(location1.Y - location2.Y));
+        }
+        private static double SQ(double x)
+        {
+            return x * x;
+        }
+        public static Direction GetDirection(this MapLocation location1, MapLocation location2)
+        {
+            double xdir = location2.X - location1.X;
+            double ydir = location2.Y - location1.Y;
+            if (Math.Abs(xdir) / (Math.Abs(xdir) + Math.Abs(ydir)) > random.NextDouble())
+            {
+                if (xdir >= 0)
+                    return Direction.Xpos;
+                else
+                    return Direction.Xneg;
+            }
+            else
+            {
+                if (ydir >= 0)
+                    return Direction.Ypos;
+                else
+                    return Direction.Yneg;
+            }
+        }
+    }
+}

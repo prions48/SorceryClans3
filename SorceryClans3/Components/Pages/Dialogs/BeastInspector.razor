@@ -1,0 +1,50 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Powerlevel</th>
+            <th>Combat</th>
+            <th>Magic</th>
+            <th>Subtlety</th>
+            @*add healing here once implemented*@
+            <th>HP</th>
+            <th>Travel</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Beast.BeastName</td>
+            <td>@Soldier.PowerLevel</td>
+            <td>@Soldier.Combat</td>
+            <td>@Soldier.Magic</td>
+            <td>@Soldier.Subtlety</td>
+            <td>@Soldier.HPMax</td>
+            <td>@Soldier.Travel</td>
+        </tr>
+        <tr>
+            <td>Min Reqs:</td>
+            <td>@Beast.MinReqs.Power</td>
+            <td>@Beast.MinReqs.Com</td>
+            <td>@Beast.MinReqs.Mag</td>
+            <td>@Beast.MinReqs.Sub</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@if (Beast.TamePower != null)
+{
+    <PowerInspector Power="Beast.TamePower" />
+}
+
+@code {
+    [Parameter] public Beast Beast { get; set; }
+    private Soldier Soldier { get; set; }
+    protected override void OnInitialized()
+    {
+        Soldier = Beast.GenerateBeast();
+    }
+}

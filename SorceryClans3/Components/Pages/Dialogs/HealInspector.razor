@@ -1,0 +1,124 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Abstractions
+
+<MudDropContainer T="Patient" Items="Patients" ItemsSelector="@((item,dropzone) => item.MedicIDs.Any(e => e == dropzone))" ItemDropped="ItemUpdated">
+    <ChildContent>
+        <MudStack Row=true>
+            <MudDropZone T="Patient" Identifier="@Guid.Empty.ToString()" Class="rounded-lg pa-4 ma-4 flex-grow-1" >
+                <MudText Typo="Typo.button">No Healing</MudText>
+            </MudDropZone>
+            <MudStack>
+                @foreach (MedicPatients medic in Medics)
+                {
+                    <MudDropZone T="Patient" Identifier="@medic.MedicID.ToString()" Class="rounded-lg pa-4 ma-4 flex-grow-1">
+                        <MudStack Row=true>
+                            <MudIcon Color="@medic.FatigueColor" Icon="@medic.FatigueIcon" />
+                            <MudText Typo="Typo.button">@medic.MedicName (@(medic.MPBase / CountPatients(medic.MedicID)))</MudText>
+                        </MudStack>
+                    </MudDropZone>
+                }
+            </MudStack>
+        </MudStack>
+    </ChildContent>
+    <ItemRenderer>
+        <MudPaper Elevation="10">
+            <MudStack Spacing="1">
+                <MudText>@context.SoldierName</MudText>
+                <MudBadge Color="@context.Status.Color()" Icon="@context.Status.Icon()" Visible="@(context.Status != HealStatus.NotYet)">
+                    <HPInspector Soldier="context" />
+                </MudBadge>
+            </MudStack>
+        </MudPaper>
+    </ItemRenderer>
+</MudDropContainer>
+
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Complete" Disabled="Completed">Complete</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Close" Disabled="!Completed">Close</MudButton>
+
+@code {
+    [Parameter] public Team MedicTeam { get; set; }
+    [Parameter] public Team PatientTeam { get; set; }
+    [Parameter] public EventCallback CompleteMission { get; set; }
+    private IList<MedicPatients> Medics { get; set; } = new List<MedicPatients>();
+    private IList<Patient> Patients { get; set; } = new List<Patient>();
+    private bool Completed { get; set; } = false;
+    protected override void OnInitialized()
+    {
+        foreach (Soldier medic in MedicTeam.Soldiers)
+        {
+            if (medic.IsHealer)
+                Medics.Add(new MedicPatients { MedicID = medic.ID.ToString(), MedicName = medic.SoldierName, MPBase = medic.HealScore, Fatigue = medic.Medical!.MedicFatigue } );
+        }
+        Medics = Medics.OrderByDescending(e => e.MPBase).ToList();
+        foreach (Soldier patient in PatientTeam.GetAllSoldiers)
+        {
+            if (patient.IsInjured)
+                Patients.Add(patient.GetPatient());
+        }
+    }
+    private int CountPatients(string medicid)
+    {
+        int ret = Patients.Count(e => e.MedicIDs.Contains(medicid));
+        if (ret == 0)
+            return 1;
+        return ret * ret;
+    }
+    private void ItemUpdated(MudItemDropInfo<Patient> dropItem)
+    {
+        if (dropItem.Item != null)
+        { 
+            if (dropItem.DropzoneIdentifier == Guid.Empty.ToString())
+            {
+                dropItem.Item.MedicIDs = new List<string>();
+            }
+            if (!dropItem.Item.MedicIDs.Contains(dropItem.DropzoneIdentifier))
+            {
+                dropItem.Item.MedicIDs.Add(dropItem.DropzoneIdentifier);
+            }
+        }
+    }
+    private void Complete()
+    {
+        //healing algorithm!
+        foreach (Patient patient in Patients)
+        {
+            IList<MedicPatients> medics = Medics.Where(e => patient.MedicIDs.Contains(e.MedicID)).ToList();
+            int totpwr = 0;
+            foreach (MedicPatients medic in medics)
+            {
+                totpwr += medic.MPBase / CountPatients(medic.MedicID);
+            }
+            Soldier? soldier = PatientTeam.GetAllSoldiers.FirstOrDefault(e => e.ID == patient.PatientID);
+            if (soldier != null)
+            {
+                patient.Status = soldier.MedicalHeal(totpwr);
+            }
+        }
+        foreach (MedicPatients medic in Medics)
+        {
+            Soldier? soldier = MedicTeam.Soldiers.FirstOrDefault(e => e.ID.ToString() == medic.MedicID);
+            if (soldier != null && soldier.IsHealer)
+            {
+                int numpatients = Patients.Count(e => e.MedicIDs.Contains(medic.MedicID));
+                if (numpatients > 0)
+                {
+                    soldier.Medical!.MedicFatigue += numpatients;
+                    medic.Fatigue = soldier.Medical!.MedicFatigue;
+                    soldier.Medical!.GainMedicPower();
+                }
+            }
+        }
+        foreach (Patient patient in Patients)
+        {
+            Soldier? s = PatientTeam.GetAllSoldiers.FirstOrDefault(e => e.ID == patient.PatientID);
+            patient.HPCurrent = s?.HPCurrent ?? 0;
+            patient.Health = s?.Health ?? HealthLevel.Uninjured;
+        }
+        Completed = true;
+        StateHasChanged();
+    }
+    private async Task Close()
+    {
+        await CompleteMission.InvokeAsync();
+    }
+ }

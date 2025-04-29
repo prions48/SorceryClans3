@@ -1,0 +1,31 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+<MudSimpleTable Striped Bordered Outlined>
+    <thead>
+        <tr>
+            <th></th>
+            <th>POWER</th>
+            <th>COM</th>
+            <th>MAG</th>
+            <th>SUB</th>
+            <th>HEAL</th>
+            <th>TRAVEL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Reqs</td>
+            <td>@Demon.pr</td>
+            <td>@Demon.cr</td>
+            <td>@Demon.mr</td>
+            <td>@Demon.sr</td>
+            <td>@Demon.kr</td>
+            <td>@Demon.tr</td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+<PowerInspector Power="@Demon.GeneratePower()" />
+
+@code {
+    [Parameter] public GreaterDemon Demon { get; set; }
+}

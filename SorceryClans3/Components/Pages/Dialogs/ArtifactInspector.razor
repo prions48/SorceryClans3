@@ -1,0 +1,26 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable>
+    <thead>
+        <tr>
+            <th>Com</th>
+            <th>Mag</th>
+            <th>Sub</th>
+            <th>HP</th>
+            <th>Heal</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Artifact?.ComBoost</td>
+            <td>@Artifact?.MagBoost</td>
+            <td>@Artifact?.SubBoost</td>
+            <td>@Artifact?.HPBoost</td>
+            <td>@Artifact?.HealBoost</td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public Artifact Artifact { get; set; }
+}

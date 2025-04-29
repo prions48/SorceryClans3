@@ -1,0 +1,79 @@
+@namespace SorceryClans3.Components.Pages
+
+<MudStack>
+    <MudSimpleTable>
+        <thead>
+            <tr>
+                <th>Power</th>
+                <th>Color</th>
+                <th>Cost</th>
+                @if (Spell.ConsumableName != null)
+                {
+                    <th>@Spell.ConsumablePrint</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Spell.PowerToCast</td>
+                <td>@Spell.ColorToCast</td>
+                <td>@Spell.MoneyToCast</td>
+                @if (Spell.ConsumableName != null)
+                {
+                    <td>@Spell.Consumables</td>
+                }
+            </tr>
+            @if (Spell.MagColorToCast != null || Spell.MagPowerToCast != null)
+            {
+                <tr>
+                    <td>Caster Reqs:</td>
+                    <td colspan="@(Spell.ConsumableName != null ? "2" : "1")">Power: @Spell.MagPowerToCast</td>
+                    <td>Color: @Spell.MagColorToCast</td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    @if (Spell.Beast != null)
+    {
+        <BeastInspector Beast="Spell.Beast" />
+    }
+    @if (Spell.Power != null)
+    {
+        <PowerInspector Power="Spell.Power" />
+    }
+    @if (Spell.Harvest != null)
+    {
+        <HarvestInspector Spell="Spell" AvailableSoldiers="AvailableSoldiers" />
+    }
+    @if (Spell.Spirit != null)
+    {
+        <SoldierInspector Soldier="Spell.Spirit.GenerateSoldier()" />
+    }
+    @if (Spell.SpiritArtifact != null)
+    {
+        <ArtifactInspector Artifact="Spell.SpiritArtifact.Artifact" />
+        <SoldierInspector Soldier="Spell.SpiritArtifact.Spirit" />
+    }
+    @if (Spell.LesserUndead != null)
+    {
+        <SoldierInspector Soldier="@Spell.LesserUndead.GenerateSoldier()" />
+    }
+    @if (Spell.GreaterUndead != null)
+    {
+        <GreaterUndeadInspector Undead="@Spell.GreaterUndead" />
+    }
+    @if (Spell.LesserDemon != null)
+    {
+        <SoldierInspector Soldier="@Spell.LesserDemon.GenerateSoldier()" />
+    }
+    @if (Spell.GreaterDemon != null)
+    {
+        <GreaterDemonInspector Demon="@Spell.GreaterDemon" />
+    }
+
+</MudStack>
+
+@code {
+    [Parameter] public Spell Spell { get; set; }
+    [Parameter] public IList<Soldier> AvailableSoldiers { get; set; }
+}

@@ -1,0 +1,86 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Abstractions
+
+@foreach (Soldier s in Soldiers.Where(e => !e.IsSub || ShowSubs))
+{
+    <tr>
+        <td>@s.SoldierName</td>
+        <td>@s.PowerLevel</td>
+        <td>@s.Combat</td>
+        <td>@s.Magic</td>
+        <td>@s.Subtlety</td>
+        <td>
+            <HPInspector Soldier="s" />
+        </td>
+        <td>@s.HealScore</td>
+        <td>
+            @if (s.Power != null)
+            {
+                <MudIconButton Icon="@s.Power.Icon" Color="@(s.Power.IconColor)" OnClick="() => ViewPower(s)" />
+            }
+        </td>
+        <td>
+            @if (s.Artifact != null)
+            {
+                <MudIconButton Icon="@s.Artifact.Icon" Color="Color.Primary" OnClick="() => ViewArtifact(s.Artifact)" />
+            }
+        </td>
+        <td>
+            @if (s.IsLeading)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Groups" Color="Color.Info" OnClick="() => ViewLeadership(s)" />
+            }
+        </td>
+    </tr>
+    <TeamSoldierInspector Soldiers="s.SubSoldiers" ShowSubs="true" />
+}
+
+<MudDialog @bind-IsVisible="ViewLead">
+    <TitleContent>@SelectedSoldier?.SoldierName</TitleContent>
+    <DialogContent>
+        <LeadInspector Soldier="SelectedSoldier" />
+    </DialogContent>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="ViewArt">
+    <TitleContent>@SelectedArtifact?.ArtifactName</TitleContent>
+    <DialogContent>
+        <ArtifactInspector Artifact="SelectedArtifact" />
+    </DialogContent>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="ViewPow">
+    <TitleContent>@SelectedPower?.PowerName</TitleContent>
+    <DialogContent>
+        <PowerInspector Power="SelectedPower" Powerlevel="PowerLevel" />
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public IList<Soldier> Soldiers { get; set; }
+    [Parameter] public bool ShowSubs { get; set; } = false;
+    private bool ViewArt = false;
+    private bool ViewPow = false;
+    private Power? SelectedPower { get; set; }
+    private int? PowerLevel { get; set; }
+    private void ViewPower(Soldier soldier)
+    {
+        SelectedPower = soldier.Power;
+        PowerLevel = soldier.PowerLevel;
+        ViewPow = true;
+    }
+    private bool ViewLead = false;
+    private Artifact? SelectedArtifact { get; set; }
+    private void ViewArtifact(Artifact art)
+    {
+        SelectedArtifact = art;
+        ViewArt = true;
+    }
+    private Soldier? SelectedSoldier { get; set; }
+    private string? SelectedLeadName { get; set; }
+    private void ViewLeadership(Soldier sold)
+    {
+        SelectedSoldier = sold;
+        ViewLead = true;
+    }
+}

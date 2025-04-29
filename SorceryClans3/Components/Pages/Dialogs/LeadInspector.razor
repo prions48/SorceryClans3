@@ -1,0 +1,36 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable Bordered Outlined Striped>
+    <thead>
+        <tr>
+            <th>Stat</th>
+            <th>Base</th>
+            <th>Current</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Charisma</td>
+            <td>@Soldier?.CharismaBase</td>
+            <td>@Soldier?.Charisma</td>
+        </tr>
+        <tr>
+            <td>Logistics</td>
+            <td>@Soldier?.LogisticsBase</td>
+            <td>@Soldier?.Logistics</td>
+        </tr>
+        <tr>
+            <td>Tactics</td>
+            <td>@Soldier?.TacticsBase</td>
+            <td>@Soldier?.Tactics</td>
+        </tr>
+        <tr>
+            <td>Experience</td>
+            <td colspan="2">@Soldier?.LeadershipXP.ToString("P1")</td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public Soldier Soldier { get; set; }
+}

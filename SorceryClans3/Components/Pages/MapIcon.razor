@@ -1,0 +1,20 @@
+<span style="@($"position: relative; top:{y}px; left:{x}px; color:{IconColor};")">x</span>
+@code {
+    [Parameter] public double x { get; set; }
+    [Parameter] public double y { get; set; }
+    [Parameter] public MudBlazor.Color Color { get; set; }
+    private string IconColor
+    {
+        get
+        {
+            switch (Color)
+            {
+                case MudBlazor.Color.Info: return "blue";
+                case MudBlazor.Color.Success: return "green";
+                case MudBlazor.Color.Warning: return "orange";
+                case MudBlazor.Color.Error: return "red";
+                default: return "black";
+            }
+        }
+    }
+}

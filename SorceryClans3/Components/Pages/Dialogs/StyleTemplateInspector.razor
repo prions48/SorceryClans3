@@ -1,0 +1,96 @@
+@namespace SorceryClans3.Components.Pages
+
+<MudSimpleTable Striped Bordered Outlined>
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Com</th>
+            <th>Mag</th>
+            <th>Sub</th>
+            <th>Heal</th>
+            <th>XP</th>
+            <th>Teach</th>
+            <th>Power</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (StyleRank rank in Style.Ranks)
+        {
+            <tr>
+                <td>@rank.Name</td>
+                <td>@rank.CBonus</td>
+                <td>@rank.MBonus</td>
+                <td>@rank.SBonus</td>
+                <td>@rank.KBonus</td>
+                <td>@rank.StyleXP</td>
+                <td>
+                    @if (rank.Teach == RankTeach.Teach)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Primary" />
+                    }
+                    else if (rank.Teach == RankTeach.AssistTeach)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.StarHalf" Color="Color.Secondary" />
+                    }
+                </td>
+                <td>
+                    @if (rank.GivePower)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.BrightnessHigh" Color="Color.Info" OnClick="OpenPower" />
+                    }
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="8">
+                <hr />
+            </td>
+        </tr>
+        <tr>
+            <td>Total</td>
+            <td>@Style.CTotal</td>
+            <td>@Style.MTotal</td>
+            <td>@Style.STotal</td>
+            <td>@Style.KTotal</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Mininum:</td>
+            <td>@Style.MinReqs.Com</td>
+            <td>@Style.MinReqs.Mag</td>
+            <td>@Style.MinReqs.Sub</td>
+            <td>@Style.MinReqs.Heal</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Maximum:</td>
+            <td>@Style.MaxReqs.Com</td>
+            <td>@Style.MaxReqs.Mag</td>
+            <td>@Style.MaxReqs.Sub</td>
+            <td>@Style.MaxReqs.Heal</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+<MudDialog @bind-IsVisible="ViewPower">
+    <TitleContent>@Style.Power?.PowerName</TitleContent>
+    <DialogContent>
+        <PowerInspector Power="Style.Power" />
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public StyleTemplate Style { get; set; }
+    private bool ViewPower = false;
+    private void OpenPower()
+    {
+        ViewPower = true;
+    }
+}

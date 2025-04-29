@@ -1,0 +1,41 @@
+@using SorceryClans3.Data.Abstractions
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudSimpleTable>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Power Level</td>
+            <td>Combat</td>
+            <td>Magic</td>
+            <td>Subtlety</td>
+            <td>Healing</td>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Soldier != null)
+        {
+            <tr>
+                <td>@Soldier.SoldierName</td>
+                <td>@Soldier.PowerLevel</td>
+                <td>@Soldier.Combat</td>
+                <td>@Soldier.Magic</td>
+                <td>@Soldier.Subtlety</td>
+                <td>@Soldier.Heal</td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <MagicIcons Colors="Soldier.GetColors" />
+                </td>
+                <td colspan="3">
+                    <HPInspector Soldier="Soldier" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+
+@code {
+    [Parameter] public Soldier Soldier { get; set; }
+}

@@ -1,0 +1,54 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Soldiers">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Team</MudTh>
+                <MudTh>Power Level</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>@(context.Team?.TeamName ?? "")</MudTd>
+                <MudTd>@context.PowerLevel</MudTd>
+                <MudTd>
+                    <MudIconButton OnClick="() => SelectSoldier(context)" Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" />
+                    <MudIconButton OnClick="() => Submit(context)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudDialog @bind-IsVisible="ViewSoldier">
+            <DialogContent>
+                <SoldierInspector Soldier="SelectedSoldier" />
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="() => ViewSoldier = false">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public IList<Soldier> Soldiers { get; set; }
+    private bool ViewSoldier { get; set; } = false;
+    private Soldier? SelectedSoldier { get; set; }
+    private void SelectSoldier(Soldier sold)
+    {
+        SelectedSoldier = sold;
+        ViewSoldier = true;
+    }
+    private void UnselectSoldier()
+    {
+        SelectedSoldier = null;
+        ViewSoldier = false;
+    }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Submit(Soldier sold)
+    {
+        MudDialog.Close(DialogResult.Ok(sold));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

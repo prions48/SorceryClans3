@@ -1,0 +1,23 @@
+@namespace SorceryClans3.Components.Pages
+
+<MudStack Row=true>
+    @foreach (MagicColor color in Colors.Distinct())
+    {
+        var colors = Colors.Where(e => e == color).ToList();
+        if (colors.Count >=6)
+        {
+            <MudIcon Icon="@color.Icon()" Color="@color.Color()" />
+            <MudText Color="@color.Color()">x @colors.Count</MudText>
+        }
+        else
+        {
+            @foreach (MagicColor col in colors)
+            {
+                <MudIcon Icon="@color.Icon()" Color="@color.Color()" />
+            }
+        }
+    }
+</MudStack>
+@code{
+    [Parameter] public IList<MagicColor> Colors { get; set; }
+}
