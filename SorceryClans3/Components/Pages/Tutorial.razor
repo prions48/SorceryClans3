@@ -3,6 +3,7 @@
 @using SorceryClans3.Components.Pages.Dialogs
 @using SorceryClans3.Data.Abstractions
 @using SorceryClans3.Components
+@using System.Timers
 @rendermode InteractiveServer
 @inject ISnackbar Snackbar
 @inject IDialogService dialogService
@@ -190,11 +191,42 @@
                                 <MudSelectItem Value="team">@team.TeamName</MudSelectItem>
                             }
                         </MudSelect>
-                        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AttemptMission" Disabled="SelectedTeam == null">Attempt</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AttemptMission" Disabled="SelectedTeam == null">Attempt (static)</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AddRunningMission" Disabled="SelectedTeam == null">Attempt (real time)</MudButton>
                         <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="RegenMission">New Mission</MudButton>
                         <MudNumericField @bind-Value="MissionSeed" Min="0" Max="1000000" Label="Difficulty" />
                     </MudStack>
                     <MissionInspector Mission="Mission" />
+                    <MudSimpleTable Striped Bordered>
+                        <thead>
+                            <tr>
+                                <th>Mission</th>
+                                <th>Remaining Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (RunningMission mission in RunningMissions)
+                            {
+                                <tr>
+                                    <td>@mission.MissionName</td>
+                                    <td>@mission.RemainingTime</td>
+                                    <td></td>
+                                </tr>
+                            }
+                            @foreach (RunningMission mission in FinishedMissions)
+                            {
+                                <tr>
+                                    <td>@mission.MissionName</td>
+                                    <td>@mission.RemainingTime</td>
+                                    <td>
+                                        <MudIconButton Color="Color.Info" Icon="@Icons.Material.Filled.RemoveRedEye" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                        
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="Research">
                     <MudStack Row=true>
@@ -555,6 +587,8 @@
         Soldier = new Soldier(Clan);
         Team = new Team();
         Mission = new Mission(MissionSeed);
+        Timer = new Timer(200);
+        Timer.Elapsed += OnTimedEvent;
     }
     private void NewClan()
     {
@@ -1096,5 +1130,49 @@
                 huntermission.StartMission(team);
             }
         }
+    }
+    private void AddRunningMission()
+    {
+        RunningMission mission = new RunningMission("Test Mission #" + (RunningMissions.Count+1), 0,0,0,20);
+        mission.Mission = Mission;
+        mission.Team = SelectedTeam!;
+        RunningMissions.Add(mission);
+        Timer.Enabled = true;
+        Mission = new Mission(MissionSeed);
+    }
+    private List<RunningMission> RunningMissions { get; set; } = [];
+    private List<RunningMission> FinishedMissions { get; set; } = [];
+    private Timer Timer { get; set; }
+    public class RunningMission
+    {
+        public string MissionName { get; set; }
+        public DateTime DueTime { get; set; }
+        public Team Team { get; set; }
+        public Mission Mission { get; set; }
+        public string RemainingTime { get { return (DueTime - DateTime.UtcNow).ToString(@"d\.hh\:mm\:ss"); } }
+        public RunningMission(string name, int days, int hours, int minutes, int seconds)
+        {
+            MissionName = name;
+            DueTime = DateTime.UtcNow.AddDays(days).AddHours(hours).AddMinutes(minutes).AddSeconds(seconds);
+        }
+    }
+    private async void OnTimedEvent(Object? source, ElapsedEventArgs args)
+    {
+        await InvokeAsync(() => {
+            int i = 0;
+            while (i < RunningMissions.Count)
+            {
+                if (RunningMissions[i].DueTime <= DateTime.UtcNow)
+                {
+                    FinishedMissions.Add(RunningMissions[i]);
+                    RunningMissions.RemoveAt(i);
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            StateHasChanged();
+        });
     }
 }

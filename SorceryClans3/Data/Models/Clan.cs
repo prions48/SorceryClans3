@@ -12,6 +12,24 @@ namespace SorceryClans3.Data.Models
         public int HPElite { get; set; }
         public int HealElite { get; set; }
         public int EliteLevel { get; set; }
+        public string DisplayStats
+        {
+            get
+            {
+                string ret = "";
+                if (ComElite != 0)
+                    ret += "C:" + (ComElite > 0 ? "+" : "") + ComElite + "  ";
+                if (MagElite != 0)
+                    ret += "M:" + (MagElite > 0 ? "+" : "") + MagElite + "  ";
+                if (SubElite != 0)
+                    ret += "S:" + (SubElite > 0 ? "+" : "") + SubElite + "  ";
+                if (HPElite != 0)
+                    ret += "HP:" + (HPElite > 0 ? "+" : "") + HPElite + "  ";
+                if (HealElite != 0)
+                    ret += "K:" + (HealElite > 0 ? "+" : "") + HealElite + "  ";
+                return ret;
+            }
+        }
         public PowerTemplate? Power { get; set; }
         public StyleTemplate? Style { get; set; }
         public Clan()

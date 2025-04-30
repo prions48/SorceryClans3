@@ -1,0 +1,74 @@
+@page "/play"
+@using SorceryClans3.Data.Users
+@namespace SorceryClans3.Components.Pages
+
+
+<MudTabs Position="Position.Left" Color="Color.Info">
+    <MudTabPanel Text="Live"></MudTabPanel>
+    <MudTabPanel Text="Clans">
+        <MudTable Items="Clans" Striped Outlined>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Lvl</MudTh>
+                <MudTh>Stats</MudTh>
+                <MudTh>Power</MudTh>
+                <MudTh># Soldiers</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ClanName</MudTd>
+                <MudTd>@context.EliteLevel</MudTd>
+                <MudTd>@context.DisplayStats</MudTd>
+                <MudTd>@context.Power?.PowerName</MudTd>
+                <MudTd>@Soldiers.Count(e => e.ClanID == context.ID)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+    <MudTabPanel Text="Soldiers">
+        <MudTable Items="Soldiers" Striped Outlined>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Lvl</MudTh>
+                <MudTh>Stats</MudTh>
+                <MudTh>Leader</MudTh>
+                <MudTh>Power</MudTh>
+                <MudTh>Artifact</MudTh>
+                <MudTh>Team</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>@context.PowerLevel</MudTd>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd>@context.Power?.PowerName</MudTd>
+                <MudTd>@context.Artifact?.ArtifactName</MudTd>
+                <MudTd>@context.Team?.TeamName</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+    <MudTabPanel Text="Teams"></MudTabPanel>
+    <MudTabPanel Text="Assignments"></MudTabPanel>
+    <MudTabPanel Text="Missions"></MudTabPanel>
+    <MudTabPanel Text="Resources"></MudTabPanel>
+    <MudTabPanel Text="Defenses"></MudTabPanel>
+</MudTabs>
+
+@code {
+    [CascadingParameter] public Auth0User? User { get; set; }
+    private List<Clan> Clans { get; set; } = [];
+    private List<Soldier> Soldiers { get; set; } = [];
+    protected override void OnInitialized()
+    {
+        Random r = new Random();
+        int x = 3;
+        for (int i = 0; i < 3; i++)
+        {
+            Clan clan = new Clan(x);
+            Clans.Add(clan);
+            for (int j = 0; j < r.Next(3)+3; j++)
+            {
+                Soldiers.Add(new Soldier(clan));
+            }
+            x = 1;
+        }
+    }
+}

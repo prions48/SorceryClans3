@@ -108,6 +108,7 @@ namespace SorceryClans3.Data.Models
         public Soldier(Clan clan)
         {
             ID = Guid.NewGuid();
+            ClanID = clan.ID;
             ClanName = clan.ClanName; 
             GivenName = Names.SoldierName();
             Random r = new Random();
