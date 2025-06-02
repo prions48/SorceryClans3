@@ -1,0 +1,37 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace SorceryClans3.Data.Models
+{
+    public class TeamResult
+    {
+        [Key] public Guid ID { get; set; }
+        public Dictionary<Soldier, int> HPDamage { get; set; } = [];
+        public TeamResult(Team team, int diff)
+        {
+            Random r = new();
+            //do math
+            List<Soldier> solds = team.GetAllSoldiers.ToList();
+            HPDamage = solds.ToDictionary(e => e, e => 0);
+            int totdmg = team.PScore - diff;
+            if (totdmg < 0)
+            {
+                for (int i = 0; i < r.Next(5); i++)
+                    HPDamage[solds[r.Next(solds.Count)]]++;
+            }
+            else
+            {
+                //this is V1 of this algorithm, it probably sucks but we can't have a dime holding up a dollar
+                while (totdmg > 0)
+                {
+                    Soldier s = solds[r.Next(solds.Count)];
+                    HPDamage[s]++;
+                    totdmg -= s.PowerLevel;
+                }
+            }
+            foreach (KeyValuePair<Soldier, int> dmg in HPDamage)
+            {
+                dmg.Key.Hurt(dmg.Value);
+            }
+        }
+    }
+}

@@ -63,19 +63,26 @@ namespace SorceryClans3.Data.Models
                 return colors;
             }
         }
+        public int PScore //for dmg purposes
+        {
+            get
+            {
+                return GetAllSoldiers.Sum(e => e.PowerLevel);
+            }
+        }
         public int CScore
-		{
-			get
-			{
-				int score = 0;
-				IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
-				for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
-				{
-					score += solds[i].Combat * solds[i].PowerLevel;
-				}
-				return (int)(score * Teamwork * ComTeamSizeFactor);
-			}
-		}
+        {
+            get
+            {
+                int score = 0;
+                IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
+                for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
+                {
+                    score += solds[i].Combat * solds[i].PowerLevel;
+                }
+                return (int)(score * Teamwork * ComTeamSizeFactor);
+            }
+        }
         public int MScore
         {
             get

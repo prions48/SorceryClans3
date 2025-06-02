@@ -1,10 +1,47 @@
 @page "/play"
-@using SorceryClans3.Data.Users
 @namespace SorceryClans3.Components.Pages
-
+@using System.Timers
+@using SorceryClans3.Data.Users
+@using SorceryClans3.Components.Pages.Dialogs
+@inject IDialogService dialogService
 
 <MudTabs Position="Position.Left" Color="Color.Info">
-    <MudTabPanel Text="Live"></MudTabPanel>
+    <MudTabPanel Text="Live">
+        <MudStack>
+            <MudToggleIconButton @bind-Toggled="Engine.Settings.RealTime" Icon="@Icons.Material.TwoTone.LockClock" Color="Color.Info"
+                ToggledIcon="@Icons.Material.TwoTone.Timer" ToggledColor="Color.Primary" Disabled="Started" />
+            @if (!Started)
+            {
+                <MudButton OnClick="Start">Start Game</MudButton>
+            }
+            @if (!Engine.Settings.RealTime)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
+            }
+            <MudSimpleTable Striped Bordered>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (GameEvent gameEvent in Engine.Events)
+                    {
+                        <tr>
+                            <td>@gameEvent.Type.ToString()</td>
+                            <td>
+                                @if (gameEvent.Visible)
+                                {
+                                    @gameEvent.EventCompleted.Subtract(Engine.Settings.CurrentTime).ToString(TSFormat)
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudStack>
+    </MudTabPanel>
     <MudTabPanel Text="Clans">
         <MudTable Items="Clans" Striped Outlined>
             <HeaderContent>
@@ -45,30 +82,200 @@
             </RowTemplate>
         </MudTable>
     </MudTabPanel>
-    <MudTabPanel Text="Teams"></MudTabPanel>
+    <MudTabPanel Text="Teams">
+        <MudStack>
+
+            @if (Soldiers.Count(e => e.Team == null) > 0)
+            {
+                <MudButton OnClick="CreateTeam" Variant="Variant.Filled" Color="Color.Info">Create New Team</MudButton>
+            }
+            <MudTable Items="Teams">
+                <HeaderContent>
+                    <MudTh>Team Name</MudTh>
+                    <MudTh>Com</MudTh>
+                    <MudTh>Mag</MudTh>
+                    <MudTh>Sub</MudTh>
+                    <MudTh>Heal</MudTh>
+                    <MudTh># Soldiers</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.TeamName</MudTd>
+                    <MudTd>@context.CScore</MudTd>
+                    <MudTd>@context.MScore</MudTd>
+                    <MudTd>@context.SScore</MudTd>
+                    <MudTd>@context.KScore</MudTd>
+                    <MudTd>@context.SoldierCount</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.TwoTone.ManageAccounts" Color="Color.Info" OnClick="() => ManageTeam(context)" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudStack>
+    </MudTabPanel>
     <MudTabPanel Text="Assignments"></MudTabPanel>
-    <MudTabPanel Text="Missions"></MudTabPanel>
+    <MudTabPanel Text="Missions">
+        <MudTable Items="Missions">
+            <HeaderContent>
+                <MudTh>CReq</MudTh>
+                <MudTh>MReq</MudTh>
+                <MudTh>SReq</MudTh>
+                <MudTh>KReq</MudTh>
+                <MudTh>$</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.CDisp</MudTd>
+                <MudTd>@context.MDisp</MudTd>
+                <MudTd>@context.SDisp</MudTd>
+                <MudTd>@context.KDisp</MudTd>
+                <MudTd>@context.MoneyReward</MudTd>
+                <MudTd>
+                    @if (context.AttemptingTeam != null)
+                    {
+                        <MudIcon Icon="@Icons.Material.TwoTone.Group" Color="Color.Default" />
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.TwoTone.GroupAdd" Color="Color.Info" OnClick="() => SelectTeamForMission(context)" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
     <MudTabPanel Text="Resources"></MudTabPanel>
     <MudTabPanel Text="Defenses"></MudTabPanel>
 </MudTabs>
 
+<MudDialog Visible="DisplayEvents.Count > 0">
+    <DialogContent>
+        <MudSimpleTable Striped Bordered>
+            <tbody>
+                @foreach (GameEventDisplay disp in DisplayEvents)
+                {
+                    <tr>
+                        <td>@disp.DisplayText</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+</MudDialog>
+
 @code {
     [CascadingParameter] public Auth0User? User { get; set; }
-    private List<Clan> Clans { get; set; } = [];
-    private List<Soldier> Soldiers { get; set; } = [];
+    private List<Clan> Clans { get { return Engine.Clans; } }
+    private List<Soldier> Soldiers { get { return Engine.Soldiers; } }
+    private List<Team> Teams { get { return Engine.Teams; } }
+    private List<Mission> Missions { get { return Engine.Missions; } }
+    private GameEngine Engine { get; set; } = new();
+    private List<GameEventDisplay> DisplayEvents { get; set; } = [];
+    private string TSFormat
+    {
+        get
+        {
+            if (Engine.Settings.RealTime)
+                return @"hh\:mm\:ss"; //return @"hh\:mm\:ss\:ff";
+            return @"dd\:hh";
+        }
+    }
     protected override void OnInitialized()
     {
+        Timer = new Timer(500);
+        Timer.Elapsed += OnTimedEvent;
         Random r = new Random();
         int x = 3;
         for (int i = 0; i < 3; i++)
         {
             Clan clan = new Clan(x);
-            Clans.Add(clan);
+            Engine.Clans.Add(clan);
             for (int j = 0; j < r.Next(3)+3; j++)
             {
-                Soldiers.Add(new Soldier(clan));
+                Engine.Soldiers.Add(new Soldier(clan));
             }
             x = 1;
         }
+        for (int i = 20; i < 30 + r.Next(10); i++)
+        {
+            Engine.Missions.Add(new Mission(2000+r.Next(10000), nocolor:true));
+        }
     }
+    private async Task CreateTeam()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Soldiers", Soldiers.Where(e => e.Team == null).ToList());
+        var dialog = dialogService.Show<SoldierTeamPicker>("Select Soldiers", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? newteam = result.Data as Team;
+            if (newteam != null)
+            {
+                foreach (Soldier soldier in newteam.Soldiers)
+                {
+                    soldier.Team = newteam;
+                }
+                Engine.Teams.Add(newteam);
+            }
+        }
+    }
+    private async Task ManageTeam(Team team)
+    {
+        //change to leader, inspect, anything else?
+    }
+    private bool RealTime { get; set; } = false;
+    private bool Started { get; set; } = false;
+    private void Start()
+    {
+        Started = true;
+    }
+    private async Task SelectTeamForMission(Mission mission)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        var parameters = new DialogParameters();
+        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null).ToList());
+        parameters.Add("CScore", mission.CScore.HasValue);
+        parameters.Add("MScore", mission.MScore.HasValue);
+        parameters.Add("SScore", mission.SScore.HasValue);
+        parameters.Add("KScore", mission.KScore.HasValue);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? selectedteam = result.Data as Team;
+            if (selectedteam != null)
+            {
+                Engine.StartMission(mission, selectedteam);
+            }
+        }
+    }
+    private void StartTime() //for non-real-time
+    {
+        List<GameEventDisplay> displays = [];
+        while (displays.Count == 0)
+        {
+            displays = Engine.ResolveEvents();
+        }
+        foreach (GameEventDisplay disp in displays)
+        {
+            DisplayEvents.Add(disp);
+        }
+        
+    }
+    private void ClearEvent(GameEventDisplay disp)
+    {
+        DisplayEvents.Remove(disp);
+    }
+
+    private async void OnTimedEvent(Object? source, ElapsedEventArgs args)
+    {
+        await InvokeAsync(() => {
+            DisplayEvents.AddRange(Engine.ResolveEvents());
+            StateHasChanged();
+        });
+    }
+    private Timer Timer { get; set; }
 }

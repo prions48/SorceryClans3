@@ -103,6 +103,7 @@ namespace SorceryClans3.Data.Models
             TravelBase = 10 + r.NextDouble() < .6 ? (r.Next(3) - 1) * r.Next(3) : r.Next(3);
             Medical = new Medical();
             HPBase = r.Next(5,15);
+            HPCurrent = HPMax;
             ResearchAffinity = r.NextDouble() + 0.5;
         }
         public Soldier(Clan clan)
@@ -125,6 +126,7 @@ namespace SorceryClans3.Data.Models
             LeadershipXP = r.NextDouble() - 1.5;
             CalcLimit();
             HPBase = r.Next(5,15) + clan.HPElite;
+            HPCurrent = HPMax;
             Power = clan.Power?.GeneratePower();
             ResearchAffinity = r.NextDouble() + 0.5;
             if (clan.Style != null && clan.Style.MinReqs.IsAbove(this))

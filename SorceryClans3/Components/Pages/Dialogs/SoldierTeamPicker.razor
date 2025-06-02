@@ -1,0 +1,89 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="TeamName" Label="New Team Name" />
+        @*Add autopopulate button(s)/features here later*@
+        <MudTable Items="Soldiers">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Power Level</MudTh>
+                <MudTh>Com</MudTh>
+                <MudTh>Mag</MudTh>
+                <MudTh>Sub</MudTh>
+                <MudTh>Heal</MudTh>
+                <MudTh>HP</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>@context.PowerLevel</MudTd>
+                <MudTd>@context.Combat</MudTd>
+                <MudTd>@context.Magic</MudTd>
+                <MudTd>@context.Subtlety</MudTd>
+                <MudTd>@context.Heal</MudTd>
+                <MudTd>
+                    <HPInspector Soldier="context" />
+                </MudTd>
+                <MudTd>
+                    @if (SelectedSoldiers.Contains(context))
+                    {
+                        <MudIconButton OnClick="() => UnselectSoldier(context)" Icon="@Icons.Material.Filled.PersonRemove" Color="Color.Warning" />
+                    }
+                    else
+                    {
+                        <MudIconButton OnClick="() => SelectSoldier(context)" Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Success" />
+                    }
+                    <MudIconButton OnClick="() => ViewSoldier(context)" Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+        <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Info" 
+        Disabled="SelectedSoldiers.Count == 0 || string.IsNullOrEmpty(TeamName)">Create Team @TeamName</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudDialog @bind-Visible="ViewSoldierDialog">
+            <DialogContent>
+                <SoldierInspector Soldier="SelectedSoldier" />
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="CloseDialog">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public List<Soldier> Soldiers { get; set; }
+    private bool ViewSoldierDialog { get; set; } = false;
+    private List<Soldier> SelectedSoldiers { get; set; } = [];
+    private Soldier? SelectedSoldier { get; set; }
+    private string TeamName { get; set; } = "";
+    private void SelectSoldier(Soldier sold)
+    {
+        SelectedSoldiers.Add(sold);
+    }
+    private void UnselectSoldier(Soldier sold)
+    {
+        SelectedSoldiers.Remove(sold);
+    }
+    private void ViewSoldier(Soldier sold)
+    {
+        SelectedSoldier = sold;
+        ViewSoldierDialog = true;
+    }
+    private void CloseDialog()
+    {
+        SelectedSoldier = null;
+        ViewSoldierDialog = false;
+    }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Submit()
+    {
+        Team newteam = new Team() {
+            TeamName = TeamName,
+            Soldiers = SelectedSoldiers
+        };
+        MudDialog.Close(DialogResult.Ok(newteam));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

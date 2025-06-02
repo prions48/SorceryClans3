@@ -702,8 +702,8 @@
     {
         if (SelectedTeam == null)
             return;
-        (bool, int) success = Mission.CompleteMission(SelectedTeam);
-        Snackbar.Add("Mission threshold: " + success.Item2.ToString(),success.Item1 ? Severity.Success : Severity.Error);
+        //(bool, int) success = Mission.CompleteMission(SelectedTeam);
+        //Snackbar.Add("Mission threshold: " + success.Item2.ToString(),success.Item1 ? Severity.Success : Severity.Error);
     }
     private void AddTeam()
     {
@@ -752,7 +752,7 @@
             int j = 0;
             while (j < HunterMissions.Count)
             {
-                bool? result = HunterMissions[j].IncrementDay();
+                /*bool? result = HunterMissions[j].IncrementDay();
                 if (result != null)
                 {
                     if (result == true)
@@ -791,7 +791,7 @@
                     HunterMissions.RemoveAt(j);
                 }
                 else
-                    j++;
+                    j++;*/
             }
             foreach (string msg in msgs)
             {
@@ -1095,7 +1095,7 @@
                         huntermission.HunterID = soldier.ID;
                         HunterMissions.Add(huntermission);
                         team.MissionID = huntermission.ID;
-                        huntermission.StartMission(team);
+                        //huntermission.StartMission(team);
                         spell.Consumables--;
                     }
                 }
@@ -1123,11 +1123,11 @@
             Team? team = result.Data as Team;
             if (team != null)
             {
-                HunterMission huntermission = harvest.StartMission();
+                /*HunterMission huntermission = harvest.StartMission();
                 huntermission.TargetID = harvest.ID;
                 HunterMissions.Add(huntermission);
                 team.MissionID = huntermission.ID;
-                huntermission.StartMission(team);
+                huntermission.StartMission(team);*/
             }
         }
     }

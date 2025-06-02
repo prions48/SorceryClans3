@@ -21,10 +21,7 @@ namespace SorceryClans3.Data.Models
         public int? MoneyReward { get; set; }
         public Artifact? ArtifactReward { get; set; }
         public int MissionDays { get; set; }
-        public int MissionDaysLeft { get; set; }
         public int TravelDistance { get; set; }
-        public int Travel1 { get; set; }
-        public int Travel2 { get; set; }
         public int? CScore { get; set; }
         public int? MScore { get; set; }
         public int? SScore { get; set; }
@@ -122,38 +119,11 @@ namespace SorceryClans3.Data.Models
             TravelDistance = r.Next(100);
             MissionDays = r.Next(2,10);
         }
-        public void StartMission(Team team)
-        {
-            AttemptingTeam = team;
-            Travel1 = TravelDistance;
-            Travel2 = TravelDistance;
-            MissionDaysLeft = MissionDays;
-        }
-        public bool? IncrementDay()
+        public (bool,int) CompleteMission()
         {
             if (AttemptingTeam == null)
-                return null;
-            if (Travel1 > 0)
-            {
-                Travel1 -= AttemptingTeam.DScore;
-                return null;
-            }
-            if (MissionDaysLeft > 0)
-            {
-                MissionDaysLeft--;
-                return null;
-            }
-            if (Travel2 > 0)
-            {
-                Travel2 -= AttemptingTeam.DScore;
-                return null;
-            }
-            (bool, int) results = CompleteMission(AttemptingTeam);
-            //do team harming here I guess
-            return results.Item1;
-        }
-        public (bool,int) CompleteMission(Team team)
-        {
+                throw new Exception("No completing team identified for mission");
+            Team team = AttemptingTeam;
             bool passcolor = true;
             int failby = 0;
             double failbypct = 0;
