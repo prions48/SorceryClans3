@@ -1,0 +1,73 @@
+<MudDialog>
+    <DialogContent>
+        <MudStack Row>
+            <MudText>COM: @Team.CScore</MudText>
+            <MudText>MAG: @Team.MScore</MudText>
+            <MudText>SUB: @Team.SScore</MudText>
+            @if (Team.KScore > 0)
+            {
+                <MudText>HEAL: @Team.KScore</MudText>
+            }
+            <MudText>TRAVEL: @Team.DScore</MudText>
+            <MudText>LEAD: @Team.LeadText</MudText>
+        </MudStack>
+        <MudSimpleTable Striped Bordered Outlined>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Power</th>
+                    <th>Combat</th>
+                    <th>Magic</th>
+                    <th>Subtlety</th>
+                    <th>HP</th>
+                    <th>Heal</th>
+                    <th>Power</th>
+                    <th>Artifact</th>
+                    <th>Leadership</th>
+                </tr>
+            </thead>
+            <tbody>
+                <TeamSoldierInspector Soldiers="Team.Leaders" ToggleLeader="UnmakeLeader" />
+                @if (Team.Leaders.Count > 0)
+                {
+                    <tr>
+                        <td colspan="10"><hr /></td>
+                    </tr>
+                }
+                <TeamSoldierInspector Soldiers="Team.Soldiers" ToggleLeader="MakeLeader" />
+                @if (Team.GetColors.Count > 0)
+                {
+                    <tr>
+                        <td colspan="10">
+                            <MudStack Row=true>
+                                Team Magic:
+                                <MagicIcons Colors="Team.GetColors" />
+                            </MudStack>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Team Team { get; set; } = new();
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void MakeLeader(Soldier s)
+    {
+        Team.Leaders.Add(s);
+        Team.Soldiers.Remove(s);
+        StateHasChanged();
+    }
+    private void UnmakeLeader(Soldier s)
+    {
+        Team.Soldiers.Add(s);
+        Team.Leaders.Remove(s);
+        StateHasChanged();
+    }
+}

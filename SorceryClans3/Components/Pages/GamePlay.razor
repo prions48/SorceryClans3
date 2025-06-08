@@ -140,7 +140,22 @@
             </MudTable>
         </MudStack>
     </MudTabPanel>
-    <MudTabPanel Text="Assignments"></MudTabPanel>
+    <MudTabPanel Text="Assignments">
+        <MudTabs Position="Position.Top">
+            <MudTabPanel Text="Liaisons">
+                Select a city
+            </MudTabPanel>
+            <MudTabPanel Text="Defenses">
+                Assign team
+            </MudTabPanel>
+            <MudTabPanel Text="Academy">
+                Assign team, then select leaders
+            </MudTabPanel>
+            <MudTabPanel Text="Research">
+                Do the thing
+            </MudTabPanel>
+        </MudTabs>
+    </MudTabPanel>
     <MudTabPanel Text="Missions">
         <MudTable Items="Missions">
             <HeaderContent>
@@ -245,6 +260,11 @@
             for (int j = 0; j < r.Next(3)+3; j++)
             {
                 Soldier soldier = new Soldier(clan);
+                if (r.Next(soldier.PowerLevel) > 1500)
+                {
+                    soldier.IsLeading = true;
+                    soldier.LeadershipXP = r.NextDouble()*1.3 - 0.4;
+                }
                 if (r.Next(2) == 0 && r.Next(soldier.PowerLevel) > 1000)
                 {
                     soldier.CreateHealer();
@@ -293,7 +313,14 @@
     }
     private async Task ManageTeam(Team team)
     {
-        //change to leader, inspect, anything else?
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraExtraLarge;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Team", team);
+        var dialog = dialogService.Show<TeamInspector>("View Team " + team.TeamName, parameters, options);
+        var result = await dialog.Result;
     }
     private bool RealTime { get; set; } = false;
     private bool Started { get; set; } = false;

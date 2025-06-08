@@ -29,27 +29,28 @@
             @if (s.IsLeading)
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Groups" Color="Color.Info" OnClick="() => ViewLeadership(s)" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChangeCircle" Color="Color.Primary" OnClick="() => Toggle(s)" />
             }
         </td>
     </tr>
     <TeamSoldierInspector Soldiers="s.SubSoldiers" ShowSubs="true" />
 }
 
-<MudDialog @bind-IsVisible="ViewLead">
+<MudDialog @bind-Visible="ViewLead">
     <TitleContent>@SelectedSoldier?.SoldierName</TitleContent>
     <DialogContent>
         <LeadInspector Soldier="SelectedSoldier" />
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="ViewArt">
+<MudDialog @bind-Visible="ViewArt">
     <TitleContent>@SelectedArtifact?.ArtifactName</TitleContent>
     <DialogContent>
         <ArtifactInspector Artifact="SelectedArtifact" />
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="ViewPow">
+<MudDialog @bind-Visible="ViewPow">
     <TitleContent>@SelectedPower?.PowerName</TitleContent>
     <DialogContent>
         <PowerInspector Power="SelectedPower" Powerlevel="PowerLevel" />
@@ -59,6 +60,7 @@
 @code {
     [Parameter] public IList<Soldier> Soldiers { get; set; }
     [Parameter] public bool ShowSubs { get; set; } = false;
+    [Parameter] public Action<Soldier> ToggleLeader { get; set; }
     private bool ViewArt = false;
     private bool ViewPow = false;
     private Power? SelectedPower { get; set; }
@@ -82,5 +84,9 @@
     {
         SelectedSoldier = sold;
         ViewLead = true;
+    }
+    private void Toggle(Soldier sold)
+    {
+        ToggleLeader.Invoke(sold);
     }
 }

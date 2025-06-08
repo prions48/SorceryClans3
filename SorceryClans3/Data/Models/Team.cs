@@ -9,7 +9,7 @@ namespace SorceryClans3.Data.Models
         public Guid? MissionID { get; set; }
         public IList<Soldier> Soldiers { get; set; }
         public IList<Soldier> Leaders { get; set; }
-        public int SoldierCount { get { return Soldiers.Count; } }
+        public int SoldierCount { get { return Soldiers.Count + Leaders.Count; } }
         [NotMapped] public bool View { get; set; }
         public void AddSoldier(Soldier s)
         {

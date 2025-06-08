@@ -16,7 +16,7 @@
 @code {
     [CascadingParameter] public Auth0User? User { get; set; }
     Guid userid = Guid.Empty;
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         if (User != null && userid != User.UserID)
         {
