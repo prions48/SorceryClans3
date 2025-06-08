@@ -16,19 +16,13 @@ namespace SorceryClans3.Data.Models
         {
             mission.AttemptingTeam = team;
             team.MissionID = mission.ID;
-            if (Settings.RealTime)
-            {
-                Events.Add(new(mission, Settings.CurrentTime.AddMinutes((mission.TravelDistance / team.DScore) + mission.MissionDays)));
-            }
-            else
-            {
-                Events.Add(new(mission, Settings.GameTime.AddDays((mission.TravelDistance / team.DScore) + mission.MissionDays)));
-            }
+            Events.Add(new(mission, Settings.MissionEndTime(mission)));
+            
         }
         public List<GameEvent> IncrementTime() //called internally
         {
             if (!Settings.RealTime)
-                Settings.GameTime = Settings.GameTime.AddDays(1);
+                Settings.GameTime = Settings.GameTime.AddHours(6);//4x/day for now
 
             //add random things
             List<GameEvent> randoms = GenerateRandomEvents();
@@ -87,16 +81,9 @@ namespace SorceryClans3.Data.Models
         {
             Random r = new Random();
             List<GameEvent> randoms = [];
-            if ((Settings.RealTime && r.NextDouble() < 0.05) || (!Settings.RealTime && r.NextDouble() < .05))//1 in 20, way too high for real
+            if (Settings.BanditAttackOdds())//1 in 20, way too high for real
             {
-                if (Settings.RealTime)
-                {
-                    randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.CurrentTime.AddMinutes(r.Next(2)+1)));
-                }
-                else
-                {
-                    randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.CurrentTime.AddDays(r.Next(5) + 10)));
-                }
+                randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.BanditTime()));
             }
             return randoms;
         }

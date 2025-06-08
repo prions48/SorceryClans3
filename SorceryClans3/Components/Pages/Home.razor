@@ -7,7 +7,7 @@
 <MudText>This is the V3 App Template for prions. To do list:</MudText>
 
 <MudTreeView AutoExpand="true" ExpandOnClick="true" T="string" ReadOnly>
-    <MudTreeViewItem Text="Completed" Expanded>
+    <MudTreeViewItem Text="Infrastructure (completed)" Expanded>
         <MudTreeViewItem Text="MudBlazor w/theme & darkmode" />
         <MudTreeViewItem Text="Auth0 authentication" />
         <MudTreeViewItem Text="Emails" />
@@ -16,7 +16,19 @@
         <MudTreeViewItem Text="Timer component" />
         <MudTreeViewItem Text="User Secrets" />
     </MudTreeViewItem>
-    <MudTreeViewItem Text="Stretch Goals" Expanded>
-        <MudTreeViewItem Text="Stripe payments..." />
+    <MudTreeViewItem Text="Game structure (completed)" Expanded>
+        <MudTreeViewItem Text="Real-time and turn-based play both available" />
+        <MudTreeViewItem Text="Game event and display system" />
+        <MudTreeViewItem Text="Team build and assign to mercenary missions" />
+    </MudTreeViewItem>
+    <MudTreeViewItem Text="Game structure (to do)" Expanded> @*if this was for my job I would have to build a timeline for it too lol*@
+        <MudTreeViewItem Text="Team management" />
+        <MudTreeViewItem Text="Improve UI of grids, include sorting/searching" />
+        <MudTreeViewItem Text="Build more & better inspector dialogs" />
+        <MudTreeViewItem Text="Missions come from liaisons to cities/organizations" />
+        <MudTreeViewItem Text="Assignments (for research, liaison, academy, and defense)" />
+        <MudTreeViewItem Text="Bandit attack logic & defenses" />
+        <MudTreeViewItem Text="Academy buildout" />
+        <MudTreeViewItem Text="Research magic buildout" />
     </MudTreeViewItem>
 </MudTreeView> 

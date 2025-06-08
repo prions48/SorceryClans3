@@ -254,6 +254,15 @@
             }
             x = 1;
         }
+        //START: team for testing only
+        List<Soldier> TopSoldiers = Soldiers.OrderByDescending(e => e.PowerLevel * (e.Combat + e.Subtlety + e.Magic + e.Heal)).ToList();
+        Engine.Teams.Add(new Team() {
+            TeamName = "Dragon",
+            Soldiers = TopSoldiers.Take(4).ToList()
+        });
+        foreach (Soldier s in Engine.Teams.First().Soldiers)
+            s.Team = Engine.Teams.First();
+        //END: team for testing only
         for (int i = 20; i < 30 + r.Next(10); i++)
         {
             Engine.Missions.Add(new Mission(2000+r.Next(10000), nocolor:true));
