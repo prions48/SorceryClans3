@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Components;
 
 namespace SorceryClans3.Data.Models
 {
@@ -6,6 +7,7 @@ namespace SorceryClans3.Data.Models
     {
         [Key] public Guid ID { get; set; }
         public string Message { get; set; } = "";
+        public DateTime EventDate { get; set; }
         public Mission? DisplayMission { get; set; }
         public Team? DisplayTeam { get; set; }
         public TeamResult? DisplayResult { get; set; }
@@ -13,11 +15,12 @@ namespace SorceryClans3.Data.Models
         //e.g. results of spells, bandit attacks, etc etc
         //add rewards object?
 
-        public GameEventDisplay(string msg)
+        public GameEventDisplay(string msg, DateTime date)
         {
             Message = msg;
+            EventDate = date;
         }
-        public string DisplayText
+        public MarkupString DisplayText
         {
             get
             {
@@ -28,11 +31,11 @@ namespace SorceryClans3.Data.Models
                     {
                         if (hp.Value > 0)
                         {
-                            add += "\n" + hp.Key.SoldierName + " took " + hp.Value + " dmg and is currently " + hp.Key.Health.ToString();
+                            add += "<br />" + hp.Key.SoldierName + " took " + hp.Value + " dmg and is currently " + hp.Key.Health.ToString();
                         }
                     }
                 }
-                return Message + add;
+                return (MarkupString)(Message + add);
             }
         }
     }

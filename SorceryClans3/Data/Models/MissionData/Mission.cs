@@ -116,8 +116,8 @@ namespace SorceryClans3.Data.Models
         }
         private void SetDistance()
         {
-            TravelDistance = r.Next(100);
-            MissionDays = r.Next(2,10);
+            TravelDistance = r.Next(40);
+            MissionDays = r.Next(1,6);
         }
         public (bool,int) CompleteMission()
         {

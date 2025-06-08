@@ -1,9 +1,12 @@
+using Microsoft.Identity.Client;
+
 namespace SorceryClans3.Data.Models
 {
     public class GameEngine
     {
         public GameSettings Settings { get; set; } = new();
         public List<GameEvent> Events { get; set; } = [];
+        public List<GameEvent> VisibleEvents { get { return Events.Where(e => e.Visible).ToList(); } }
         public List<Mission> Missions { get; set; } = [];
         public List<Clan> Clans { get; set; } = [];
         public List<Soldier> Soldiers { get; set; } = [];
@@ -12,6 +15,7 @@ namespace SorceryClans3.Data.Models
         public void StartMission(Mission mission, Team team)
         {
             mission.AttemptingTeam = team;
+            team.MissionID = mission.ID;
             if (Settings.RealTime)
             {
                 Events.Add(new(mission, Settings.CurrentTime.AddMinutes((mission.TravelDistance / team.DScore) + mission.MissionDays)));
@@ -25,11 +29,17 @@ namespace SorceryClans3.Data.Models
         {
             if (!Settings.RealTime)
                 Settings.GameTime = Settings.GameTime.AddDays(1);
+
+            //add random things
+            List<GameEvent> randoms = GenerateRandomEvents();
+            Events.AddRange(randoms);
+
+            //process
             List<GameEvent> events = [];
             int i = 0;
             while (i < Events.Count)
             {
-                if (Events[i].EventCompleted < Settings.CurrentTime)
+                if (Events[i].EventCompleted <= Settings.CurrentTime)
                 {
                     events.Add(Events[i]);
                     Events.RemoveAt(i);
@@ -51,14 +61,44 @@ namespace SorceryClans3.Data.Models
                         displays.Add(ev.ResolveReturn());
                         break;
                     case MissionType.Mercenary:
-                        displays.Add(ev.ResolveMercenary());
+                        var merc = ev.ResolveMercenary();
+                        Missions.Remove(merc.DisplayMission!);
+                        merc.DisplayTeam!.MissionID = Guid.Empty;
+                        displays.Add(merc);
+                        if (Settings.RealTime)
+                        {
+                            Events.Add(new GameEvent(merc.DisplayTeam, Settings.CurrentTime.AddMinutes(merc.DisplayMission!.TravelDistance / merc.DisplayTeam.DScore)));
+                        }
+                        else
+                        {
+                            Events.Add(new GameEvent(merc.DisplayTeam, Settings.CurrentTime.AddDays(merc.DisplayMission!.TravelDistance / merc.DisplayTeam.DScore)));
+                        }
                         break;
-                    default: displays.Add(new("Undefined game event"));
+                    case MissionType.BanditAttack:
+                        displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));
+                        break;
+                    default: displays.Add(new("Undefined game event", Settings.CurrentTime));
                         break;
                 }
             }
             return displays;
         }
-        
+        private List<GameEvent> GenerateRandomEvents()
+        {
+            Random r = new Random();
+            List<GameEvent> randoms = [];
+            if ((Settings.RealTime && r.NextDouble() < 0.05) || (!Settings.RealTime && r.NextDouble() < .05))//1 in 20, way too high for real
+            {
+                if (Settings.RealTime)
+                {
+                    randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.CurrentTime.AddMinutes(r.Next(2)+1)));
+                }
+                else
+                {
+                    randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.CurrentTime.AddDays(r.Next(5) + 10)));
+                }
+            }
+            return randoms;
+        }
     }
 }

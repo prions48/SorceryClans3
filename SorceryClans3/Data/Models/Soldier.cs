@@ -67,9 +67,9 @@ namespace SorceryClans3.Data.Models
         public Artifact? Artifact { get; set; }
         public Medical? Medical { get; set; }
         public IList<Style> Styles { get; set; } = new List<Style>();
-        public IDictionary<Guid,double> Teamwork { get; set; } = new Dictionary<Guid,double>();
+        public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();
         public IDictionary<MagicColor, double> ResearchSkill { get; set; } = new Dictionary<MagicColor, double>();
-		public double ResearchAffinity { get; set; }
+        public double ResearchAffinity { get; set; }
         public int TeamWeight
         {
             get //how much work to lead
@@ -90,19 +90,19 @@ namespace SorceryClans3.Data.Models
             ClanName = "Unknown";
             GivenName = "Soldier";
             Random r = new Random();
-            PowerLevel = r.Next(100,5000);
+            PowerLevel = r.Next(100, 5000);
             ComBase = r.Next(11);
             MagBase = r.Next(11);
             SubBase = r.Next(11);
             CharismaBase = r.Next(11);
             LogisticsBase = r.Next(11);
             TacticsBase = r.Next(11);
-            IntegrityBase = r.Next(4,8);
+            IntegrityBase = r.Next(4, 8);
             LeadershipXP = r.NextDouble() - 1.5;
             CalcLimit();
             TravelBase = 10 + r.NextDouble() < .6 ? (r.Next(3) - 1) * r.Next(3) : r.Next(3);
             Medical = new Medical();
-            HPBase = r.Next(5,15);
+            HPBase = r.Next(5, 15);
             HPCurrent = HPMax;
             ResearchAffinity = r.NextDouble() + 0.5;
         }
@@ -110,10 +110,10 @@ namespace SorceryClans3.Data.Models
         {
             ID = Guid.NewGuid();
             ClanID = clan.ID;
-            ClanName = clan.ClanName; 
+            ClanName = clan.ClanName;
             GivenName = Names.SoldierName();
             Random r = new Random();
-            PowerLevel = r.Next(100,5000);
+            PowerLevel = r.Next(100, 5000);
             Medical = new Medical(clan.HealElite);
             ComBase = r.Next(11) + clan.ComElite;
             MagBase = r.Next(11) + clan.MagElite;
@@ -122,10 +122,10 @@ namespace SorceryClans3.Data.Models
             CharismaBase = r.Next(11);
             LogisticsBase = r.Next(11);
             TacticsBase = r.Next(11);
-            IntegrityBase = r.Next(4,8);
+            IntegrityBase = r.Next(4, 8);
             LeadershipXP = r.NextDouble() - 1.5;
             CalcLimit();
-            HPBase = r.Next(5,15) + clan.HPElite;
+            HPBase = r.Next(5, 15) + clan.HPElite;
             HPCurrent = HPMax;
             Power = clan.Power?.GeneratePower();
             ResearchAffinity = r.NextDouble() + 0.5;
@@ -175,7 +175,7 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                return HPBase + (Power ?.HBonus ?? 0);
+                return HPBase + (Power?.HBonus ?? 0);
             }
         }
         public int Magic
@@ -353,8 +353,8 @@ namespace SorceryClans3.Data.Models
                 if (!Type.Independent() || !IsLeading)
                     return 0;
                 if (LeadershipXP < 0)
-                    return (int)((RevCha * 2 + RevTac + (RevLog / 2) ) * LeadershipXP);
-                return (int)((Charisma * 2 + Tactics + (Logistics / 2) ) * LeadershipXP);
+                    return (int)((RevCha * 2 + RevTac + (RevLog / 2)) * LeadershipXP);
+                return (int)((Charisma * 2 + Tactics + (Logistics / 2)) * LeadershipXP);
             }
         }
         public int MagLeadership
@@ -364,8 +364,8 @@ namespace SorceryClans3.Data.Models
                 if (!Type.Independent() || !IsLeading)
                     return 0;
                 if (LeadershipXP < 0)
-                    return (int)((RevLog * 2 + RevCha + (RevTac / 2) ) * LeadershipXP);
-                return (int)((Logistics * 2 + Charisma + (Tactics / 2) ) * LeadershipXP);
+                    return (int)((RevLog * 2 + RevCha + (RevTac / 2)) * LeadershipXP);
+                return (int)((Logistics * 2 + Charisma + (Tactics / 2)) * LeadershipXP);
             }
         }
         public int SubLeadership
@@ -375,18 +375,18 @@ namespace SorceryClans3.Data.Models
                 if (!Type.Independent() || !IsLeading)
                     return 0;
                 if (LeadershipXP < 0)
-                    return (int)((RevTac * 2 + RevLog + (RevCha / 2) ) * LeadershipXP);
-                return (int)((Tactics * 2 + Logistics + (Charisma / 2) ) * LeadershipXP);
+                    return (int)((RevTac * 2 + RevLog + (RevCha / 2)) * LeadershipXP);
+                return (int)((Tactics * 2 + Logistics + (Charisma / 2)) * LeadershipXP);
             }
         }
         public double GetSkill(MagicColor color)
         {
             Random r = new Random();
-			if (ResearchSkill.ContainsKey(color))
-			{
-				return ResearchSkill[color];
-			}
-			return ResearchAffinity / 3.0;
+            if (ResearchSkill.ContainsKey(color))
+            {
+                return ResearchSkill[color];
+            }
+            return ResearchAffinity / 3.0;
         }
         public string GetSkillDisplay(MagicColor color)
         {
@@ -404,59 +404,59 @@ namespace SorceryClans3.Data.Models
             return "Superior";
         }
         public double IncrementSkill(MagicColor color)
-		{
+        {
             Random r = new Random();
-			if (ResearchSkill.ContainsKey(color))
-			{
-				ResearchSkill[color] += r.NextDouble() * 0.04 + 0.02;
-				if (ResearchSkill[color] > ResearchAffinity)
-					ResearchSkill[color] = ResearchAffinity;
-				return ResearchSkill[color];
-			}
-			return ResearchAffinity / 3.0;
-		}
+            if (ResearchSkill.ContainsKey(color))
+            {
+                ResearchSkill[color] += r.NextDouble() * 0.04 + 0.02;
+                if (ResearchSkill[color] > ResearchAffinity)
+                    ResearchSkill[color] = ResearchAffinity;
+                return ResearchSkill[color];
+            }
+            return ResearchAffinity / 3.0;
+        }
         public string RankText
-		{
-			get
-			{
-				switch (Type)
-				{
-					case SoldierType.Beast: return "Beast";
-					case SoldierType.GreaterDemon:
-					case SoldierType.LesserDemon: return "Demon";
-					case SoldierType.GreaterUndead:
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case SoldierType.Beast: return "Beast";
+                    case SoldierType.GreaterDemon:
+                    case SoldierType.LesserDemon: return "Demon";
+                    case SoldierType.GreaterUndead:
                     case SoldierType.LesserUndead: return "Undead";
-					case SoldierType.LesserSpirit:
+                    case SoldierType.LesserSpirit:
                     case SoldierType.GreaterSpirit: return "Spirit";
                     case SoldierType.Standard: return "To do soon";
-					default: return "Unknown";
-				}
-			}
-		}
+                    default: return "Unknown";
+                }
+            }
+        }
         private bool GainXP//also can help with research?
         {
             get
             {
                 switch (Type)
-				{
-					case SoldierType.Beast: return true;
-					case SoldierType.GreaterDemon: return true;
-					case SoldierType.LesserDemon: return false;
-					case SoldierType.GreaterUndead: return true;
+                {
+                    case SoldierType.Beast: return true;
+                    case SoldierType.GreaterDemon: return true;
+                    case SoldierType.LesserDemon: return false;
+                    case SoldierType.GreaterUndead: return true;
                     case SoldierType.LesserUndead: return false;
-					case SoldierType.LesserSpirit: return false;
+                    case SoldierType.LesserSpirit: return false;
                     case SoldierType.GreaterSpirit: return true;
                     case SoldierType.Standard: return true;
-					default: return true;
-				}
+                    default: return true;
+                }
             }
         }
         public string DisplayAffinity
-		{
-			get
-			{
-				if (ResearchAffinity < 0.6)
-					return "Poor";
+        {
+            get
+            {
+                if (ResearchAffinity < 0.6)
+                    return "Poor";
                 if (ResearchAffinity < 0.8)
                     return "Fair";
                 if (ResearchAffinity < 1.0)
@@ -465,7 +465,7 @@ namespace SorceryClans3.Data.Models
                     return "Good";
                 if (ResearchAffinity < 1.4)
                     return "Excellent";
-				return "Brilliant";
+                return "Brilliant";
             }
         }
         public void Hurt(int hp)
@@ -474,8 +474,8 @@ namespace SorceryClans3.Data.Models
             double pcthurt = hp * 1.0 / HPMax;
             HPCurrent -= hp;
             //if ((pcthurt - 0.1) / 0.7 > r.NextDouble())
-                //Health = Health.Hurt(r.Next(2)+1);
-            if (HPCurrent * 1.0 / HPMax < (1.0 - ((int)(Health+1) * .25)))
+            //Health = Health.Hurt(r.Next(2)+1);
+            if (HPCurrent * 1.0 / HPMax < (1.0 - ((int)(Health + 1) * .25)))
                 Health = Health.Hurt();
             if (hp * r.NextDouble() > 3.0)
                 Health = Health.Hurt();
@@ -514,7 +514,8 @@ namespace SorceryClans3.Data.Models
         }
         public Patient GetPatient()
         {
-            return new Patient {
+            return new Patient
+            {
                 Health = this.Health,
                 SoldierName = this.SoldierName,
                 HPCurrent = this.HPCurrent,
@@ -559,7 +560,7 @@ namespace SorceryClans3.Data.Models
         public void CalcLimit()
         {
             Random r = new Random();
-            PowerLimit = ((ComBase + MagBase + SubBase) / 4) + r.Next(3) + (EliteStats(ComBase,MagBase,SubBase) ? r.Next(3, 12) : r.Next(2));
+            PowerLimit = ((ComBase + MagBase + SubBase) / 4) + r.Next(3) + (EliteStats(ComBase, MagBase, SubBase) ? r.Next(3, 12) : r.Next(2));
         }
         private bool EliteStats(int c, int m, int s)
         {
@@ -573,6 +574,14 @@ namespace SorceryClans3.Data.Models
         {
             SubSoldiers.Add(soldier);
             soldier.SubTo = this;
+        }
+        public void CreateHealer()
+        {
+            if (PowerLevel < 500 || Medical == null)
+                return;
+            Medical.Assessed = true; //for testing
+            Medical.Trained = true; //for testing
+            Medical.MedicalPowerBase = 1;
         }
     }
 }

@@ -1,0 +1,30 @@
+@inject IDialogService dialogService
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Striped Bordered>
+            <tbody>
+                @foreach (GameEventDisplay display in DisplayEvents)
+                {
+                    <tr>
+                        <td>@display.DisplayText</td>
+                    </tr>
+                    @if (display.DisplayMission != null || display.DisplayTeam != null)
+                    {
+                        <tr>
+                            <td>
+                                @display.DisplayMission?.MoneyReward?.ToString("C")
+                                @display.DisplayTeam?.TeamName
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<GameEventDisplay> DisplayEvents { get; set; } = [];
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

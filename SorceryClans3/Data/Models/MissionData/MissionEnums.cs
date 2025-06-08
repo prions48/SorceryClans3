@@ -3,6 +3,8 @@ namespace SorceryClans3.Data.Models
     public enum MissionType
     {
         TravelHome,
+        BanditAttack,
+        ClanAttack,
         Mercenary,
         RetrieveArtifact,
         RetrieveSpell,

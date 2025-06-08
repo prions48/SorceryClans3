@@ -14,9 +14,13 @@
             {
                 <MudButton OnClick="Start">Start Game</MudButton>
             }
-            @if (!Engine.Settings.RealTime)
+            else
             {
-                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
+                <MudText>@Engine.Settings.CurrentTime.ToString(DTFormat)</MudText>
+                @if (!Engine.Settings.RealTime)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
+                }
             }
             <MudSimpleTable Striped Bordered>
                 <thead>
@@ -26,20 +30,43 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (GameEvent gameEvent in Engine.Events)
+                    @foreach (GameEvent gameEvent in Engine.VisibleEvents)
                     {
                         <tr>
                             <td>@gameEvent.Type.ToString()</td>
                             <td>
-                                @if (gameEvent.Visible)
+                                @if (gameEvent.FixedDate)
                                 {
-                                    @gameEvent.EventCompleted.Subtract(Engine.Settings.CurrentTime).ToString(TSFormat)
+                                    @(gameEvent.EventCompleted.Subtract(Engine.Settings.CurrentTime).ToString(TSFormat) + (Engine.Settings.RealTime ? "" : " days"))
                                 }
                             </td>
                         </tr>
                     }
                 </tbody>
             </MudSimpleTable>
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="History">
+                    <MudSimpleTable Striped Bordered>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (GameEventDisplay gameEvent in HistoryEvents)
+                            {
+                                <tr>
+                                    <td>@gameEvent.DisplayText</td>
+                                    <td>
+                                        @gameEvent.EventDate.ToString(DTFormat)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
         </MudStack>
     </MudTabPanel>
     <MudTabPanel Text="Clans">
@@ -122,6 +149,8 @@
                 <MudTh>SReq</MudTh>
                 <MudTh>KReq</MudTh>
                 <MudTh>$</MudTh>
+                <MudTh>Distance</MudTh>
+                <MudTh>Time</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -130,6 +159,8 @@
                 <MudTd>@context.SDisp</MudTd>
                 <MudTd>@context.KDisp</MudTd>
                 <MudTd>@context.MoneyReward</MudTd>
+                <MudTd>@context.TravelDistance</MudTd>
+                <MudTd>@context.MissionDays</MudTd>
                 <MudTd>
                     @if (context.AttemptingTeam != null)
                     {
@@ -147,19 +178,31 @@
     <MudTabPanel Text="Defenses"></MudTabPanel>
 </MudTabs>
 
-<MudDialog Visible="DisplayEvents.Count > 0">
+<MudDialog @bind-Visible="ShowEventDialog" Options="new DialogOptions() { CloseOnEscapeKey=false, BackdropClick=false, FullWidth=true, MaxWidth=MaxWidth.ExtraLarge }">
     <DialogContent>
         <MudSimpleTable Striped Bordered>
             <tbody>
-                @foreach (GameEventDisplay disp in DisplayEvents)
+                @foreach (GameEventDisplay display in DisplayEvents)
                 {
                     <tr>
-                        <td>@disp.DisplayText</td>
+                        <td>@display.DisplayText</td>
                     </tr>
+                    @if (display.DisplayMission != null || display.DisplayTeam != null)
+                    {
+                        <tr>
+                            <td>
+                                @display.DisplayMission?.MoneyReward?.ToString("C")
+                                @display.DisplayTeam?.TeamName
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </MudSimpleTable>
     </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="CloseEventDialog">Close</MudButton>
+    </DialogActions>
 </MudDialog>
 
 @code {
@@ -170,13 +213,23 @@
     private List<Mission> Missions { get { return Engine.Missions; } }
     private GameEngine Engine { get; set; } = new();
     private List<GameEventDisplay> DisplayEvents { get; set; } = [];
+    private List<GameEventDisplay> HistoryEvents { get; set; } = [];
     private string TSFormat
     {
         get
         {
             if (Engine.Settings.RealTime)
                 return @"hh\:mm\:ss"; //return @"hh\:mm\:ss\:ff";
-            return @"dd\:hh";
+            return "%d";
+        }
+    }
+    private string DTFormat
+    {
+        get
+        {
+            if (Engine.Settings.RealTime)
+                return @"MM/dd/yy hh\:mm tt";
+            return "MMM d, Year y";
         }
     }
     protected override void OnInitialized()
@@ -191,7 +244,13 @@
             Engine.Clans.Add(clan);
             for (int j = 0; j < r.Next(3)+3; j++)
             {
-                Engine.Soldiers.Add(new Soldier(clan));
+                Soldier soldier = new Soldier(clan);
+                if (r.Next(2) == 0 && r.Next(soldier.PowerLevel) > 1000)
+                {
+                    soldier.CreateHealer();
+                    soldier.Medical!.MedicalPowerBase = r.Next(soldier.Medical.HealBase*10);
+                }
+                Engine.Soldiers.Add(soldier);
             }
             x = 1;
         }
@@ -204,6 +263,8 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraExtraLarge;
+        options.FullWidth = true;
         var parameters = new DialogParameters();
         parameters.Add("Soldiers", Soldiers.Where(e => e.Team == null).ToList());
         var dialog = dialogService.Show<SoldierTeamPicker>("Select Soldiers", parameters, options);
@@ -230,11 +291,40 @@
     private void Start()
     {
         Started = true;
+        if (Engine.Settings.RealTime)
+            Timer.Enabled = true;
+    }
+    private async Task ShowEvents(List<GameEventDisplay> displays)
+    {
+        if (displays.Count == 0)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("DisplayEvents", displays);
+        var dialog = dialogService.Show<DisplayEventDialog>("View Events", parameters, options);
+        var result = await dialog.Result;
+        int i = 0;
+        while (i < displays.Count)
+        {
+            if (DisplayEvents.Contains(displays[i]))
+            {
+                if (!HistoryEvents.Contains(displays[i]))
+                    HistoryEvents.Add(displays[i]);
+                DisplayEvents.Remove(displays[i]);
+            }
+            else
+            {
+                i++;
+            }
+        }
     }
     private async Task SelectTeamForMission(Mission mission)
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
         var parameters = new DialogParameters();
         parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null).ToList());
         parameters.Add("CScore", mission.CScore.HasValue);
@@ -252,30 +342,38 @@
             }
         }
     }
-    private void StartTime() //for non-real-time
+    private async Task StartTime() //for non-real-time
     {
         List<GameEventDisplay> displays = [];
-        while (displays.Count == 0)
+        bool continuing = false;
+        while (displays.Count == 0 && (!continuing || Engine.Settings.GameTime.Day > 1))
         {
             displays = Engine.ResolveEvents();
+            continuing = true;
         }
         foreach (GameEventDisplay disp in displays)
         {
             DisplayEvents.Add(disp);
         }
-        
-    }
-    private void ClearEvent(GameEventDisplay disp)
-    {
-        DisplayEvents.Remove(disp);
+        ShowEventDialog = DisplayEvents.Count > 0;
+        //await ShowEvents(DisplayEvents);
     }
 
     private async void OnTimedEvent(Object? source, ElapsedEventArgs args)
     {
         await InvokeAsync(() => {
             DisplayEvents.AddRange(Engine.ResolveEvents());
+            //ShowEvents(DisplayEvents);
+            ShowEventDialog = DisplayEvents.Count > 0;
             StateHasChanged();
         });
     }
+    private void CloseEventDialog()
+    {
+        ShowEventDialog = false;
+        HistoryEvents.AddRange(DisplayEvents);
+        DisplayEvents.Clear();
+    }
     private Timer Timer { get; set; }
+    private bool ShowEventDialog { get; set; } = false;
 }
