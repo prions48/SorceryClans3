@@ -20,7 +20,7 @@
             </RowTemplate>
         </MudTable>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
-        <MudDialog @bind-IsVisible="ViewSoldier">
+        <MudDialog @bind-Visible="ViewSoldier">
             <DialogContent>
                 <SoldierInspector Soldier="SelectedSoldier" />
             </DialogContent>

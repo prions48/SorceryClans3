@@ -149,7 +149,62 @@
                 Assign team
             </MudTabPanel>
             <MudTabPanel Text="Academy">
-                Assign team, then select leaders
+                <MudStack>
+                    <MudStack Row>
+                        <MudText>CScore: @Engine.Academy.CombatScore</MudText>
+                        <MudText>MScore: @Engine.Academy.MagicScore</MudText>
+                        <MudText>SScore: @Engine.Academy.SubtletyScore</MudText>
+                    </MudStack>
+                    <MudSimpleTable Striped Bordered>
+                        <thead>
+                            <tr>
+                                @foreach (AcademyRole role in Enum.GetValues(typeof(AcademyRole)))
+                                {
+                                    <th>@role.ToString()</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @foreach (AcademyRole role in Enum.GetValues(typeof(AcademyRole)))
+                                {
+                                    <td>
+                                        @if (Engine.Academy.HeadInstructors.ContainsKey(role))
+                                        {
+                                            @(Engine.Academy.HeadInstructors[role]?.SoldierName ?? "Unassigned")
+                                        }
+                                        else
+                                        {
+                                            @("Unassigned")
+                                        }
+                                        <MudIconButton OnClick="() => AssignInstructor(role)" Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Info" />
+                                    </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                    <MudButton OnClick="AddTeamToAcademy" Variant="Variant.Filled" Color="Color.Info">Add Team</MudButton>
+                    <MudTable Items="Engine.Academy.Teams">
+                        <HeaderContent>
+                            <MudTh>Team Name</MudTh>
+                            <MudTh>Com</MudTh>
+                            <MudTh>Mag</MudTh>
+                            <MudTh>Sub</MudTh>
+                            <MudTh># Soldiers</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.TeamName</MudTd>
+                            <MudTd>@context.CScore</MudTd>
+                            <MudTd>@context.MScore</MudTd>
+                            <MudTd>@context.SScore</MudTd>
+                            <MudTd>@context.SoldierCount</MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Info" OnClick="() => RemoveAcademyTeam(context)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudStack>
             </MudTabPanel>
             <MudTabPanel Text="Research">
                 Do the thing
@@ -412,4 +467,52 @@
     }
     private Timer Timer { get; set; }
     private bool ShowEventDialog { get; set; } = false;
+
+    #region Academy functions
+    private async Task AddTeamToAcademy()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null).ToList());
+        parameters.Add("CScore", true);
+        parameters.Add("MScore", true);
+        parameters.Add("SScore", true);
+        parameters.Add("KScore", false);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? selectedteam = result.Data as Team;
+            if (selectedteam != null)
+            {
+                Engine.Academy.Teams.Add(selectedteam);
+                selectedteam.MissionID = Engine.Academy.AcademyAssignmentID;
+            }
+        }
+    }
+    private void RemoveAcademyTeam(Team team)
+    {
+        Engine.Academy.RemoveTeam(team);
+    }
+    private async Task AssignInstructor(AcademyRole role)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Soldiers", Engine.Academy.Teams.SelectMany(e => e.GetAllSoldiers.Where(f => !Engine.Academy.HeadInstructors.Values.Select(g => g?.ID ?? Guid.Empty).Contains(f.ID))).ToList());
+        var dialog = dialogService.Show<SoldierPicker>("Select " + role.ToString(), parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Soldier? s = result.Data as Soldier;
+            if (s != null)
+            {
+                Engine.Academy.SetInstructor(role, s);
+            }
+        }
+    }
+    #endregion
 }

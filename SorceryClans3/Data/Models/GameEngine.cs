@@ -11,13 +11,14 @@ namespace SorceryClans3.Data.Models
         public List<Clan> Clans { get; set; } = [];
         public List<Soldier> Soldiers { get; set; } = [];
         public List<Team> Teams { get; set; } = [];
+        public Academy Academy { get; set; } = new();
 
         public void StartMission(Mission mission, Team team)
         {
             mission.AttemptingTeam = team;
             team.MissionID = mission.ID;
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
-            
+
         }
         public List<GameEvent> IncrementTime() //called internally
         {
