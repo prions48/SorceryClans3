@@ -17,7 +17,7 @@ namespace SorceryClans3.Data.Models
                         score += ComAcadScore(s, (AcademyRole)i);
                     }
                 }
-                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Select(e => e.ID).ToList());
+                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Where(e => e is not null).Select(e => e!.ID).ToList());
             }
         }
         public double MagicScore
@@ -32,7 +32,7 @@ namespace SorceryClans3.Data.Models
                         score += MagAcadScore(s, (AcademyRole)i);
                     }
                 }
-                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Select(e => e.ID).ToList());
+                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Where(e => e is not null).Select(e => e!.ID).ToList());
             }
         }
         public double SubtletyScore
@@ -47,7 +47,7 @@ namespace SorceryClans3.Data.Models
                         score += SubAcadScore(s, (AcademyRole)i);
                     }
                 }
-                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Select(e => e.ID).ToList());
+                return score + CoachScores(Teams.SelectMany(e => e.GetAllSoldiers).ToList(), HeadInstructors.Values.Where(e => e is not null).Select(e => e!.ID).ToList());
             }
         }
         public void SetInstructor(AcademyRole arole, Soldier sold)

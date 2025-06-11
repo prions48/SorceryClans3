@@ -503,6 +503,7 @@
         options.FullWidth = true;
         var parameters = new DialogParameters();
         parameters.Add("Soldiers", Engine.Academy.Teams.SelectMany(e => e.GetAllSoldiers.Where(f => !Engine.Academy.HeadInstructors.Values.Select(g => g?.ID ?? Guid.Empty).Contains(f.ID))).ToList());
+        parameters.Add("ShowStats", true);
         var dialog = dialogService.Show<SoldierPicker>("Select " + role.ToString(), parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

@@ -7,12 +7,24 @@
                 <MudTh>Name</MudTh>
                 <MudTh>Team</MudTh>
                 <MudTh>Power Level</MudTh>
+                @if (ShowStats)
+                {
+                    <MudTh>C</MudTh>
+                    <MudTh>M</MudTh>
+                    <MudTh>S</MudTh>
+                }
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd>@context.SoldierName</MudTd>
                 <MudTd>@(context.Team?.TeamName ?? "")</MudTd>
                 <MudTd>@context.PowerLevel</MudTd>
+                @if (ShowStats)
+                {
+                    <MudTd>@context.Combat</MudTd>
+                    <MudTd>@context.Magic</MudTd>
+                    <MudTd>@context.Subtlety</MudTd>
+                }
                 <MudTd>
                     <MudIconButton OnClick="() => SelectSoldier(context)" Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" />
                     <MudIconButton OnClick="() => Submit(context)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" />
@@ -33,6 +45,7 @@
 
 @code {
     [Parameter] public IList<Soldier> Soldiers { get; set; }
+    [Parameter] public bool ShowStats { get; set; } = false;
     private bool ViewSoldier { get; set; } = false;
     private Soldier? SelectedSoldier { get; set; }
     private void SelectSoldier(Soldier sold)
