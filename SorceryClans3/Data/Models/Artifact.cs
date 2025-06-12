@@ -29,6 +29,9 @@ namespace SorceryClans3.Data.Models
         public int ComBoost { get; set; }
         public int MagBoost { get; set; }
         public int SubBoost { get; set; }
+        public int ChaBoost { get; set; }
+        public int LogBoost { get; set; }
+        public int TacBoost { get; set; }
         public int HPBoost { get; set; }
         public int HealBoost { get; set; }
         public Artifact()
@@ -132,15 +135,21 @@ namespace SorceryClans3.Data.Models
                 else
                     sec++;
             }
-            int type = r.Next(4);
+            int type = r.Next(5);
             switch (type)
             {
                 case 0: ComBoost = prim; break;
                 case 1: MagBoost = prim; break;
                 case 2: SubBoost = prim; break;
                 case 3: HealBoost = prim; break;
+                case 4: switch (r.Next(3))
+                    {
+                        case 0: ChaBoost = prim; break;
+                        case 1: LogBoost = prim; break;
+                        case 2: TacBoost = prim; break;
+                } break;
             }
-            if (type == 3)
+            if (type < 3)
                 type = r.Next(4);
             else
                 type = r.Next(3);

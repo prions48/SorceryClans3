@@ -196,21 +196,21 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                return CharismaBase;
+                return CharismaBase + (Artifact?.ChaBoost ?? 0);
             }
         }
         public int Logistics
         {
             get
             {
-                return LogisticsBase;
+                return LogisticsBase + (Artifact?.LogBoost ?? 0);
             }
         }
         public int Tactics
         {
             get
             {
-                return TacticsBase;
+                return TacticsBase + (Artifact?.TacBoost ?? 0);
             }
         }
         private int RevCha

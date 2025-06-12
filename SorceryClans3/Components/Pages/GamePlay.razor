@@ -143,7 +143,33 @@
     <MudTabPanel Text="Assignments">
         <MudTabs Position="Position.Top">
             <MudTabPanel Text="Liaisons">
-                Select a city
+                <MudTable Items="Engine.Clients" Striped Bordered>
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Distance</MudTh>
+                        <MudTh>Liaisons</MudTh>
+                        <MudTh># Missions</MudTh>
+                        <MudTh>View Mission</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.CityName</MudTd>
+                        <MudTd>@context.Distance</MudTd>
+                        <MudTd>@string.Join(",",context.Liaisons.Select(e => e.TeamName))</MudTd>
+                        <MudTd>
+                            @if (context.Liaisons.Count > 0)
+                            {
+                                @context.Missions.Count
+                            }
+                            else
+                            {
+                                @("Unknown")
+                            }
+                        </MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ViewCityMissions(context)" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
             </MudTabPanel>
             <MudTabPanel Text="Defenses">
                 Assign team
@@ -342,6 +368,14 @@
         {
             Engine.Missions.Add(new Mission(2000+r.Next(10000), nocolor:true));
         }
+        for (int i = 0; i <= 5; i++)
+        {
+            ClientCity city = new(i);
+            city.NewMissionCycle();
+            Engine.Clients.Add(city);
+        }
+        Engine.Clients.First().Liaisons.Add(Engine.Teams.First());
+        Engine.Teams.First().MissionID = Engine.Clients.First().ID;
     }
     private async Task CreateTeam()
     {
@@ -514,6 +548,13 @@
                 Engine.Academy.SetInstructor(role, s);
             }
         }
+    }
+    #endregion
+
+    #region Cities
+    private async Task ViewCityMissions(ClientCity city)
+    {
+
     }
     #endregion
 }

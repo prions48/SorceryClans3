@@ -91,26 +91,28 @@ namespace SorceryClans3.Data.Models
             SPenalty = SScore == null ? 0 : (int)(SScore * (r.NextDouble() * .2 + .1));
             KPenalty = KScore == null ? 0 : (int)(KScore * (r.NextDouble() * .2 + .2));
         }
-        private void SetDisp()
+        public void SetDisp(int accfactor = 0)
         {
+            double pfac = 1.0 + (5.0 / (25.0 + accfactor));
+            double nfac = 1.0 - (5.0 / (25.0 + accfactor));
             if (CScore != null)
             {
-                CDisp = r.Next((int)(CScore * .9),(int)(CScore*1.1));
+                CDisp = r.Next((int)(CScore * nfac), (int)(CScore * pfac));
                 CDisp = (CDisp / 10) * 10;
             }
             if (MScore != null)
             {
-                MDisp = r.Next((int)(MScore * .9),(int)(MScore*1.1));
+                MDisp = r.Next((int)(MScore * nfac),(int)(MScore * pfac));
                 MDisp = (MDisp / 10) * 10;
             }
             if (SScore != null)
             {
-                SDisp = r.Next((int)(SScore * .9),(int)(SScore*1.1));
+                SDisp = r.Next((int)(SScore * nfac),(int)(SScore * pfac));
                 SDisp = (SDisp / 10) * 10;
             }
             if (KScore != null)
             {
-                KDisp = r.Next((int)(KScore * .9),(int)(KScore*1.1));
+                KDisp = r.Next((int)(KScore * nfac),(int)(KScore * pfac));
                 KDisp = (KDisp / 10) * 10;
             }
         }

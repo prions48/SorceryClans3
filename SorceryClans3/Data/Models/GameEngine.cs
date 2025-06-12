@@ -12,6 +12,7 @@ namespace SorceryClans3.Data.Models
         public List<Soldier> Soldiers { get; set; } = [];
         public List<Team> Teams { get; set; } = [];
         public Academy Academy { get; set; } = new();
+        public List<ClientCity> Clients { get; set; } = [];
 
         public void StartMission(Mission mission, Team team)
         {
