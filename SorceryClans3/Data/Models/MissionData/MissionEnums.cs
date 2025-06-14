@@ -2,7 +2,8 @@ namespace SorceryClans3.Data.Models
 {
     public enum MissionType
     {
-        TravelHome,
+        TravelToLocation,
+        LiaisonAtLocation,
         BanditAttack,
         ClanAttack,
         Mercenary,

@@ -586,7 +586,7 @@
         Clan = new Clan();
         Soldier = new Soldier(Clan);
         Team = new Team();
-        Mission = new Mission(MissionSeed);
+        //Mission = new Mission(1000, new(1));
         Timer = new Timer(200);
         Timer.Elapsed += OnTimedEvent;
     }
@@ -696,7 +696,7 @@
     private int MissionSeed = 1000;
     private void RegenMission()
     {
-        Mission = new Mission(MissionSeed);
+        //Mission = new Mission(MissionSeed);
     }
     private void AttemptMission()
     {
@@ -1138,7 +1138,7 @@
         mission.Team = SelectedTeam!;
         RunningMissions.Add(mission);
         Timer.Enabled = true;
-        Mission = new Mission(MissionSeed);
+        //Mission = new Mission(MissionSeed);
     }
     private List<RunningMission> RunningMissions { get; set; } = [];
     private List<RunningMission> FinishedMissions { get; set; } = [];

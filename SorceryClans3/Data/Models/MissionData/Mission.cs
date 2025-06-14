@@ -6,6 +6,8 @@ namespace SorceryClans3.Data.Models
         private int Seed { get; set; }
         public Team? AttemptingTeam { get; set; }
         public MissionType Type { get; set; } = MissionType.Mercenary;
+        public ClientCity Client { get; set; }
+        public MapLocation Location { get; set; }
         public IList<string> Rewards
         {
             get
@@ -21,7 +23,13 @@ namespace SorceryClans3.Data.Models
         public int? MoneyReward { get; set; }
         public Artifact? ArtifactReward { get; set; }
         public int MissionDays { get; set; }
-        public int TravelDistance { get; set; }
+        public int TravelDistance
+        {
+            get
+            {
+                return (int)Math.Ceiling(Location.GetDistance(Client.Location));
+            }
+        }
         public int? CScore { get; set; }
         public int? MScore { get; set; }
         public int? SScore { get; set; }
@@ -46,16 +54,18 @@ namespace SorceryClans3.Data.Models
             KScore = null;
             SetColor(false);
             SetDisp();
-            SetDistance();
+            SetTime();
         }
-        public Mission(int seed, bool forceall = false, bool nocolor = false)
+        public Mission(int seed, ClientCity client, bool forceall = false, bool nocolor = false)
         {
+            Client = client;
+            Location = new(client);
             ID = Guid.NewGuid();
             Seed = seed;
             SetScore(forceall);
             SetColor(nocolor);
             SetDisp();
-            SetDistance();
+            SetTime();
         }
 
         private void SetScore(bool forceall)
@@ -116,10 +126,9 @@ namespace SorceryClans3.Data.Models
                 KDisp = (KDisp / 10) * 10;
             }
         }
-        private void SetDistance()
+        private void SetTime()
         {
-            TravelDistance = r.Next(40);
-            MissionDays = r.Next(1,6);
+            MissionDays = r.Next(1,6) + (int)(Seed <= 1 ? 0 : Math.Log(Seed));
         }
         public (bool,int) CompleteMission()
         {

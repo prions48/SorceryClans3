@@ -1,0 +1,69 @@
+@inject IDialogService dialogService
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Missions">
+            <HeaderContent>
+                <MudTh>CReq</MudTh>
+                <MudTh>MReq</MudTh>
+                <MudTh>SReq</MudTh>
+                <MudTh>KReq</MudTh>
+                <MudTh>$</MudTh>
+                <MudTh>Distance</MudTh>
+                <MudTh>Time</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.CDisp</MudTd>
+                <MudTd>@context.MDisp</MudTd>
+                <MudTd>@context.SDisp</MudTd>
+                <MudTd>@context.KDisp</MudTd>
+                <MudTd>@context.MoneyReward</MudTd>
+                <MudTd>@context.TravelDistance</MudTd>
+                <MudTd>@context.MissionDays</MudTd>
+                <MudTd>
+                    @if (context.AttemptingTeam != null)
+                    {
+                        <MudIcon Icon="@Icons.Material.TwoTone.Group" Color="Color.Default" />
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.TwoTone.GroupAdd" Color="Color.Info" OnClick="() => SelectTeamForMission(context)" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public List<Mission> Missions { get; set; } = [];
+    [Parameter] public List<Team> Teams { get; set; } = [];
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private async Task SelectTeamForMission(Mission mission)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("AvailableTeams", Teams);
+        parameters.Add("CScore", mission.CScore.HasValue);
+        parameters.Add("MScore", mission.MScore.HasValue);
+        parameters.Add("SScore", mission.SScore.HasValue);
+        parameters.Add("KScore", mission.KScore.HasValue);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? selectedteam = result.Data as Team;
+            if (selectedteam != null)
+            {
+                MudDialog.Close(DialogResult.Ok((mission, selectedteam)));
+            }
+        }
+    }
+    
+}

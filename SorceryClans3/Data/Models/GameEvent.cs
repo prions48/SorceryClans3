@@ -4,10 +4,11 @@ namespace SorceryClans3.Data.Models
 {
     public class GameEvent
     {
-        [Key] public Guid ID { get; set; }
+        [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public MissionType Type { get; set; }
         public Mission? MissionToComplete { get; set; }
         public Team? TeamInTransit { get; set; }
+        public MapLocation? Destination { get; set; }
         public DateTime EventCompleted { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
@@ -19,13 +20,14 @@ namespace SorceryClans3.Data.Models
             Visible = true;
             FixedDate = true;
         }
-        public GameEvent(Team team, DateTime duedate)
+        public GameEvent(Team team, DateTime duedate, MissionType type, MapLocation destination)
         {
-            Type = MissionType.TravelHome;
+            Type = type;
             TeamInTransit = team;
             EventCompleted = duedate;
             Visible = true;
             FixedDate = true;
+            Destination = destination;
         }
         public GameEvent(MissionType type, DateTime duedate)
         {
@@ -48,12 +50,13 @@ namespace SorceryClans3.Data.Models
                 DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, results.Item2)
             };
         }
-        public GameEventDisplay ResolveReturn()
+        public GameEventDisplay ResolveReturn(bool liaison = false)
         {
             if (TeamInTransit == null)
                 throw new Exception("Failure to resolve missing team");
             TeamInTransit.MissionID = null;
-            return new($"Team {TeamInTransit.TeamName} has returned.", EventCompleted)
+            TeamInTransit.Location = Destination;
+            return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions" : "returned to " + TeamInTransit.Location?.LocationName ?? "home base.")}.", EventCompleted)
             {
                 DisplayTeam = TeamInTransit
             };

@@ -1,3 +1,4 @@
+using MathNet.Numerics.Distributions;
 namespace SorceryClans3.Data.Models
 {
     public enum Direction
@@ -9,18 +10,38 @@ namespace SorceryClans3.Data.Models
     }
     public class MapLocation
     {
+        public string? LocationName { get; set; } = null;
         public double X { get; set; }
         public double Y { get; set; }
+        public static MapLocation HomeBase
+        {
+            get
+            {
+                return new(0.0, 0.0) { LocationName = "home base"};
+            }
+        }
         public MapLocation()
         {
             Random r = new Random();
             X = r.NextDouble() * 200 - 100;
             Y = r.NextDouble() * 200 - 100;
         }
+        public MapLocation(int range, int min)
+        {
+            Random r = new Random();
+            X = ((r.NextDouble() * (range - min)) + min) * (1 - (r.Next(2) * 2));
+            Y = ((r.NextDouble() * (range - min)) + min) * (1 - (r.Next(2) * 2));
+        }
         public MapLocation(double x, double y)
         {
             X = x;
             Y = y;
+        }
+        public MapLocation(ClientCity client)
+        {
+            LocationName = client.CityName;
+            X = Normal.Sample(client.Location.X, 10.0 + client.CityLevel);
+            Y = Normal.Sample(client.Location.Y, 10.0 + client.CityLevel);
         }
         public void MoveUp(double step = 1.0)
         {
@@ -50,6 +71,10 @@ namespace SorceryClans3.Data.Models
     public static class MapUtils
     {
         private static Random random = new Random();
+        public static double GetDistance(this MapLocation location1)
+        {
+            return Math.Sqrt(SQ(location1.X) + SQ(location1.Y));
+        }
         public static double GetDistance(this MapLocation location1, MapLocation location2)
         {
             return Math.Sqrt(SQ(location1.X - location2.X) + SQ(location1.Y - location2.Y));

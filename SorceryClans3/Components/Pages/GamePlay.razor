@@ -3,6 +3,7 @@
 @using System.Timers
 @using SorceryClans3.Data.Users
 @using SorceryClans3.Components.Pages.Dialogs
+@inject ISnackbar Snackbar
 @inject IDialogService dialogService
 
 <MudTabs Position="Position.Left" Color="Color.Info">
@@ -111,8 +112,7 @@
     </MudTabPanel>
     <MudTabPanel Text="Teams">
         <MudStack>
-
-            @if (Soldiers.Count(e => e.Team == null) > 0)
+            @if (Soldiers.Any(e => e.Team == null))
             {
                 <MudButton OnClick="CreateTeam" Variant="Variant.Filled" Color="Color.Info">Create New Team</MudButton>
             }
@@ -142,31 +142,67 @@
     </MudTabPanel>
     <MudTabPanel Text="Assignments">
         <MudTabs Position="Position.Top">
-            <MudTabPanel Text="Liaisons">
+            <MudTabPanel Text="Clients">
                 <MudTable Items="Engine.Clients" Striped Bordered>
                     <HeaderContent>
                         <MudTh>Name</MudTh>
                         <MudTh>Distance</MudTh>
                         <MudTh>Liaisons</MudTh>
-                        <MudTh># Missions</MudTh>
-                        <MudTh>View Mission</MudTh>
+                        <MudTh>Teams</MudTh>
+                        <MudTh>View Missions</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.CityName</MudTd>
                         <MudTd>@context.Distance</MudTd>
-                        <MudTd>@string.Join(",",context.Liaisons.Select(e => e.TeamName))</MudTd>
                         <MudTd>
-                            @if (context.Liaisons.Count > 0)
+                            <table>
+                                <tbody>
+                                    @foreach (Team team in context.Liaisons)
+                                    {
+                                        <tr>
+                                            <td>@team.TeamName</td>
+                                            <td>
+                                                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RecallTeamFromCity(context, team, true)" Disabled="team.MissionID != null" />
+                                            </td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="2">
+                                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AssignTeamToCity(context, true)" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </MudTd>
+                        <MudTd>
+                            <table>
+                                <tbody>
+                                    @foreach (Team team in context.Teams)
+                                    {
+                                        <tr>
+                                            <td>@team.TeamName</td>
+                                            <td>
+                                                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RecallTeamFromCity(context, team, true)"  Disabled="team.MissionID != null" />
+                                            </td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="2">
+                                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AssignTeamToCity(context, false)" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </MudTd>
+                        <MudTd>
+                            @if (true)//context.Liaisons.Any(e => e.MissionID == null))
                             {
-                                @context.Missions.Count
+                                <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ViewCityMissions(context)" />
                             }
                             else
                             {
                                 @("Unknown")
                             }
-                        </MudTd>
-                        <MudTd>
-                            <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ViewCityMissions(context)" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -364,18 +400,14 @@
         foreach (Soldier s in Engine.Teams.First().Soldiers)
             s.Team = Engine.Teams.First();
         //END: team for testing only
-        for (int i = 20; i < 30 + r.Next(10); i++)
-        {
-            Engine.Missions.Add(new Mission(2000+r.Next(10000), nocolor:true));
-        }
         for (int i = 0; i <= 5; i++)
         {
             ClientCity city = new(i);
             city.NewMissionCycle();
             Engine.Clients.Add(city);
         }
-        Engine.Clients.First().Liaisons.Add(Engine.Teams.First());
-        Engine.Teams.First().MissionID = Engine.Clients.First().ID;
+        //Engine.Clients.First().Liaisons.Add(Engine.Teams.First());
+        //Engine.Teams.First().MissionID = Engine.Clients.First().ID;
     }
     private async Task CreateTeam()
     {
@@ -471,7 +503,7 @@
     {
         List<GameEventDisplay> displays = [];
         bool continuing = false;
-        while (displays.Count == 0 && (!continuing || Engine.Settings.GameTime.Day > 1))
+        while (displays.Count == 0 && (!continuing || Engine.Settings.BypassDay1))
         {
             displays = Engine.ResolveEvents();
             continuing = true;
@@ -552,9 +584,54 @@
     #endregion
 
     #region Cities
+    private async Task AssignTeamToCity(ClientCity city, bool liaison)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison))).ToList());
+        parameters.Add("CScore", true);
+        parameters.Add("MScore", true);
+        parameters.Add("SScore", true);
+        parameters.Add("KScore", true);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? selectedteam = result.Data as Team;
+            if (selectedteam != null)
+            {
+                Engine.TeamCityTravel(city, selectedteam, liaison, false);
+            }
+        }
+    }
+    private void RecallTeamFromCity(ClientCity city, Team team, bool liaison)
+    {
+        //maybe add confirm dialog?
+        Engine.TeamCityTravel(city, team, liaison, true);
+    }
     private async Task ViewCityMissions(ClientCity city)
     {
-
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Missions", city.Missions.Where(e => e.AttemptingTeam == null).ToList());
+        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.Teams.Where(e => e.MissionID == null)).ToList());
+        var dialog = dialogService.Show<MissionPicker>("Missions for " + city.CityName, parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            (Mission, Team)? picked = result.Data as (Mission, Team)?;
+            if (picked != null)
+            {
+                Mission mission = picked.Value.Item1;
+                Team team = picked.Value.Item2;
+                Engine.StartMission(mission, team);
+                Snackbar.Add(team.TeamName + " has been sent on the mission for " + city.CityName, Severity.Info);
+            }
+        }
     }
     #endregion
 }

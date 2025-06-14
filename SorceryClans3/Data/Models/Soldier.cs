@@ -254,7 +254,7 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                return IntegrityBase;
+                return IntegrityBase; //add artifact boost at some point?
             }
         }
         public int? Travel
@@ -294,7 +294,7 @@ namespace SorceryClans3.Data.Models
                 {
                     case HealthLevel.Uninjured: return 1.0;
                     case HealthLevel.Hurt: return 1.0;
-                    case HealthLevel.Wounded: return 0.9;
+                    case HealthLevel.Wounded: return 0.8;
                     case HealthLevel.Critical: return 0.5;
                     default: return 0;
                 }

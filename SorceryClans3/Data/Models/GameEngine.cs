@@ -19,7 +19,25 @@ namespace SorceryClans3.Data.Models
             mission.AttemptingTeam = team;
             team.MissionID = mission.ID;
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
-
+        }
+        public void TeamCityTravel(ClientCity city, Team team, bool liaison, bool returning = false)
+        {
+            if (liaison)
+            {
+                if (returning)
+                    city.Liaisons.Remove(team);
+                else
+                    city.Liaisons.Add(team);
+            }
+            else
+            {
+                if (returning)
+                    city.Teams.Remove(team);
+                else
+                    city.Teams.Add(team);
+            }
+            team.MissionID = returning ? Guid.Empty : city.ID;
+            Events.Add(new(team, Settings.TravelCompletion(MapLocation.HomeBase, /*this needs cleanup later*/ city.Location, team.DScore), liaison && !returning ? MissionType.LiaisonAtLocation : MissionType.TravelToLocation, returning ? MapLocation.HomeBase : city.Location));
         }
         public List<GameEvent> IncrementTime() //called internally
         {
@@ -53,22 +71,18 @@ namespace SorceryClans3.Data.Models
             {
                 switch (ev.Type)
                 {
-                    case MissionType.TravelHome:
+                    case MissionType.TravelToLocation:
                         displays.Add(ev.ResolveReturn());
+                        break;
+                    case MissionType.LiaisonAtLocation:
+                        displays.Add(ev.ResolveReturn(true));
                         break;
                     case MissionType.Mercenary:
                         var merc = ev.ResolveMercenary();
                         Missions.Remove(merc.DisplayMission!);
                         merc.DisplayTeam!.MissionID = Guid.Empty;
                         displays.Add(merc);
-                        if (Settings.RealTime)
-                        {
-                            Events.Add(new GameEvent(merc.DisplayTeam, Settings.CurrentTime.AddMinutes(merc.DisplayMission!.TravelDistance / merc.DisplayTeam.DScore)));
-                        }
-                        else
-                        {
-                            Events.Add(new GameEvent(merc.DisplayTeam, Settings.CurrentTime.AddDays(merc.DisplayMission!.TravelDistance / merc.DisplayTeam.DScore)));
-                        }
+                        Events.Add(new GameEvent(merc.DisplayTeam, Settings.MissionTravelTime(merc.DisplayMission!), MissionType.TravelToLocation, merc.DisplayTeam!.Location ?? MapLocation.HomeBase));
                         break;
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));

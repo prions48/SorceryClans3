@@ -23,12 +23,36 @@ namespace SorceryClans3.Data.Models
                 return CurrentTime - StartDate;
             }
         }
+        public bool BypassDay1 { get { if (RealTime) return true; return !(GameTime.Day == 1 && GameTime.Hour == 0); } }
         #region Time Calcs
         public DateTime MissionEndTime(Mission mission)
         {
             if (RealTime)
-                return CurrentTime.AddMinutes((mission.TravelDistance * 1.0 / mission.AttemptingTeam!.DScore) + mission.MissionDays);
-            return CurrentTime.AddDays((mission.TravelDistance * 1.0 / mission.AttemptingTeam!.DScore) + mission.MissionDays);
+                return CurrentTime.AddMinutes(mission.MissionDays).Add(TravelTime(mission));
+            return CurrentTime.AddDays(mission.MissionDays).Add(TravelTime(mission));
+        }
+        public DateTime MissionTravelTime(Mission mission)
+        {
+            return CurrentTime.Add(TravelTime(mission));
+        }
+        public DateTime TravelCompletion(MapLocation loc1, MapLocation loc2, int dscore)
+        {
+            return CurrentTime.Add(TravelTime(loc1, loc2, dscore));
+        }
+        public TimeSpan TravelTime(Mission mission)
+        {
+            if (mission.AttemptingTeam == null)
+                return new(0);
+            return TravelTime(mission.Location, mission.AttemptingTeam.Location ?? MapLocation.HomeBase, mission.AttemptingTeam.DScore);
+        }
+        public TimeSpan TravelTime(MapLocation loc1, MapLocation loc2, int dscore)
+        {
+            if (dscore == 0)
+                return new(0);
+            double distance = loc1.GetDistance(loc2);
+            if (RealTime)
+                return new TimeSpan(0, (int)Math.Ceiling(distance / dscore), 0);
+            return new TimeSpan((int)Math.Ceiling(distance / dscore), 0, 0, 0);
         }
         public DateTime BanditTime()
         {
