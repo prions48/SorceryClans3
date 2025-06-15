@@ -17,7 +17,10 @@
                 <MudTd>@context.MDisp</MudTd>
                 <MudTd>@context.SDisp</MudTd>
                 <MudTd>@context.KDisp</MudTd>
-                <MudTd>@context.MoneyReward</MudTd>
+                <MudTd>
+                    @context.MoneyReward
+                    <MudIcon Icon="@GetIcon(context)" Color="GetColor(context)" />
+                </MudTd>
                 <MudTd>@context.TravelDistance</MudTd>
                 <MudTd>@context.MissionDays</MudTd>
                 <MudTd>
@@ -65,5 +68,21 @@
             }
         }
     }
-    
+    private MudBlazor.Color GetColor(Mission mission)
+    {
+        switch (mission.Importance)
+        {
+            case ClientImportance.Normal: return Color.Default;
+            case ClientImportance.Important: return Color.Warning;
+            default: return Color.Error;
+        }
+    }
+    private string GetIcon(Mission mission)
+    {
+        switch (mission.Importance)
+        {
+            case ClientImportance.Normal: return "";
+            default: return Icons.Material.TwoTone.Warning;
+        }
+    }
 }

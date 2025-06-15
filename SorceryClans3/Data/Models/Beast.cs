@@ -22,7 +22,7 @@ namespace SorceryClans3.Data.Models
         public int? dseed;
         public int kseed; //healing beasts?? exciting...
         Random r = new Random();
-        private HunterMission TameMission { get; set; }
+        private HunterMission? TameMission { get; set; }
         private bool coinFlip()
         {
             return r.Next(2) == 0;
@@ -289,10 +289,10 @@ namespace SorceryClans3.Data.Models
             BeastName = aname;
             BeastAdj = bname;
             ToolName = lname;
-            TameMission = new HunterMission(pseed * 30, true, true)
+            /*TameMission = new HunterMission(pseed * 30, true, true)
             {
                 Type = MissionType.TameBeast
-            };
+            };*/
         }
         public BeastHarvest? CreateHarvest(int seed)
         {
@@ -324,10 +324,10 @@ namespace SorceryClans3.Data.Models
         public HunterMission StartMission()
         {
             HunterMission ret = TameMission;
-            TameMission = new HunterMission(pseed * 30, true, true)
+            /*TameMission = new HunterMission(pseed * 30, true, true)
             {
                 Type = MissionType.TameBeast
-            };
+            };*/
             return ret;
         }
         public Soldier GenerateBeast(string? soldname = null)

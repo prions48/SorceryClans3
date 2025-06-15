@@ -100,7 +100,7 @@ namespace SorceryClans3.Data.Models
             IntegrityBase = r.Next(4, 8);
             LeadershipXP = r.NextDouble() - 1.5;
             CalcLimit();
-            TravelBase = 10 + r.NextDouble() < .6 ? (r.Next(3) - 1) * r.Next(3) : r.Next(3);
+            TravelBase = 5 + r.NextDouble() < .6 ? (r.Next(3) - 1) : r.Next(2);
             Medical = new Medical();
             HPBase = r.Next(5, 15);
             HPCurrent = HPMax;

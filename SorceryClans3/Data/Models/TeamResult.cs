@@ -5,9 +5,12 @@ namespace SorceryClans3.Data.Models
     public class TeamResult
     {
         [Key] public Guid ID { get; set; }
+        public bool Success { get; set; }
+
         public Dictionary<Soldier, int> HPDamage { get; set; } = [];
-        public TeamResult(Team team, int diff)
+        public TeamResult(Team team, bool success, int diff)
         {
+            Success = success;
             Random r = new();
             //do math
             List<Soldier> solds = team.GetAllSoldiers.ToList();

@@ -71,5 +71,12 @@ namespace SorceryClans3.Data.Models
             return r.NextDouble() < .01; //1 per month~ (given 4 events per day)
         }
         #endregion
+
+        #region Config - limits
+        public int MaxMissions(int lvl)
+        {
+            return 15 + lvl * 3;
+        }
+        #endregion
     }
 }

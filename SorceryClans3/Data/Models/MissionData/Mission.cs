@@ -8,6 +8,8 @@ namespace SorceryClans3.Data.Models
         public MissionType Type { get; set; } = MissionType.Mercenary;
         public ClientCity Client { get; set; }
         public MapLocation Location { get; set; }
+        public ClientImportance Importance { get; set; }
+        public DateTime ExpirationDate { get; set; }
         public IList<string> Rewards
         {
             get
@@ -44,7 +46,7 @@ namespace SorceryClans3.Data.Models
         public int SPenalty { get; set; }
         public int KPenalty { get; set; }
         Random r = new Random();
-        public Mission()
+        public Mission(GameSettings settings)
         {
             ID = Guid.NewGuid();
             Seed = 100;
@@ -54,9 +56,10 @@ namespace SorceryClans3.Data.Models
             KScore = null;
             SetColor(false);
             SetDisp();
-            SetTime();
+            SetTime(settings);
         }
-        public Mission(int seed, ClientCity client, bool forceall = false, bool nocolor = false)
+        //currently only constructor in use
+        public Mission(GameSettings settings, int seed, ClientCity client, bool forceall = false, bool nocolor = false, bool important = false)
         {
             Client = client;
             Location = new(client);
@@ -65,38 +68,42 @@ namespace SorceryClans3.Data.Models
             SetScore(forceall);
             SetColor(nocolor);
             SetDisp();
-            SetTime();
+            SetTime(settings);
+            Importance = GenerateImportance(important);
+            if (Importance == ClientImportance.Important && MoneyReward != null)
+                MoneyReward = (int)(MoneyReward * 1.5);
+            else if (Importance == ClientImportance.Critical && MoneyReward != null)
+                MoneyReward = MoneyReward * 3;
         }
-
         private void SetScore(bool forceall)
         {
             while (CScore == null && MScore == null && SScore == null && KScore == null)
             {
                 CScore = r.NextDouble() < .3 && !forceall ? null : r.Next(Seed, 2 * Seed);
                 MScore = r.NextDouble() < .4 && !forceall ? null : r.Next(Seed, (int)(1.5 * Seed));
-                SScore = r.NextDouble() < .5 && !forceall ? null : r.Next(Seed/10, Seed/2);
-                int heal = (int)(Math.Log10(Seed+1) * Math.Log10(Seed+1) * 25) + r.Next(100);
+                SScore = r.NextDouble() < .5 && !forceall ? null : r.Next(Seed / 10, Seed / 2);
+                int heal = (int)(Math.Log10(Seed + 1) * Math.Log10(Seed + 1) * 25) + r.Next(100);
                 KScore = r.NextDouble() < .95 || forceall ? null : r.Next(heal, 2 * heal);
             }
-            MoneyReward = (CScore == null ? 0 : r.Next(CScore.Value/10, CScore.Value/5)) +
-                     (MScore == null ? 0 : r.Next(MScore.Value/10, MScore.Value/5)) +
-                     (SScore == null ? 0 : r.Next(SScore.Value/4, SScore.Value/2)) +
-                     (KScore == null ? 0 : r.Next(KScore.Value*100, KScore.Value*200));
+            MoneyReward = (CScore == null ? 0 : r.Next(CScore.Value / 10, CScore.Value / 5)) +
+                     (MScore == null ? 0 : r.Next(MScore.Value / 10, MScore.Value / 5)) +
+                     (SScore == null ? 0 : r.Next(SScore.Value / 4, SScore.Value / 2)) +
+                     (KScore == null ? 0 : r.Next(KScore.Value * 100, KScore.Value * 200));
         }
         private void SetColor(bool nocolor)
         {
             //start with just one for now
             if (Seed < 100000 || r.NextDouble() > .2 || nocolor)
                 return;
-            int numcolors = r.Next(2)+1;
+            int numcolors = r.Next(2) + 1;
             for (int i = 0; i < numcolors; i++)
             {
-                MagicColor color = (MagicColor)(r.Next(6)+1);
-                int tally = r.Next(1,5);
+                MagicColor color = (MagicColor)(r.Next(6) + 1);
+                int tally = r.Next(1, 5);
                 for (int j = 0; j < tally; j++)
                     ColorReqs.Add(color);
             }
-            CPenalty = CScore == null ? 0 : (int)(CScore * (r.NextDouble() * .1 + .1)); 
+            CPenalty = CScore == null ? 0 : (int)(CScore * (r.NextDouble() * .1 + .1));
             MPenalty = MScore == null ? 0 : (int)(MScore * (r.NextDouble() * .3 + .3));
             SPenalty = SScore == null ? 0 : (int)(SScore * (r.NextDouble() * .2 + .1));
             KPenalty = KScore == null ? 0 : (int)(KScore * (r.NextDouble() * .2 + .2));
@@ -112,25 +119,33 @@ namespace SorceryClans3.Data.Models
             }
             if (MScore != null)
             {
-                MDisp = r.Next((int)(MScore * nfac),(int)(MScore * pfac));
+                MDisp = r.Next((int)(MScore * nfac), (int)(MScore * pfac));
                 MDisp = (MDisp / 10) * 10;
             }
             if (SScore != null)
             {
-                SDisp = r.Next((int)(SScore * nfac),(int)(SScore * pfac));
+                SDisp = r.Next((int)(SScore * nfac), (int)(SScore * pfac));
                 SDisp = (SDisp / 10) * 10;
             }
             if (KScore != null)
             {
-                KDisp = r.Next((int)(KScore * nfac),(int)(KScore * pfac));
+                KDisp = r.Next((int)(KScore * nfac), (int)(KScore * pfac));
                 KDisp = (KDisp / 10) * 10;
             }
         }
-        private void SetTime()
+        private void SetTime(GameSettings settings)
         {
-            MissionDays = r.Next(1,6) + (int)(Seed <= 1 ? 0 : Math.Log(Seed));
+            MissionDays = r.Next(1, 6) + (int)(Seed <= 1 ? 0 : Math.Log(Seed)); //settings can do more later
+            if (settings.RealTime)
+            {
+                ExpirationDate = settings.CurrentTime.AddDays(r.Next(8) + 3);
+            }
+            else
+            {
+                ExpirationDate = settings.CurrentTime.AddMonths(1 + r.Next(4)).AddDays(r.Next(20));
+            }
         }
-        public (bool,int) CompleteMission()
+        public (bool, int) CompleteMission()
         {
             if (AttemptingTeam == null)
                 throw new Exception("No completing team identified for mission");
@@ -146,7 +161,7 @@ namespace SorceryClans3.Data.Models
                 {
                     IList<MagicColor> reqs = ColorReqs.Where(e => e == color).ToList();
                     IList<MagicColor> tcolors = teamcolors.Where(e => e == color).ToList();
-                    passcolor = passcolor && tcolors.Count >= reqs.Count;     
+                    passcolor = passcolor && tcolors.Count >= reqs.Count;
                     if (tcolors.Count < reqs.Count)
                     {
                         failby = reqs.Count - tcolors.Count;
@@ -159,15 +174,15 @@ namespace SorceryClans3.Data.Models
                    PassStat(SScore, team.SScore, passcolor, SPenalty) &&
                    PassStat(KScore, team.KScore, passcolor, KPenalty) && (passcolor || PctSuccessOnColorFail(failby, failbypct));//if color inadequate, tops out at 50% pass rate
             int diff = 0;
-            int cdiff = DiffSuccess(CScore,team.CScore,passcolor,CPenalty);
-            int mdiff = DiffSuccess(MScore,team.MScore,passcolor,MPenalty);
-            int sdiff = DiffSuccess(SScore,team.SScore,passcolor,SPenalty);
-            int kdiff = DiffSuccess(KScore,team.KScore,passcolor,KPenalty);
+            int cdiff = DiffSuccess(CScore, team.CScore, passcolor, CPenalty);
+            int mdiff = DiffSuccess(MScore, team.MScore, passcolor, MPenalty);
+            int sdiff = DiffSuccess(SScore, team.SScore, passcolor, SPenalty);
+            int kdiff = DiffSuccess(KScore, team.KScore, passcolor, KPenalty);
             if (success)
                 diff = cdiff + mdiff + sdiff + kdiff;
             else
-            diff = (cdiff > 0 ? 0 : cdiff) + (mdiff > 0 ? 0 : mdiff) + 
-                   (sdiff > 0 ? 0 : sdiff) + (kdiff > 0 ? 0 : kdiff);
+                diff = (cdiff > 0 ? 0 : cdiff) + (mdiff > 0 ? 0 : mdiff) +
+                       (sdiff > 0 ? 0 : sdiff) + (kdiff > 0 ? 0 : kdiff);
             return (success, diff);
         }
         private bool PctSuccessOnColorFail(int failby, double failbypct)
@@ -197,6 +212,20 @@ namespace SorceryClans3.Data.Models
         private bool PercentSuccess(int m, int t)
         {
             return (m - t) * 1.0 / m < (r.NextDouble() * .1);
+        }
+        private ClientImportance GenerateImportance(bool important)
+        {
+            if (!important)
+                return ClientImportance.Normal;
+            if (r.Next(12) == 0)
+                    return ClientImportance.Critical;
+            if (r.Next(4) == 0)
+                return ClientImportance.Important;
+            return ClientImportance.Normal;
+        }
+        public int ReputationBoost()
+        {
+            return Seed / 100 + r.Next(100);
         }
     }
 }

@@ -182,20 +182,20 @@
                                         <tr>
                                             <td>@team.TeamName</td>
                                             <td>
-                                                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RecallTeamFromCity(context, team, true)"  Disabled="team.MissionID != null" />
+                                                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RecallTeamFromCity(context, team, false)"  Disabled="team.MissionID != null" />
                                             </td>
                                         </tr>
                                     }
                                     <tr>
                                         <td colspan="2">
-                                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AssignTeamToCity(context, false)" />
+                                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AssignTeamToCity(context, false)" Disabled="context.Liaisons.Count == 0" />
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </MudTd>
                         <MudTd>
-                            @if (true)//context.Liaisons.Any(e => e.MissionID == null))
+                            @if (context.Liaisons.Any(e => e.MissionID == null))
                             {
                                 <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ViewCityMissions(context)" />
                             }
@@ -403,7 +403,7 @@
         for (int i = 0; i <= 5; i++)
         {
             ClientCity city = new(i);
-            city.NewMissionCycle();
+            city.NewMissionCycle(Engine.Settings);
             Engine.Clients.Add(city);
         }
         //Engine.Clients.First().Liaisons.Add(Engine.Teams.First());
@@ -541,7 +541,7 @@
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
         var parameters = new DialogParameters();
-        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null).ToList());
+        parameters.Add("AvailableTeams", Teams.Where(e => e.IsAtHome && e.MissionID == null).ToList());
         parameters.Add("CScore", true);
         parameters.Add("MScore", true);
         parameters.Add("SScore", true);
@@ -590,7 +590,7 @@
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
         var parameters = new DialogParameters();
-        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison))).ToList());
+        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison) || (e.Location == city.Location && !city.Teams.Contains(e) && !liaison))).ToList());
         parameters.Add("CScore", true);
         parameters.Add("MScore", true);
         parameters.Add("SScore", true);
@@ -602,7 +602,18 @@
             Team? selectedteam = result.Data as Team;
             if (selectedteam != null)
             {
-                Engine.TeamCityTravel(city, selectedteam, liaison, false);
+                if (!liaison && city.Liaisons.Contains(selectedteam))
+                {
+                    city.Liaisons.Remove(selectedteam);
+                    city.Teams.Add(selectedteam);
+                }
+                else if (liaison && city.Teams.Contains(selectedteam))
+                {
+                    city.Teams.Remove(selectedteam);
+                    city.Liaisons.Add(selectedteam);
+                }
+                else
+                    Engine.TeamCityTravel(city, selectedteam, liaison, false);
             }
         }
     }
@@ -616,9 +627,10 @@
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
         var parameters = new DialogParameters();
-        parameters.Add("Missions", city.Missions.Where(e => e.AttemptingTeam == null).ToList());
-        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.Teams.Where(e => e.MissionID == null)).ToList());
+        parameters.Add("Missions", city.Missions);
+        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
         var dialog = dialogService.Show<MissionPicker>("Missions for " + city.CityName, parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

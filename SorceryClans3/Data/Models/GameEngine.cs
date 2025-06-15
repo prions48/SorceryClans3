@@ -67,6 +67,10 @@ namespace SorceryClans3.Data.Models
         {
             List<GameEvent> events = IncrementTime();
             List<GameEventDisplay> displays = [];
+            foreach (ClientCity city in Clients)
+            {
+                displays.AddRange(city.NewMissionCycle(Settings));
+            }
             foreach (GameEvent ev in events)
             {
                 switch (ev.Type)
@@ -79,7 +83,9 @@ namespace SorceryClans3.Data.Models
                         break;
                     case MissionType.Mercenary:
                         var merc = ev.ResolveMercenary();
-                        Missions.Remove(merc.DisplayMission!);
+                        //remove? or only if !failed?... for now only 1 try
+                        //could allow retries on certain missions, do that logic here
+                        merc.DisplayMission!.Client.Missions.Remove(merc.DisplayMission!);
                         merc.DisplayTeam!.MissionID = Guid.Empty;
                         displays.Add(merc);
                         Events.Add(new GameEvent(merc.DisplayTeam, Settings.MissionTravelTime(merc.DisplayMission!), MissionType.TravelToLocation, merc.DisplayTeam!.Location ?? MapLocation.HomeBase));
@@ -87,7 +93,8 @@ namespace SorceryClans3.Data.Models
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));
                         break;
-                    default: displays.Add(new("Undefined game event", Settings.CurrentTime));
+                    default:
+                        displays.Add(new("Undefined game event", Settings.CurrentTime));
                         break;
                 }
             }

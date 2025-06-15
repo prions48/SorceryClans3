@@ -47,7 +47,7 @@ namespace SorceryClans3.Data.Models
             {
                 DisplayMission = MissionToComplete,
                 DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
-                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, results.Item2)
+                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, results.Item1, results.Item2)
             };
         }
         public GameEventDisplay ResolveReturn(bool liaison = false)
@@ -56,7 +56,7 @@ namespace SorceryClans3.Data.Models
                 throw new Exception("Failure to resolve missing team");
             TeamInTransit.MissionID = null;
             TeamInTransit.Location = Destination;
-            return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions" : "returned to " + TeamInTransit.Location?.LocationName ?? "home base.")}.", EventCompleted)
+            return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions at" : "returned to ")} {TeamInTransit.Location?.LocationName ?? "home base."}.", EventCompleted)
             {
                 DisplayTeam = TeamInTransit
             };

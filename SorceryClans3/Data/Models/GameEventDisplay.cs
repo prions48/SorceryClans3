@@ -5,7 +5,7 @@ namespace SorceryClans3.Data.Models
 {
     public class GameEventDisplay
     {
-        [Key] public Guid ID { get; set; }
+        [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public string Message { get; set; } = "";
         public DateTime EventDate { get; set; }
         public Mission? DisplayMission { get; set; }

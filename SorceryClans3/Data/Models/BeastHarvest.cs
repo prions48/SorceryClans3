@@ -97,10 +97,10 @@ namespace SorceryClans3.Data.Models
         public HunterMission StartMission()
         {
             HunterMission mission = Mission;
-            Mission = new HunterMission(lvl * 3000, true, true)
+            /*Mission = new HunterMission(lvl * 3000, true, true)
             {
                 Type = MissionType.Harvest
-            };
+            };*/
             return mission;
         }
         public BeastHarvest(int lvl, BeastEco eco, Beast beast)
@@ -108,7 +108,7 @@ namespace SorceryClans3.Data.Models
             if (lvl == 0)
                 lvl = 1;
             this.lvl = lvl;
-            Mission = new HunterMission(lvl * 3000, true, true);
+            //Mission = new HunterMission(lvl * 3000, true, true);
             HunterID = beast.ID;
             hunter = beast.FullName;
             if (eco == BeastEco.Herbivore)
