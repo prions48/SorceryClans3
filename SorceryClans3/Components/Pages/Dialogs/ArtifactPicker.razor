@@ -1,0 +1,46 @@
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Artifacts" Striped Bordered>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Com</MudTh>
+                <MudTh>Mag</MudTh>
+                <MudTh>Sub</MudTh>
+                <MudTh>HP</MudTh>
+                <MudTh>Heal</MudTh>
+                <MudTh>Cha</MudTh>
+                <MudTh>Log</MudTh>
+                <MudTh>Tac</MudTh>
+                <MudTh>Assign</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTh>@context.ArtifactName</MudTh>
+                <MudTh>@context.ComBoost</MudTh>
+                <MudTh>@context.MagBoost</MudTh>
+                <MudTh>@context.SubBoost</MudTh>
+                <MudTh>@context.HPBoost</MudTh>
+                <MudTh>@context.HealBoost</MudTh>
+                <MudTh>@context.ChaBoost</MudTh>
+                <MudTh>@context.LogBoost</MudTh>
+                <MudTh>@context.TacBoost</MudTh>
+                <MudTh>
+                    <MudIconButton OnClick="() => SelectArtifact(context)" Icon="@Icons.Material.TwoTone.SwapHorizontalCircle" />
+                </MudTh>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public List<Artifact> Artifacts { get; set; } = [];
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void SelectArtifact(Artifact art)
+    {
+        MudDialog.Close(DialogResult.Ok(art));
+    }
+
+}

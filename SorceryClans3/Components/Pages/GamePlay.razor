@@ -273,40 +273,28 @@
             </MudTabPanel>
         </MudTabs>
     </MudTabPanel>
-    <MudTabPanel Text="Missions">
-        <MudTable Items="Missions">
-            <HeaderContent>
-                <MudTh>CReq</MudTh>
-                <MudTh>MReq</MudTh>
-                <MudTh>SReq</MudTh>
-                <MudTh>KReq</MudTh>
-                <MudTh>$</MudTh>
-                <MudTh>Distance</MudTh>
-                <MudTh>Time</MudTh>
-                <MudTh>Actions</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.CDisp</MudTd>
-                <MudTd>@context.MDisp</MudTd>
-                <MudTd>@context.SDisp</MudTd>
-                <MudTd>@context.KDisp</MudTd>
-                <MudTd>@context.MoneyReward</MudTd>
-                <MudTd>@context.TravelDistance</MudTd>
-                <MudTd>@context.MissionDays</MudTd>
-                <MudTd>
-                    @if (context.AttemptingTeam != null)
-                    {
-                        <MudIcon Icon="@Icons.Material.TwoTone.Group" Color="Color.Default" />
-                    }
-                    else
-                    {
-                        <MudIconButton Icon="@Icons.Material.TwoTone.GroupAdd" Color="Color.Info" OnClick="() => SelectTeamForMission(context)" />
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+    <MudTabPanel Text="Resources">
+        <MudSimpleTable Striped Bordered>
+            <thead>
+                <tr>
+                    <th>Resource</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Money</td>
+                    <td>@Engine.Resources.Money.ToString("C")</td>
+                </tr>
+                <tr>
+                    <td>Artifacts</td>
+                    <td>
+                        <MudButton OnClick="OpenArtifactDialog" Variant="Variant.Outlined" Color="Color.Info">@Engine.Resources.Artifacts.Count</MudButton>
+                    </td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
     </MudTabPanel>
-    <MudTabPanel Text="Resources"></MudTabPanel>
     <MudTabPanel Text="Defenses"></MudTabPanel>
 </MudTabs>
 
@@ -391,6 +379,10 @@
             }
             x = 1;
         }
+        //resources
+        Engine.Resources.Money = 10000 + r.Next(1000);
+        Engine.Resources.Artifacts.Add(new(5));
+        Engine.Resources.Artifacts.Add(new(5));
         //START: team for testing only
         List<Soldier> TopSoldiers = Soldiers.OrderByDescending(e => e.PowerLevel * (e.Combat + e.Subtlety + e.Magic + e.Heal)).ToList();
         Engine.Teams.Add(new Team() {
@@ -642,6 +634,50 @@
                 Team team = picked.Value.Item2;
                 Engine.StartMission(mission, team);
                 Snackbar.Add(team.TeamName + " has been sent on the mission for " + city.CityName, Severity.Info);
+            }
+        }
+    }
+    #endregion
+
+    #region Artifacts
+    private async Task OpenArtifactDialog()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add("Artifacts", Engine.Resources.Artifacts);
+        var dialog = dialogService.Show<ArtifactPicker>("All Artifacts", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Artifact? artifact = result.Data as Artifact;
+            if (artifact != null)
+            {
+                options = new DialogOptions();
+                options.CloseOnEscapeKey = true;
+                options.FullWidth = true;
+                options.MaxWidth = MaxWidth.Large;
+                parameters = new DialogParameters();
+                parameters.Add("Artifact", artifact);
+                parameters.Add("Soldiers", Engine.Soldiers.Where(e => e.Team == null || (e.Team.IsAtHome && e.Team.MissionID == null)).ToList());
+                parameters.Add("SoldierPicker", true);
+                dialog = dialogService.Show<ArtifactInspector>(artifact.ArtifactName, parameters, options);
+                result = await dialog.Result;
+                if (result?.Canceled == false)
+                {
+                    Soldier? soldier = result.Data as Soldier;
+                    if (soldier != null)
+                    {
+                        if (soldier.Artifact != null)
+                        {
+                            soldier.Artifact.AssignedSoldier = null;
+                        }
+                        soldier.Artifact = artifact;
+                        artifact.AssignedSoldier = soldier;
+                    }
+                }
             }
         }
     }

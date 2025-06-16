@@ -26,6 +26,7 @@ namespace SorceryClans3.Data.Models
     {
         public Guid ID { get; set; }
         public string ArtifactName { get; set; }
+        public Soldier? AssignedSoldier { get; set; } = null;
         public int ComBoost { get; set; }
         public int MagBoost { get; set; }
         public int SubBoost { get; set; }

@@ -8,7 +8,8 @@ namespace SorceryClans3.Data.Models
         public string TeamName { get; set; }
         public Guid? MissionID { get; set; }
         public MapLocation? Location { get; set; } = null;
-        public bool IsAtHome { get { return Location == null || (Location.X == 0 && Location.Y == 0); }}
+        public Resources Resources { get; set; } = new();
+        public bool IsAtHome { get { return Location == null || (Location.X == 0 && Location.Y == 0); } }
         public IList<Soldier> Soldiers { get; set; }
         public IList<Soldier> Leaders { get; set; }
         public int SoldierCount { get { return Soldiers.Count + Leaders.Count; } }

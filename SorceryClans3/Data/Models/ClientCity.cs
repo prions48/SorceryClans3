@@ -6,6 +6,7 @@ namespace SorceryClans3.Data.Models
     public class ClientCity
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
+        public Resources Resources { get; set; } = new();
         public MapLocation Location { get; set; }
         public int Distance { get { return (int)Math.Ceiling(Location.GetDistance()); } }
         public string CityName { get; set; }

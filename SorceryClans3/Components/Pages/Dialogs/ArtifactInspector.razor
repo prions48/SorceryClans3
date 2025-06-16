@@ -1,26 +1,150 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
 
-<MudSimpleTable>
-    <thead>
-        <tr>
-            <th>Com</th>
-            <th>Mag</th>
-            <th>Sub</th>
-            <th>HP</th>
-            <th>Heal</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>@Artifact?.ComBoost</td>
-            <td>@Artifact?.MagBoost</td>
-            <td>@Artifact?.SubBoost</td>
-            <td>@Artifact?.HPBoost</td>
-            <td>@Artifact?.HealBoost</td>
-        </tr>
-    </tbody>
-</MudSimpleTable>
+<MudDialog>
+    <DialogContent>
+        <MudStack>
+            <MudSimpleTable>
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        @if (Artifact.ComBoost > 0)
+                        {
+                            <th>Com</th>
+                        }
+                        @if (Artifact.MagBoost > 0)
+                        {
+                            <th>Mag</th>
+                        }
+                        @if (Artifact.SubBoost > 0)
+                        {
+                            <th>Sub</th>
+                        }
+                        @if (Artifact.HPBoost > 0)
+                        {
+                            <th>HP</th>
+                        }
+                        @if (Artifact.HealBoost > 0)
+                        {
+                            <th>Heal</th>
+                        }
+                        @if (Artifact.ChaBoost > 0)
+                        {
+                            <th>Cha</th>
+                        }
+                        @if (Artifact.LogBoost > 0)
+                        {
+                            <th>Log</th>
+                        }
+                        @if (Artifact.TacBoost > 0)
+                        {
+                            <th>Tac</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Artifact.ArtifactName</td>
+                        @if (Artifact.ComBoost > 0)
+                        {
+                            <td>@Artifact.ComBoost</td>
+                        }
+                        @if (Artifact.MagBoost > 0)
+                        {
+                            <td>@Artifact.MagBoost</td>
+                        }
+                        @if (Artifact.SubBoost > 0)
+                        {
+                            <td>@Artifact.SubBoost</td>
+                        }
+                        @if (Artifact.HPBoost > 0)
+                        {
+                            <td>@Artifact.HPBoost</td>
+                        }
+                        @if (Artifact.HealBoost > 0)
+                        {
+                            <td>@Artifact.HealBoost</td>
+                        }
+                        @if (Artifact.ChaBoost > 0)
+                        {
+                            <td>@Artifact.ChaBoost</td>
+                        }
+                        @if (Artifact.LogBoost > 0)
+                        {
+                            <td>@Artifact.LogBoost</td>
+                        }
+                        @if (Artifact.TacBoost > 0)
+                        {
+                            <td>@Artifact.TacBoost</td>
+                        }
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+            @if (SoldierPicker)
+            {
+                <MudTable Items="Soldiers" Striped Bordered>
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Powerlevel</MudTh>
+                        <MudTh>Artifact</MudTh>
+                        <MudTh>Com</MudTh>
+                        <MudTh>Mag</MudTh>
+                        <MudTh>Sub</MudTh>
+                        <MudTh>HP</MudTh>
+                        <MudTh>Heal</MudTh>
+                        <MudTh>Cha</MudTh>
+                        <MudTh>Log</MudTh>
+                        <MudTh>Tac</MudTh>
+                        <MudTh>View</MudTh>
+                        <MudTh>Select</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.SoldierName</MudTd>
+                        <MudTd>@context.PowerLevel</MudTd>
+                        <MudTd>@context.Artifact?.ArtifactName</MudTd>
+                        <MudTd>@context.Combat</MudTd>
+                        <MudTd>@context.Magic</MudTd>
+                        <MudTd>@context.Subtlety</MudTd>
+                        <MudTd>@context.HPMax</MudTd>
+                        <MudTd>@context.Heal</MudTd>
+                        <MudTd>
+                            @if (context.IsLeading)
+                            {
+                                @context.Charisma
+                            }
+                        </MudTd>
+                        <MudTd>
+                            @if (context.IsLeading)
+                            {
+                                @context.Logistics
+                            }
+                        </MudTd>
+                        <MudTd>
+                            @if (context.IsLeading)
+                            {
+                                @context.Tactics
+                            }
+                        </MudTd>
+                        <MudTd>
+                            <MudIconButton OnClick="() => Select(context)" Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Success" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
-    [Parameter] public Artifact Artifact { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Artifact Artifact { get; set; } = new();
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
+    [Parameter] public bool SoldierPicker { get; set; } = false;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void Select(Soldier sold)
+    {
+        MudDialog.Close(DialogResult.Ok(sold));
+    }
 }

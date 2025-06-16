@@ -10,6 +10,10 @@
             <td>Magic</td>
             <td>Subtlety</td>
             <td>Healing</td>
+            @if (Soldier.IsLeading)
+            {
+                <td>Leadership</td>
+            }
         </tr>
     </thead>
     <tbody>
@@ -22,6 +26,12 @@
                 <td>@Soldier.Magic</td>
                 <td>@Soldier.Subtlety</td>
                 <td>@Soldier.Heal</td>
+                @if (Soldier.IsLeading)
+                {
+                    <td>
+                        <MudIconButton OnClick="OpenDialog" Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" />
+                    </td>
+                }
             </tr>
             <tr>
                 <td colspan="3">
@@ -35,7 +45,24 @@
     </tbody>
 </MudSimpleTable>
 
+<MudDialog @bind-Visible="ViewLeaderDialog">
+    <DialogContent>
+        <LeadInspector Soldier="Soldier" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog">Close</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     [Parameter] public Soldier Soldier { get; set; }
+    private bool ViewLeaderDialog { get; set; } = false;
+    private void OpenDialog()
+    {
+        ViewLeaderDialog = true;
+    }
+    private void CloseDialog()
+    {
+        ViewLeaderDialog = false;
+    }
 }

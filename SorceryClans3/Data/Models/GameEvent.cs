@@ -56,7 +56,7 @@ namespace SorceryClans3.Data.Models
                 throw new Exception("Failure to resolve missing team");
             TeamInTransit.MissionID = null;
             TeamInTransit.Location = Destination;
-            return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions at" : "returned to ")} {TeamInTransit.Location?.LocationName ?? "home base."}.", EventCompleted)
+            return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions at" : "arrived at ")} {TeamInTransit.Location?.LocationName ?? "home base."}.", EventCompleted)
             {
                 DisplayTeam = TeamInTransit
             };
