@@ -7,6 +7,7 @@
                 <thead>
                     <tr>
                         <td>Name</td>
+                        <td>Wielder</td>
                         @if (Artifact.ComBoost > 0)
                         {
                             <th>Com</th>
@@ -44,6 +45,7 @@
                 <tbody>
                     <tr>
                         <td>@Artifact.ArtifactName</td>
+                        <td>@Artifact.AssignedSoldier?.SoldierName</td>
                         @if (Artifact.ComBoost > 0)
                         {
                             <td>@Artifact.ComBoost</td>
@@ -84,6 +86,7 @@
                 <MudTable Items="Soldiers" Striped Bordered>
                     <HeaderContent>
                         <MudTh>Name</MudTh>
+                        <MudTh>Team</MudTh>
                         <MudTh>Powerlevel</MudTh>
                         <MudTh>Artifact</MudTh>
                         <MudTh>Com</MudTh>
@@ -94,11 +97,11 @@
                         <MudTh>Cha</MudTh>
                         <MudTh>Log</MudTh>
                         <MudTh>Tac</MudTh>
-                        <MudTh>View</MudTh>
                         <MudTh>Select</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.SoldierName</MudTd>
+                        <MudTd>@context.Team?.TeamName</MudTd>
                         <MudTd>@context.PowerLevel</MudTd>
                         <MudTd>@context.Artifact?.ArtifactName</MudTd>
                         <MudTd>@context.Combat</MudTd>

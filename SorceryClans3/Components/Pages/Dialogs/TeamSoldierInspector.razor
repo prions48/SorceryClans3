@@ -1,5 +1,6 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
 @using SorceryClans3.Data.Abstractions
+@inject IDialogService dialogService
 
 @foreach (Soldier s in Soldiers.Where(e => !e.IsSub || ShowSubs))
 {
@@ -43,13 +44,6 @@
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-Visible="ViewArt">
-    <TitleContent>@SelectedArtifact?.ArtifactName</TitleContent>
-    <DialogContent>
-        <ArtifactInspector Artifact="SelectedArtifact" />
-    </DialogContent>
-</MudDialog>
-
 <MudDialog @bind-Visible="ViewPow">
     <TitleContent>@SelectedPower?.PowerName</TitleContent>
     <DialogContent>
@@ -61,7 +55,6 @@
     [Parameter] public IList<Soldier> Soldiers { get; set; }
     [Parameter] public bool ShowSubs { get; set; } = false;
     [Parameter] public Action<Soldier> ToggleLeader { get; set; }
-    private bool ViewArt = false;
     private bool ViewPow = false;
     private Power? SelectedPower { get; set; }
     private int? PowerLevel { get; set; }
@@ -72,11 +65,16 @@
         ViewPow = true;
     }
     private bool ViewLead = false;
-    private Artifact? SelectedArtifact { get; set; }
-    private void ViewArtifact(Artifact art)
+    private async Task ViewArtifact(Artifact art)
     {
-        SelectedArtifact = art;
-        ViewArt = true;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add("Artifact", art);
+        var dialog = dialogService.Show<ArtifactInspector>(art.ArtifactName, parameters, options);
+        var result = await dialog.Result;
     }
     private Soldier? SelectedSoldier { get; set; }
     private string? SelectedLeadName { get; set; }
