@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore.Storage;
+
 namespace SorceryClans3.Data.Models
 {
     public class Resources
@@ -24,6 +26,10 @@ namespace SorceryClans3.Data.Models
             Beasts = [];
             Harvests = [];
             LesserUndeads = [];
+        }
+        public void BoostMoney(double factor)
+        {
+            Money = (int)(Money * factor);
         }
     }
 }

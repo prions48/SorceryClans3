@@ -2,7 +2,7 @@ namespace SorceryClans3.Data.Models
 {
     public class Academy
     {
-        public Guid AcademyAssignmentID { get; init; } = new();
+        public Guid AcademyAssignmentID { get; init; } = Guid.NewGuid();
         public Dictionary<AcademyRole, Soldier?> HeadInstructors { get; set; } = [];
         public List<Team> Teams { get; set; } = [];
         public double CombatScore
@@ -64,6 +64,7 @@ namespace SorceryClans3.Data.Models
         public void AddTeam(Team team)
         {
             Teams.Add(team);
+            team.MissionID = AcademyAssignmentID;
         }
         public void RemoveTeam(Team team)
         {
@@ -85,6 +86,8 @@ namespace SorceryClans3.Data.Models
             {
                 HeadInstructors[role] = null;
             }
+            Teams.Remove(team);
+            team.MissionID = null;
         }
         public static double ComAcadScore(Soldier? s, AcademyRole arole)
         {

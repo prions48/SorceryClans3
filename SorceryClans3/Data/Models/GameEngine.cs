@@ -20,6 +20,12 @@ namespace SorceryClans3.Data.Models
             team.MissionID = mission.ID;
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
         }
+        public void StartContractMission(MissionContract mission, Team team)
+        {
+            mission.AttemptingTeam = team;
+            team.MissionID = mission.ID;
+            Events.Add(new(mission, Settings.MissionEndTime(mission)));
+        }
         public void TeamCityTravel(ClientCity city, Team team, bool liaison, bool returning = false)
         {
             if (liaison)
@@ -85,10 +91,15 @@ namespace SorceryClans3.Data.Models
                         var merc = ev.ResolveMercenary();
                         //remove? or only if !failed?... for now only 1 try
                         //could allow retries on certain missions, do that logic here
-                        merc.DisplayMission!.Client.Missions.Remove(merc.DisplayMission!);
+                        merc.DisplayMission!.Client.FinishMission(merc);
                         merc.DisplayTeam!.MissionID = Guid.Empty;
                         displays.Add(merc);
                         Events.Add(new GameEvent(merc.DisplayTeam, Settings.MissionTravelTime(merc.DisplayMission!), MissionType.TravelToLocation, merc.DisplayTeam!.Location ?? MapLocation.HomeBase));
+                        break;
+                    case MissionType.ContractMisson:
+                        var merc2 = ev.ResolveMercenary();
+                        displays.Add(merc2);
+                        //do other things later?
                         break;
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));

@@ -18,7 +18,7 @@ namespace SorceryClans3.Data.Models
             MissionToComplete = mission;
             EventCompleted = duedate;
             Visible = true;
-            FixedDate = true;
+            FixedDate = mission.Type == MissionType.Mercenary;
         }
         public GameEvent(Team team, DateTime duedate, MissionType type, MapLocation destination)
         {

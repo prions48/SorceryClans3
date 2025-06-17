@@ -149,6 +149,7 @@
                         <MudTh>Distance</MudTh>
                         <MudTh>Liaisons</MudTh>
                         <MudTh>Teams</MudTh>
+                        <MudTh>View Contracts</MudTh>
                         <MudTh>View Missions</MudTh>
                     </HeaderContent>
                     <RowTemplate>
@@ -194,10 +195,20 @@
                                 </tbody>
                             </table>
                         </MudTd>
-                        <MudTd>
+                        <MudTd>@*Contracts*@
                             @if (context.Liaisons.Any(e => e.MissionID == null))
                             {
-                                <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ViewCityMissions(context)" />
+                                <MudButton Color="Color.Info" Variant="Variant.Outlined" OnClick="() => ViewCityMissions(context)" Disabled="context.Missions.Count == 0">@context.Missions.Count</MudButton>
+                            }
+                            else
+                            {
+                                @("Unknown")
+                            }
+                        </MudTd>
+                        <MudTd>@*Missions*@
+                            @if (context.Liaisons.Any(e => e.MissionID == null))
+                            {
+                                <MudButton Color="Color.Info" Variant="Variant.Outlined" OnClick="() => ViewCityMissions(context)" Disabled="context.Missions.Count == 0">@context.Missions.Count</MudButton>
                             }
                             else
                             {
@@ -271,6 +282,30 @@
             <MudTabPanel Text="Research">
                 Do the thing
             </MudTabPanel>
+            <MudTabPanel Text="Training">
+                <MudSimpleTable Striped Bordered>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Send Team</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Medical Training</td>
+                            <td>Button</td>
+                        </tr>
+                        <tr>
+                            <td>Leadership Training</td>
+                            <td>Button</td>
+                        </tr>
+                        <tr>
+                            <td>Alchemy Training</td>
+                            <td>Button</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudTabPanel>
         </MudTabs>
     </MudTabPanel>
     <MudTabPanel Text="Resources">
@@ -311,7 +346,7 @@
                     {
                         <tr>
                             <td>
-                                @display.DisplayMission?.MoneyReward?.ToString("C")
+                                @display.DisplayMission?.MoneyReward.ToString("C")
                                 @display.DisplayTeam?.TeamName
                             </td>
                         </tr>
@@ -545,8 +580,7 @@
             Team? selectedteam = result.Data as Team;
             if (selectedteam != null)
             {
-                Engine.Academy.Teams.Add(selectedteam);
-                selectedteam.MissionID = Engine.Academy.AcademyAssignmentID;
+                Engine.Academy.AddTeam(selectedteam);
             }
         }
     }

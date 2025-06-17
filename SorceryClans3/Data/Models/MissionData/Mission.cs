@@ -3,7 +3,7 @@ namespace SorceryClans3.Data.Models
     public class Mission
     {
         public Guid ID { get; set; }
-        private int Seed { get; set; }
+        protected int Seed { get; set; }
         public Team? AttemptingTeam { get; set; }
         public MissionType Type { get; set; } = MissionType.Mercenary;
         public ClientCity Client { get; set; }
@@ -14,16 +14,15 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                IList<string> ret = new List<string>();
-                if (MoneyReward != null)
-                    ret.Add(MoneyReward.Value.ToString("C0"));
-                if (ArtifactReward != null)
-                    ret.Add(ArtifactReward.ArtifactName);
+                List<string> ret = new List<string>();
+                ret.Add(MoneyReward.ToString("C0"));
+                if (Resources.Artifacts.Count > 0)
+                    ret.AddRange(Resources.Artifacts.Select(e => e.ArtifactName));
                 return ret;
             }
         }
-        public int? MoneyReward { get; set; }
-        public Artifact? ArtifactReward { get; set; }
+        public Resources Resources { get; set; } = new();
+        public int MoneyReward { get { return Resources.Money; } }
         public int MissionDays { get; set; }
         public int TravelDistance
         {
@@ -45,7 +44,7 @@ namespace SorceryClans3.Data.Models
         public int MPenalty { get; set; }
         public int SPenalty { get; set; }
         public int KPenalty { get; set; }
-        Random r = new Random();
+        protected Random r = new Random();
         public Mission(GameSettings settings)
         {
             ID = Guid.NewGuid();
@@ -70,12 +69,12 @@ namespace SorceryClans3.Data.Models
             SetDisp();
             SetTime(settings);
             Importance = GenerateImportance(important);
-            if (Importance == ClientImportance.Important && MoneyReward != null)
-                MoneyReward = (int)(MoneyReward * 1.5);
-            else if (Importance == ClientImportance.Critical && MoneyReward != null)
-                MoneyReward = MoneyReward * 3;
+            if (Importance == ClientImportance.Important)
+                Resources.BoostMoney(1.5);
+            else if (Importance == ClientImportance.Critical)
+                Resources.BoostMoney(3.0);
         }
-        private void SetScore(bool forceall)
+        protected void SetScore(bool forceall)
         {
             while (CScore == null && MScore == null && SScore == null && KScore == null)
             {
@@ -85,12 +84,12 @@ namespace SorceryClans3.Data.Models
                 int heal = (int)(Math.Log10(Seed + 1) * Math.Log10(Seed + 1) * 25) + r.Next(100);
                 KScore = r.NextDouble() < .95 || forceall ? null : r.Next(heal, 2 * heal);
             }
-            MoneyReward = (CScore == null ? 0 : r.Next(CScore.Value / 10, CScore.Value / 5)) +
+            Resources.Money = (CScore == null ? 0 : r.Next(CScore.Value / 10, CScore.Value / 5)) +
                      (MScore == null ? 0 : r.Next(MScore.Value / 10, MScore.Value / 5)) +
                      (SScore == null ? 0 : r.Next(SScore.Value / 4, SScore.Value / 2)) +
                      (KScore == null ? 0 : r.Next(KScore.Value * 100, KScore.Value * 200));
         }
-        private void SetColor(bool nocolor)
+        protected void SetColor(bool nocolor)
         {
             //start with just one for now
             if (Seed < 100000 || r.NextDouble() > .2 || nocolor)
@@ -133,7 +132,7 @@ namespace SorceryClans3.Data.Models
                 KDisp = (KDisp / 10) * 10;
             }
         }
-        private void SetTime(GameSettings settings)
+        protected virtual void SetTime(GameSettings settings)
         {
             MissionDays = r.Next(1, 6) + (int)(Seed <= 1 ? 0 : Math.Log(Seed)); //settings can do more later
             if (settings.RealTime)
@@ -145,7 +144,7 @@ namespace SorceryClans3.Data.Models
                 ExpirationDate = settings.CurrentTime.AddMonths(1 + r.Next(4)).AddDays(r.Next(20));
             }
         }
-        public (bool, int) CompleteMission()
+        public virtual (bool, int) CompleteMission()
         {
             if (AttemptingTeam == null)
                 throw new Exception("No completing team identified for mission");
@@ -213,7 +212,7 @@ namespace SorceryClans3.Data.Models
         {
             return (m - t) * 1.0 / m < (r.NextDouble() * .1);
         }
-        private ClientImportance GenerateImportance(bool important)
+        protected ClientImportance GenerateImportance(bool important)
         {
             if (!important)
                 return ClientImportance.Normal;

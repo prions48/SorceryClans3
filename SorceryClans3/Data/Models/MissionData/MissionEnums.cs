@@ -4,6 +4,7 @@ namespace SorceryClans3.Data.Models
     {
         TravelToLocation,
         LiaisonAtLocation,
+        ContractMisson,
         BanditAttack,
         ClanAttack,
         Mercenary,

@@ -38,6 +38,20 @@ namespace SorceryClans3.Data.Models
         public int TotalLogistics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Logistics * e.LeadershipXP)); } }
         public int TotalTactics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Tactics * e.LeadershipXP)); } }
         public List<Mission> Missions { get; set; } = [];
+        public void FinishMission(GameEventDisplay display)
+        {
+            if (display.DisplayMission == null || display.DisplayResult == null)
+                throw new Exception("Failed to resolve mission!");
+            if (display.DisplayResult.Success)
+            {
+                Resources.TransferResources(display.DisplayMission.Resources);
+            }
+            else
+            {
+
+            }
+            Missions.Remove(display.DisplayMission);
+        }
         public List<GameEventDisplay> NewMissionCycle(GameSettings settings)
         {
             List<GameEventDisplay> ret = [];
@@ -71,7 +85,7 @@ namespace SorceryClans3.Data.Models
             for (int i = 0; i < nmissions && Missions.Count <= settings.MaxMissions(CityLevel); i++)
             {
                 Mission newmission = new(settings, 1000 * (CityLevel + 1) + r.Next(50000 * CityLevel), this, false, true, Liaisons.Count > 0 && Reputation >= ClientReputation.Neutral);
-                newmission.MoneyReward = (int)((newmission.MoneyReward ?? 0) * (25.0 + TotalCharisma / 25.0));
+                newmission.Resources.Money = (int)((newmission.MoneyReward) * (25.0 + TotalCharisma / 25.0));
                 newmission.SetDisp(TotalTactics);
                 Missions.Add(newmission);
             }
