@@ -6,6 +6,7 @@ namespace SorceryClans3.Data.Models
         LiaisonAtLocation,
         ContractMisson,
         BanditAttack,
+        PayDay,
         ClanAttack,
         Mercenary,
         RetrieveArtifact,

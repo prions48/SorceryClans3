@@ -60,6 +60,12 @@ namespace SorceryClans3.Data.Models
                 return CurrentTime.AddMinutes(r.Next(4) + 2);
             return CurrentTime.AddDays(r.Next(5) + 10);
         }
+        public DateTime PayDay(MissionContract contract)
+        {
+            if (RealTime)
+                return CurrentTime.AddDays(1);
+            return CurrentTime.AddMonths(1);
+        }
         #endregion
 
         #region Probabilities
@@ -76,6 +82,19 @@ namespace SorceryClans3.Data.Models
         public int MaxMissions(int lvl)
         {
             return 15 + lvl * 3;
+        }
+        public int MaxContracts(int lvl)
+        {
+            return 2 + lvl / 2;
+        }
+        #endregion
+
+        #region Contracts
+        public string ContractDisplay()
+        {
+            if (RealTime)
+                return "Daily";
+            return "Monthly";
         }
         #endregion
     }

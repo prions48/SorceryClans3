@@ -25,6 +25,7 @@ namespace SorceryClans3.Data.Models
             mission.AttemptingTeam = team;
             team.MissionID = mission.ID;
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
+            Events.Add(new(MissionType.PayDay, Settings.PayDay(mission), true));
         }
         public void TeamCityTravel(ClientCity city, Team team, bool liaison, bool returning = false)
         {
@@ -87,6 +88,9 @@ namespace SorceryClans3.Data.Models
                     case MissionType.LiaisonAtLocation:
                         displays.Add(ev.ResolveReturn(true));
                         break;
+                    case MissionType.PayDay:
+                        //to implement here
+                        break;
                     case MissionType.Mercenary:
                         var merc = ev.ResolveMercenary();
                         //remove? or only if !failed?... for now only 1 try
@@ -117,7 +121,7 @@ namespace SorceryClans3.Data.Models
             List<GameEvent> randoms = [];
             if (Settings.BanditAttackOdds())//1 in 20, way too high for real
             {
-                randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.BanditTime()));
+                randoms.Add(new GameEvent(MissionType.BanditAttack, Settings.BanditTime(), true));
             }
             return randoms;
         }

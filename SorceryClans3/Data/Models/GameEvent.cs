@@ -14,7 +14,7 @@ namespace SorceryClans3.Data.Models
         public bool FixedDate { get; set; }
         public GameEvent(Mission mission, DateTime duedate)
         {
-            Type = MissionType.Mercenary;
+            Type = mission.Type;
             MissionToComplete = mission;
             EventCompleted = duedate;
             Visible = true;
@@ -29,12 +29,12 @@ namespace SorceryClans3.Data.Models
             FixedDate = true;
             Destination = destination;
         }
-        public GameEvent(MissionType type, DateTime duedate)
+        public GameEvent(MissionType type, DateTime duedate, bool visible)
         {
             //should only be used for bandit/clan/etc
             Type = type;
-            Visible = true;//for testing
-            FixedDate = true;//for testing
+            Visible = visible;//for testing
+            FixedDate = visible;//for testing
             EventCompleted = duedate;
         }
         public GameEventDisplay ResolveMercenary()

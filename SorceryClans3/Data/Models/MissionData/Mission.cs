@@ -217,14 +217,30 @@ namespace SorceryClans3.Data.Models
             if (!important)
                 return ClientImportance.Normal;
             if (r.Next(12) == 0)
-                    return ClientImportance.Critical;
+                return ClientImportance.Critical;
             if (r.Next(4) == 0)
                 return ClientImportance.Important;
             return ClientImportance.Normal;
         }
         public int ReputationBoost()
         {
-            return Seed / 100 + r.Next(100);
+            int ret = Seed;
+            if (Seed > 100000)
+                ret  = 100000 + ((Seed - 100000) / 1000);
+            return (ret / 1000 + r.Next(100)) * ImportanceFactor;
+        }
+        private int ImportanceFactor
+        {
+            get
+            {
+                switch (Importance)
+                {
+                    case ClientImportance.Normal: return 1;
+                    case ClientImportance.Important: return 3;
+                    case ClientImportance.Critical: return 10;
+                    default: return 1;
+                }
+            }
         }
     }
 }

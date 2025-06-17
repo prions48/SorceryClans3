@@ -11,7 +11,7 @@ namespace SorceryClans3.Data.Models
         public int Distance { get { return (int)Math.Ceiling(Location.GetDistance()); } }
         public string CityName { get; set; }
         public int CityLevel { get; set; }
-        public int RepScore { get; set; } = 0;
+        private int RepScore { get; set; } = 0;
         public int UnseenMissions { get; set; } = 0;
         private DateTime NextRefresh { get; set; } = DateTime.MinValue;
         public ClientReputation Reputation
@@ -19,9 +19,10 @@ namespace SorceryClans3.Data.Models
             get
             {
                 if (RepScore < -1000) return ClientReputation.Hostile;
-                if (RepScore < 0) return ClientReputation.Hostile;
-                if (RepScore < 1000) return ClientReputation.Hostile;
-                if (RepScore < 10000) return ClientReputation.Hostile;
+                if (RepScore < 0) return ClientReputation.Poor;
+                if (RepScore < 1000) return ClientReputation.Neutral;
+                if (RepScore < 10000) return ClientReputation.Warm;
+                if (RepScore < 50000) return ClientReputation.Friendly;
                 return ClientReputation.Trust;
             }
         }
@@ -38,6 +39,7 @@ namespace SorceryClans3.Data.Models
         public int TotalLogistics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Logistics * e.LeadershipXP)); } }
         public int TotalTactics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Tactics * e.LeadershipXP)); } }
         public List<Mission> Missions { get; set; } = [];
+        public List<MissionContract> Contracts { get; set; } = [];
         public void FinishMission(GameEventDisplay display)
         {
             if (display.DisplayMission == null || display.DisplayResult == null)
@@ -45,10 +47,11 @@ namespace SorceryClans3.Data.Models
             if (display.DisplayResult.Success)
             {
                 Resources.TransferResources(display.DisplayMission.Resources);
+                RepScore += display.DisplayMission.ReputationBoost();
             }
             else
             {
-
+                RepScore -= display.DisplayMission.ReputationBoost();
             }
             Missions.Remove(display.DisplayMission);
         }
@@ -82,27 +85,35 @@ namespace SorceryClans3.Data.Models
             //to do: probability gives # of new missions
             Random r = new();
             int nmissions = 1 + (int)(r.NextDouble() * 5 * (15.0 + TotalLogistics) / 15);
-            for (int i = 0; i < nmissions && Missions.Count <= settings.MaxMissions(CityLevel); i++)
+            for (int i = 0; i < nmissions && Missions.Count < settings.MaxMissions(CityLevel); i++)
             {
                 Mission newmission = new(settings, 1000 * (CityLevel + 1) + r.Next(50000 * CityLevel), this, false, true, Liaisons.Count > 0 && Reputation >= ClientReputation.Neutral);
                 newmission.Resources.Money = (int)((newmission.MoneyReward) * (25.0 + TotalCharisma / 25.0));
                 newmission.SetDisp(TotalTactics);
                 Missions.Add(newmission);
             }
+            int ncontracts = r.Next(3) == 0 ? r.Next(3 + (int)((TotalLogistics + 10.0)/ 10.0)) : 0;
+            for (int i = 0; i < ncontracts && Contracts.Count < settings.MaxContracts(CityLevel); i++)
+            {
+                MissionContract newcontract = new(settings, 1000 * (CityLevel + 1) + r.Next(50000 * CityLevel), this, Liaisons.Count > 0 && Reputation >= ClientReputation.Neutral);
+                newcontract.Resources.Money = (int)((newcontract.MoneyReward) * (25.0 + TotalCharisma / 25.0));
+                newcontract.SetDisp(TotalTactics);
+                Contracts.Add(newcontract);
+            }
             //now that it's triggered, set the next one
             if (settings.RealTime)
                 NextRefresh = settings.CurrentTime.AddMinutes(30 + r.Next(10));
             else
                 NextRefresh = settings.CurrentTime.AddDays(10 + r.Next(5));
-            if (nmissions > 0 || UnseenMissions > 0)//now this only triggers if a liaison comes active the same day as a refresh
+            if (nmissions + ncontracts > 0 || UnseenMissions > 0)//now this only triggers if a liaison comes active the same day as a refresh
             {
                 if (Liaisons.Any(e => e.MissionID == null))
                 {
-                    ret.Add(new($"New mission{(nmissions == 1 ? "" : "s")} ready for {CityName}!", settings.CurrentTime));
+                    ret.Add(new($"New mission{(nmissions+ncontracts == 1 ? "" : "s")} ready for {CityName}!", settings.CurrentTime));
                     UnseenMissions = 0;
                 }
                 else
-                    UnseenMissions += nmissions;
+                    UnseenMissions += nmissions + ncontracts;
             }
             return ret;
         }

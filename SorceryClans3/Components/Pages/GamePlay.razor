@@ -147,6 +147,7 @@
                     <HeaderContent>
                         <MudTh>Name</MudTh>
                         <MudTh>Distance</MudTh>
+                        <MudTh>Reputation</MudTh>
                         <MudTh>Liaisons</MudTh>
                         <MudTh>Teams</MudTh>
                         <MudTh>View Contracts</MudTh>
@@ -155,6 +156,7 @@
                     <RowTemplate>
                         <MudTd>@context.CityName</MudTd>
                         <MudTd>@context.Distance</MudTd>
+                        <MudTd>@context.Reputation.ToString()</MudTd>
                         <MudTd>
                             <table>
                                 <tbody>
@@ -198,7 +200,7 @@
                         <MudTd>@*Contracts*@
                             @if (context.Liaisons.Any(e => e.MissionID == null))
                             {
-                                <MudButton Color="Color.Info" Variant="Variant.Outlined" OnClick="() => ViewCityMissions(context)" Disabled="context.Missions.Count == 0">@context.Missions.Count</MudButton>
+                                <MudButton Color="Color.Info" Variant="Variant.Outlined" OnClick="() => ViewCityContracts(context)" Disabled="context.Contracts.Count == 0">@context.Contracts.Count</MudButton>
                             }
                             else
                             {
@@ -668,6 +670,30 @@
                 Team team = picked.Value.Item2;
                 Engine.StartMission(mission, team);
                 Snackbar.Add(team.TeamName + " has been sent on the mission for " + city.CityName, Severity.Info);
+            }
+        }
+    }
+    private async Task ViewCityContracts(ClientCity city)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add("Contracts", city.Contracts);
+        parameters.Add("Settings", Engine.Settings);
+        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
+        var dialog = dialogService.Show<ContractPicker>("Missions for " + city.CityName, parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            (MissionContract, Team)? picked = result.Data as (MissionContract, Team)?;
+            if (picked != null)
+            {
+                MissionContract mission = picked.Value.Item1;
+                Team team = picked.Value.Item2;
+                Engine.StartContractMission(mission, team);
+                Snackbar.Add(team.TeamName + " has been sent on the contract for " + city.CityName, Severity.Info);
             }
         }
     }
