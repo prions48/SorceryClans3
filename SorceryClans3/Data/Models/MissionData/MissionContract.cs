@@ -46,5 +46,24 @@ namespace SorceryClans3.Data.Models
             NumEvents++;
             return result;
         }
+        public int PayContract()
+        {
+            Client.Resources.Money += MoneyReward;
+            return MoneyReward;
+        }
+        public override int ReputationBoost()
+        {
+            int ret = Seed;
+            if (Seed > 100000)
+                ret = 100000 + ((Seed - 100000) / 1000);
+            return (int)((ret / 1000 + r.Next(100)) * ImportanceFactor * (10.0 + NumEvents) / 10.0);
+        }
+        public override int ReputationPenalty()
+        {
+            int ret = Seed;
+            if (Seed > 100000)
+                ret  = 100000 + ((Seed - 100000) / 1000);
+            return (int)((ret / 100 + r.Next(1000)) * ImportanceFactor * 10.0 / (10.0 + NumEvents));
+        }
     }
 }

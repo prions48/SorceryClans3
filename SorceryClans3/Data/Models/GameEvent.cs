@@ -37,6 +37,15 @@ namespace SorceryClans3.Data.Models
             FixedDate = visible;//for testing
             EventCompleted = duedate;
         }
+        public GameEvent(MissionContract contract, DateTime duedate, bool payday)
+        {
+            //should only be used for bandit/clan/etc
+            Type = payday ? MissionType.PayDay : MissionType.ContractMisson;
+            MissionToComplete = contract;
+            Visible = !payday;//don't need to clog up dashboard
+            FixedDate = false;
+            EventCompleted = duedate;
+        }
         public GameEventDisplay ResolveMercenary()
         {
             if (MissionToComplete?.AttemptingTeam == null)
@@ -60,6 +69,18 @@ namespace SorceryClans3.Data.Models
             {
                 DisplayTeam = TeamInTransit
             };
+        }
+        public GameEventDisplay? ResolvePayday()
+        {
+            if (MissionToComplete == null)
+                return null;
+            if (MissionToComplete.AttemptingTeam == null || MissionToComplete.AttemptingTeam.MissionID != MissionToComplete.ID)
+                return null;
+            MissionContract? contract = MissionToComplete as MissionContract;
+            if (contract == null)
+                return null;
+            int money = contract.PayContract();
+            return new($"{contract.Client.CityName} has paid {contract.MoneyReward} for the services of Team {contract.AttemptingTeam}.", EventCompleted);
         }
     }
 }

@@ -55,7 +55,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (GameEventDisplay gameEvent in HistoryEvents)
+                            @foreach (GameEventDisplay gameEvent in HistoryEvents.OrderByDescending(e => e.EventDate))
                             {
                                 <tr>
                                     <td>@gameEvent.DisplayText</td>

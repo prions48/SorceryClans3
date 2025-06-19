@@ -222,14 +222,21 @@ namespace SorceryClans3.Data.Models
                 return ClientImportance.Important;
             return ClientImportance.Normal;
         }
-        public int ReputationBoost()
+        public virtual int ReputationBoost()
         {
             int ret = Seed;
             if (Seed > 100000)
                 ret  = 100000 + ((Seed - 100000) / 1000);
             return (ret / 1000 + r.Next(100)) * ImportanceFactor;
         }
-        private int ImportanceFactor
+        public virtual int ReputationPenalty()
+        {
+            int ret = Seed;
+            if (Seed > 100000)
+                ret  = 100000 + ((Seed - 100000) / 1000);
+            return (ret / 1000 + r.Next(1000)) * ImportanceFactor;
+        }
+        protected int ImportanceFactor
         {
             get
             {

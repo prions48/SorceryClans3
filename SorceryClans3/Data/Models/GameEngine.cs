@@ -20,12 +20,13 @@ namespace SorceryClans3.Data.Models
             team.MissionID = mission.ID;
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
         }
-        public void StartContractMission(MissionContract mission, Team team)
+        public void StartContractMission(MissionContract mission, Team team, bool first = false)
         {
             mission.AttemptingTeam = team;
             team.MissionID = mission.ID;
-            Events.Add(new(mission, Settings.MissionEndTime(mission)));
-            Events.Add(new(MissionType.PayDay, Settings.PayDay(mission), true));
+            Events.Add(new(mission, Settings.MissionEndTime(mission), false));
+            if (first)
+                Events.Add(new(mission, Settings.PayDay(mission),true));
         }
         public void TeamCityTravel(ClientCity city, Team team, bool liaison, bool returning = false)
         {
@@ -90,6 +91,12 @@ namespace SorceryClans3.Data.Models
                         break;
                     case MissionType.PayDay:
                         //to implement here
+                        var payday = ev.ResolvePayday();
+                        if (payday != null)
+                            displays.Add(payday);
+                        MissionContract? contract = ev.MissionToComplete as MissionContract;
+                        if (contract != null)
+                            Events.Add(new(contract, Settings.PayDay(contract),true));
                         break;
                     case MissionType.Mercenary:
                         var merc = ev.ResolveMercenary();
@@ -103,8 +110,21 @@ namespace SorceryClans3.Data.Models
                     case MissionType.ContractMisson:
                         var merc2 = ev.ResolveMercenary();
                         displays.Add(merc2);
+                        var toll = merc2.DisplayMission!.Client.TollContract(merc2);
+                        if (toll != null)
+                        {
+                            merc2.DisplayTeam!.MissionID = Guid.Empty;
+                            Events.Add(new GameEvent(merc2.DisplayTeam, Settings.MissionTravelTime(merc2.DisplayMission!), MissionType.TravelToLocation, merc2.DisplayTeam!.Location ?? MapLocation.HomeBase));
+                            displays.Add(toll);
+                        }
+                        else
+                        {
+                            MissionContract? contract2 = merc2.DisplayMission as MissionContract;
+                            if (contract2 != null && merc2.DisplayTeam != null)
+                                StartContractMission(contract2, merc2.DisplayTeam);
+                        }
                         //do other things later?
-                        break;
+                            break;
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));
                         break;

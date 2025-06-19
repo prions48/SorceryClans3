@@ -13,6 +13,7 @@ namespace SorceryClans3.Data.Models
         public int CityLevel { get; set; }
         private int RepScore { get; set; } = 0;
         public int UnseenMissions { get; set; } = 0;
+        private int NumMissionsCompleted { get; set; } = 0;
         private DateTime NextRefresh { get; set; } = DateTime.MinValue;
         public ClientReputation Reputation
         {
@@ -44,6 +45,7 @@ namespace SorceryClans3.Data.Models
         {
             if (display.DisplayMission == null || display.DisplayResult == null)
                 throw new Exception("Failed to resolve mission!");
+            NumMissionsCompleted++;
             if (display.DisplayResult.Success)
             {
                 Resources.TransferResources(display.DisplayMission.Resources);
@@ -54,6 +56,36 @@ namespace SorceryClans3.Data.Models
                 RepScore -= display.DisplayMission.ReputationBoost();
             }
             Missions.Remove(display.DisplayMission);
+        }
+        public GameEventDisplay? TollContract(GameEventDisplay display)
+        {
+            if (display.DisplayMission == null || display.DisplayResult == null)
+                throw new Exception("Failed to resolve contract!");
+            MissionContract? contract = display.DisplayMission as MissionContract;
+            NumMissionsCompleted++;
+            if (contract != null)
+            {
+                if (contract.AttemptingTeam == null)
+                {
+                    return new($"The {contract.Client.CityName} has rescinded your services due to abdication of duty!", display.EventDate);
+                }
+                else if (display.DisplayResult.Success)
+                {
+                    RepScore += contract.ReputationBoost();
+                    Random r = new();
+                    if (r.Next(5 + contract.NumEvents) == 0)
+                    {
+                        return new($"The {contract.Client.CityName} has rescinded the services of Team {contract.AttemptingTeam.TeamName}", display.EventDate);
+                    }
+                }
+                else
+                {
+                    Contracts.Remove(contract);
+                    RepScore -= contract.ReputationPenalty();
+                    return new($"The {contract.Client.CityName} has rescinded the services of Team {contract.AttemptingTeam.TeamName} due to failure!", display.EventDate);
+                }
+            }
+            return null;
         }
         public List<GameEventDisplay> NewMissionCycle(GameSettings settings)
         {
@@ -92,7 +124,7 @@ namespace SorceryClans3.Data.Models
                 newmission.SetDisp(TotalTactics);
                 Missions.Add(newmission);
             }
-            int ncontracts = r.Next(3) == 0 ? r.Next(3 + (int)((TotalLogistics + 10.0)/ 10.0)) : 0;
+            int ncontracts = Contracts.Count == 0 ? 1 : r.Next(3) == 0 ? r.Next(3 + (int)((TotalLogistics + 10.0) / 10.0)) : 0;
             for (int i = 0; i < ncontracts && Contracts.Count < settings.MaxContracts(CityLevel); i++)
             {
                 MissionContract newcontract = new(settings, 1000 * (CityLevel + 1) + r.Next(50000 * CityLevel), this, Liaisons.Count > 0 && Reputation >= ClientReputation.Neutral);
@@ -109,7 +141,7 @@ namespace SorceryClans3.Data.Models
             {
                 if (Liaisons.Any(e => e.MissionID == null))
                 {
-                    ret.Add(new($"New mission{(nmissions+ncontracts == 1 ? "" : "s")} ready for {CityName}!", settings.CurrentTime));
+                    ret.Add(new($"New mission{(nmissions + ncontracts == 1 ? "" : "s")} ready for {CityName}!", settings.CurrentTime));
                     UnseenMissions = 0;
                 }
                 else
