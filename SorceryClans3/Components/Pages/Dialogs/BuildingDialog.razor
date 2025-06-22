@@ -1,0 +1,63 @@
+<MudDialog>
+    <DialogContent>
+        <MudStack Row>
+        <MudText>Current Money: @Money.ToString("C")</MudText>
+        <MudSpacer />
+        <MudText>To Spend: @ToBuild.Sum(e => e.Cost()).ToString("C")</MudText>
+        </MudStack>
+        <MudSimpleTable Striped Bordered>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Current #</th>
+                    <th>Occupied</th>
+                    <th>In Progress</th>
+                    <th>Cost</th>
+                    <th>To Build</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DefenseType type in Types)
+                {
+                    <tr>
+                        <td>Watch Tower</td>
+                        <td>@Structures.Count(e => e.Type == type)</td>
+                        <td>@Structures.Count(e => e.Type == type && e.Team != null)</td>
+                        <td>@InProgress.Count(e => e == type)</td>
+                        <td>@type.Cost()</td>
+                        <td>
+                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AddBuild(type)" Disabled="Structures.Count(e => e.Type == type) + InProgress.Count(e => e == type) + ToBuild.Count(e => e == type) >= 5 || ToBuild.Sum(e => e.Cost()) > Money" />
+                            <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RemoveBuild(type)" Disabled="ToBuild.Count(e => e == type) == 0" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Submit" Disabled="ToBuild.Count == 0">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public List<DefenseStructure> Structures { get; set; } = [];
+    [Parameter] public List<DefenseType> InProgress { get; set; } = [];
+    [Parameter] public int Money { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void AddBuild(DefenseType type)
+    {
+        ToBuild.Add(type);
+    }
+    private void RemoveBuild(DefenseType type)
+    {
+        ToBuild.Remove(type);
+    }
+    private List<DefenseType> ToBuild { get; set; } = [];
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(ToBuild));
+    }
+    private List<DefenseType> Types { get; set; } = new() { DefenseType.WatchTower };
+}

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Identity.Client;
 
 namespace SorceryClans3.Data.Models
 {
@@ -10,8 +11,12 @@ namespace SorceryClans3.Data.Models
         public Team? TeamInTransit { get; set; }
         public MapLocation? Destination { get; set; }
         public DateTime EventCompleted { get; set; }
+        public DefenseType? DefenseType { get; set; }
+        public ClientCity? City { get; set; }
+        public bool? RoundTrip { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
+        public bool Cancelable { get; set; } = false;
         public GameEvent(Mission mission, DateTime duedate)
         {
             Type = mission.Type;
@@ -29,6 +34,17 @@ namespace SorceryClans3.Data.Models
             FixedDate = true;
             Destination = destination;
         }
+        public GameEvent(Team team, DateTime duedate, ClientCity city, bool roundtrip)
+        {
+            Type = MissionType.ResourceTransit;
+            TeamInTransit = team;
+            EventCompleted = duedate;
+            Visible = true;
+            FixedDate = true;
+            Destination = city.Location;
+            City = city;
+            RoundTrip = roundtrip;
+        }
         public GameEvent(MissionType type, DateTime duedate, bool visible)
         {
             //should only be used for bandit/clan/etc
@@ -44,6 +60,14 @@ namespace SorceryClans3.Data.Models
             MissionToComplete = contract;
             Visible = !payday;//don't need to clog up dashboard
             FixedDate = false;
+            EventCompleted = duedate;
+        }
+        public GameEvent(DefenseType type, DateTime duedate)
+        {
+            DefenseType = type;
+            Type = MissionType.Building;
+            Visible = true;
+            FixedDate = true;
             EventCompleted = duedate;
         }
         public GameEventDisplay ResolveMercenary()
@@ -81,6 +105,25 @@ namespace SorceryClans3.Data.Models
                 return null;
             int money = contract.PayContract();
             return new($"{contract.Client.CityName} has paid {contract.MoneyReward} for the services of Team {contract.AttemptingTeam}.", EventCompleted);
+        }
+        public GameEventDisplay ResolveBuilding()
+        {
+            return new($"{DefenseType} construction completed!", EventCompleted);
+        }
+        public GameEventDisplay ResolveResourceTransit()
+        {
+            if (RoundTrip == null || TeamInTransit == null || City == null)
+                throw new Exception("Failure to configure travel");
+            if (RoundTrip == false)
+            {
+                TeamInTransit.MissionID = null;
+                TeamInTransit.Location = null;
+                return new($"Team {TeamInTransit.TeamName} has returned to home base, bringing resources from {City.CityName}.", EventCompleted);
+            }
+            else
+            {
+                return new($"Team {TeamInTransit.TeamName} has delivered resources from {City.CityName} and is now returning.", EventCompleted);
+            }
         }
     }
 }

@@ -1,0 +1,48 @@
+using System.Reflection.Metadata.Ecma335;
+
+namespace SorceryClans3.Data.Models
+{
+    public class Defenses
+    {
+        //buildings/walls etc here
+        //not teams (currently) though
+        public List<DefenseStructure> Structures { get; set; } = [];
+        public List<Team> GetTeams(DefenseType? type = null)
+        {
+            return Structures.Where(e => e.Team != null && (type == null || e.Type == type)).Select(e => e.Team!).ToList();
+        }
+        public List<DefenseStructure> StructuresByType(DefenseType type, OccupiedStatus status = OccupiedStatus.All)
+        {
+            return Structures.Where(e => e.Type == type && (status == OccupiedStatus.All || ((status == OccupiedStatus.Occupied) == (e.Team != null)))).ToList();
+        }
+        public void BuildStructure(DefenseType type)
+        {
+            Structures.Add(new(type));
+        }
+    }
+    public class DefenseStructure
+    {
+        public Guid ID { get; set; } = Guid.NewGuid();
+        public Team? Team { get; set; } = null;
+        public DefenseType Type { get; set; }
+        public DefenseStructure(DefenseType type)
+        {
+            Type = type;
+        }
+    }
+    public enum DefenseType
+    {
+        WatchTower
+    }
+    public static class DefenseUtils
+    {
+        public static int Cost(this DefenseType type)
+        {
+            switch (type)
+            {
+                case DefenseType.WatchTower: return 10000;
+                default: return 0;
+            }
+        }
+    }
+}

@@ -54,6 +54,25 @@ namespace SorceryClans3.Data.Models
                 return new TimeSpan(0, (int)Math.Ceiling(distance / dscore), 0);
             return new TimeSpan((int)Math.Ceiling(distance / dscore), 0, 0, 0);
         }
+        public TimeSpan TravelTime(ClientCity city, int dscore)
+        {
+            if (dscore == 0)
+                return new(0);
+            double distance = city.Location.GetDistance(MapLocation.HomeBase);
+            if (RealTime)
+                return new TimeSpan(0, (int)Math.Ceiling(distance / dscore), 0);
+            return new TimeSpan((int)Math.Ceiling(distance / dscore), 0, 0, 0);
+        }
+        public TimeSpan TravelTime(ClientCity city, Team team)
+        {
+            if (team.DScore == 0)
+                return new(0);
+            return TravelTime(city, team.DScore);
+        }
+        public DateTime TravelCompletion(ClientCity city, Team team)
+        {
+            return CurrentTime.Add(TravelTime(city, team));
+        }
         public DateTime BanditTime()
         {
             if (RealTime)
@@ -65,6 +84,14 @@ namespace SorceryClans3.Data.Models
             if (RealTime)
                 return CurrentTime.AddDays(1);
             return CurrentTime.AddMonths(1);
+        }
+        public DateTime BuildTime(DefenseType type)
+        {
+            switch (type)
+            {
+                case DefenseType.WatchTower: return RealTime ? CurrentTime.AddHours(4) : CurrentTime.AddDays(15);
+                default: return CurrentTime;
+            }
         }
         #endregion
 

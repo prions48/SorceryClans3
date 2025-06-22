@@ -48,7 +48,7 @@ namespace SorceryClans3.Data.Models
         }
         public int PayContract()
         {
-            Client.Resources.Money += MoneyReward;
+            Client.Resources.GainMoney(MoneyReward);
             return MoneyReward;
         }
         public override int ReputationBoost()

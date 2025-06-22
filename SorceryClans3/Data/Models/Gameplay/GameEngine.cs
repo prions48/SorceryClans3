@@ -14,6 +14,7 @@ namespace SorceryClans3.Data.Models
         public Academy Academy { get; set; } = new();
         public List<ClientCity> Clients { get; set; } = [];
         public Resources Resources { get; set; } = new(); //home base resources
+        public Defenses Defenses { get; set; } = new();
         public void StartMission(Mission mission, Team team)
         {
             mission.AttemptingTeam = team;
@@ -28,6 +29,40 @@ namespace SorceryClans3.Data.Models
             if (first)
                 Events.Add(new(mission, Settings.PayDay(mission),true));
         }
+        public void AssignDefense(Team team, DefenseStructure structure)
+        {
+            structure.Team = team;
+            team.MissionID = structure.ID;
+        }
+        public void RemoveDefense(DefenseStructure structure)
+        {
+            if (structure.Team != null)
+            {
+                structure.Team.MissionID = null;
+                structure.Team = null;
+            }
+        }
+        public void StartBuilding(DefenseType type)
+        {
+            Events.Add(new(type, Settings.BuildTime(type)));
+            Resources.LoseMoney(type.Cost());
+        }
+        public void StartResourceRun(ClientCity city, Team team, bool roundtrip)
+        {
+            team.Resources.TransferResources(city.Resources);
+            Events.Add(new(team, Settings.TravelCompletion(city, team), city, roundtrip));
+                team.MissionID = Guid.Empty;
+            if (!roundtrip)
+            {
+                team.MissionID = Guid.Empty;
+                team.Location = null;
+                city.RemoveTeam(team);
+            }
+        }
+        public List<DefenseType> InProgressBuildings(DefenseType? type = null)
+        {
+            return Events.Where(e => e.DefenseType != null && (type == null || e.DefenseType == type)).Select(e => e.DefenseType!.Value).ToList();
+        }
         public void TeamCityTravel(ClientCity city, Team team, bool liaison, bool returning = false)
         {
             if (liaison)
@@ -35,14 +70,20 @@ namespace SorceryClans3.Data.Models
                 if (returning)
                     city.Liaisons.Remove(team);
                 else
-                    city.Liaisons.Add(team);
+                {
+                    if (!city.Liaisons.Contains(team))
+                        city.Liaisons.Add(team);
+                }
             }
             else
             {
                 if (returning)
                     city.Teams.Remove(team);
                 else
-                    city.Teams.Add(team);
+                {
+                    if (!city.Teams.Contains(team))
+                        city.Teams.Add(team);
+                }
             }
             team.MissionID = returning ? Guid.Empty : city.ID;
             Events.Add(new(team, Settings.TravelCompletion(MapLocation.HomeBase, /*this needs cleanup later*/ city.Location, team.DScore), liaison && !returning ? MissionType.LiaisonAtLocation : MissionType.TravelToLocation, returning ? MapLocation.HomeBase : city.Location));
@@ -127,6 +168,21 @@ namespace SorceryClans3.Data.Models
                             break;
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));
+                        break;
+                    case MissionType.Building:
+                        Defenses.BuildStructure(ev.DefenseType!.Value);
+                        displays.Add(ev.ResolveBuilding());
+                        break;
+                    case MissionType.ResourceTransit:
+                        if (ev.TeamInTransit != null)
+                        {
+                            Resources.TransferResources(ev.TeamInTransit.Resources);
+                            displays.Add(ev.ResolveResourceTransit());
+                            if (ev.RoundTrip == true)
+                            {
+                                TeamCityTravel(ev.City!, ev.TeamInTransit, false, false);
+                            }
+                        }
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));

@@ -150,6 +150,7 @@
                         <MudTh>Reputation</MudTh>
                         <MudTh>Liaisons</MudTh>
                         <MudTh>Teams</MudTh>
+                        <MudTh>Resources</MudTh>
                         <MudTh>View Contracts</MudTh>
                         <MudTh>View Missions</MudTh>
                     </HeaderContent>
@@ -197,6 +198,9 @@
                                 </tbody>
                             </table>
                         </MudTd>
+                        <MudTd>
+                            <MudButton OnClick="() => ClientResources(context)" Variant="Variant.Outlined" Color="Color.Info" Disabled="context.Resources.AllCount == 0">@MoneyAbbrev(context.Resources)</MudButton>
+                        </MudTd>
                         <MudTd>@*Contracts*@
                             @if (context.Liaisons.Any(e => e.MissionID == null))
                             {
@@ -221,7 +225,7 @@
                 </MudTable>
             </MudTabPanel>
             <MudTabPanel Text="Defenses">
-                Assign team
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="DefenseBuilds">Defense Buildings</MudButton>
             </MudTabPanel>
             <MudTabPanel Text="Academy">
                 <MudStack>
@@ -284,6 +288,13 @@
             <MudTabPanel Text="Research">
                 Do the thing
             </MudTabPanel>
+        </MudTabs>
+    </MudTabPanel>
+    <MudTabPanel Text="Missions">
+        <MudTabs Position="Position.Top">
+            <MudTabPanel Text="Rescue"></MudTabPanel>
+            <MudTabPanel Text="Retrieval"></MudTabPanel>
+            <MudTabPanel Text="Exploration"></MudTabPanel>
             <MudTabPanel Text="Training">
                 <MudSimpleTable Striped Bordered>
                     <thead>
@@ -417,7 +428,7 @@
             x = 1;
         }
         //resources
-        Engine.Resources.Money = 10000 + r.Next(1000);
+        Engine.Resources.Money = 50000 + r.Next(10000);
         Engine.Resources.Artifacts.Add(new(5));
         Engine.Resources.Artifacts.Add(new(5));
         //START: team for testing only
@@ -697,6 +708,39 @@
             }
         }
     }
+    private async Task ClientResources(ClientCity city)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ClientResourceDialog.City), city);
+        parameters.Add(nameof(ClientResourceDialog.IncludeTeam), true);
+        var dialog = dialogService.Show<ClientResourceDialog>("Missions for " + city.CityName, parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            (Team,bool)? team = result.Data as (Team,bool)?;
+            if (team != null)
+            {
+                Engine.StartResourceRun(city, team.Value.Item1, team.Value.Item2);
+            }
+        }
+    }
+    private string MoneyAbbrev(Resources res)
+    {
+        string other = "";
+        if (res.OtherCount > 0)
+            other = " + " + res.OtherCount;
+        if (res.Money < 1000)
+            return $"${res.Money}{other}";
+        if (res.Money < 1000000)
+            return $"${res.Money/1000}K{other}";
+        if (res.Money < 1000000000)
+            return $"${res.Money/1000}M{other}";
+        return $"${res.Money/1000}B{other}";
+    }
     #endregion
 
     #region Artifacts
@@ -737,6 +781,42 @@
                         soldier.Artifact = artifact;
                         artifact.AssignedSoldier = soldier;
                     }
+                }
+            }
+        }
+    }
+    #endregion
+
+    #region Defenses
+    private async Task DefenseBuilds()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add("Money", Engine.Resources.Money);
+        parameters.Add("Structures", Engine.Defenses.Structures);
+        parameters.Add("InProgress", Engine.InProgressBuildings());
+        var dialog = dialogService.Show<BuildingDialog>("Buildings", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            List<DefenseType>? defenseTypes = result.Data as List<DefenseType>;
+            if (defenseTypes != null)
+            {
+                Dictionary<DefenseType, int> adding = [];
+                foreach (DefenseType type in defenseTypes)
+                {
+                    Engine.StartBuilding(type);
+                    if (!adding.TryAdd(type,1))
+                    {
+                        adding[type]++;
+                    }
+                }
+                foreach (KeyValuePair<DefenseType,int> kvp in adding)
+                {
+                    Snackbar.Add("Construction started on " + kvp.Value + " " + kvp.Key.ToString() + (kvp.Value == 1 ? "" : "s"), Severity.Info);
                 }
             }
         }

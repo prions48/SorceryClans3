@@ -1,0 +1,93 @@
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Striped Bordered>
+            <thead>
+                <tr>
+                    <th>Resource</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Money</td>
+                    <td>@City.Resources.Money</td>
+                </tr>
+                <tr>
+                    <td>Artifacts</td>
+                    <td>@string.Join("<br />",City.Resources.Artifacts.Select(e => e.ArtifactName))</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+        @if (IncludeTeam)
+        {
+            <MudSimpleTable Striped Bordered>
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Power Level</th>
+                        <th>Travel Speed</th>
+                        <th>Send Home</th>
+                        <th>Round Trip</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Team team in City.AvailableTeams)
+                    {
+                        <tr>
+                            <td>@team.TeamName</td>
+                            <td>@team.PScore</td>
+                            <td>@team.DScore</td>
+                            <td>
+                                @if (SelectedTeam?.ID == team.ID && !RoundTrip)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Warning" OnClick="Unselect" />
+                                }
+                                else
+                                {
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.ArrowCircleLeft" Color="Color.Success" OnClick="() => Select(team, false)" />
+                                }
+                            </td>
+                            <td>
+                                @if (SelectedTeam?.ID == team.ID && RoundTrip)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Warning" OnClick="Unselect" />
+                                }
+                                else
+                                {
+                                    <MudIconButton Icon="@Icons.Material.TwoTone.ChangeCircle" Color="Color.Success" OnClick="() => Select(team, true)" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        @if (IncludeTeam)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Submit" Disabled="SelectedTeam == null">Send</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter, EditorRequired] public ClientCity City { get; set; }
+    [Parameter] public bool IncludeTeam { get; set; } = false;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private Team? SelectedTeam { get; set; } = null;
+    private bool RoundTrip { get; set; } = false;
+    private void Select(Team team, bool round)
+    {
+        SelectedTeam = team;
+        RoundTrip = round;
+    }
+    private void Unselect() => SelectedTeam = null;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok((SelectedTeam,RoundTrip)));
+    }
+
+}

@@ -36,11 +36,17 @@ namespace SorceryClans3.Data.Models
         public List<Team> Liaisons { get; set; } = [];
         public List<Team> Teams { get; set; } = [];
         public List<Team> AllTeams {get { return Liaisons.Concat(Teams).ToList(); } }
+        public List<Team> AvailableTeams {get { return Liaisons.Concat(Teams).Where(e => e.MissionID == null).ToList(); } }
         public int TotalCharisma { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Charisma * e.LeadershipXP)); } }
         public int TotalLogistics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Logistics * e.LeadershipXP)); } }
         public int TotalTactics { get { return Liaisons.Where(e => e.MissionID == this.ID).SelectMany(e => e.Leaders).Sum(e => (int)(e.Tactics * e.LeadershipXP)); } }
         public List<Mission> Missions { get; set; } = [];
         public List<MissionContract> Contracts { get; set; } = [];
+        public void RemoveTeam(Team team)
+        {
+            Liaisons.Remove(team);
+            Teams.Remove(team);
+        }
         public void FinishMission(GameEventDisplay display)
         {
             if (display.DisplayMission == null || display.DisplayResult == null)
