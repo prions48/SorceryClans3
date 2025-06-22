@@ -50,9 +50,9 @@ namespace SorceryClans3.Data.Models
                 return this.Color.Color();
             }
         }
-        public IList<MagicColor> GetColors(int powerlevel)
+        public List<MagicColor> GetColors(int powerlevel)
         {
-            IList<MagicColor> colors = new List<MagicColor>();
+            List<MagicColor> colors = new List<MagicColor>();
             int c = 0;
             for (int i = MinPowerForColor; i <= powerlevel && i < MinPowerForColor + PowerIncrementForColor*MaxColors; i += PowerIncrementForColor)
             {

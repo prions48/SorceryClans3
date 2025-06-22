@@ -152,11 +152,11 @@ namespace SorceryClans3.Data.Models
             if (Heritability > .95)
                 Heritability = .95;
         }
-        public IList<MagicColor> GetColors(int powerlevel)
+        public List<MagicColor> GetColors(int powerlevel)
         {
             if (this.Color == MagicColor.None)
                 return new List<MagicColor> { MagicColor.None };
-            IList<MagicColor> ret = new List<MagicColor>();
+            List<MagicColor> ret = new List<MagicColor>();
             for (int i = 0; i < MaxColors; i++)
                 ret.Add(this.Color);
             return ret;

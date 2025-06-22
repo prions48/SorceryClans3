@@ -41,7 +41,7 @@
 }
 
 @code {
-    [Parameter] public Beast Beast { get; set; }
+    [Parameter, EditorRequired] public Beast Beast { get; set; }
     private Soldier Soldier { get; set; }
     protected override void OnInitialized()
     {

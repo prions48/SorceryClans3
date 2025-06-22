@@ -10,8 +10,8 @@ namespace SorceryClans3.Data.Models
         public MapLocation? Location { get; set; } = null;
         public Resources Resources { get; set; } = new();
         public bool IsAtHome { get { return Location == null || (Location.X == 0 && Location.Y == 0); } }
-        public IList<Soldier> Soldiers { get; set; }
-        public IList<Soldier> Leaders { get; set; }
+        public List<Soldier> Soldiers { get; set; }
+        public List<Soldier> Leaders { get; set; }
         public int SoldierCount { get { return Soldiers.Count + Leaders.Count; } }
         [NotMapped] public bool View { get; set; }
         public void AddSoldier(Soldier s)
@@ -47,18 +47,18 @@ namespace SorceryClans3.Data.Models
                 }
             }
         }
-        public IList<Soldier> GetAllSoldiers
+        public List<Soldier> GetAllSoldiers
         {
             get
             {
                 return [.. Leaders, .. Soldiers];
             }
         }
-        public IList<MagicColor> GetColors
+        public List<MagicColor> GetColors
         {
             get
             {
-                IList<MagicColor> colors = new List<MagicColor>();
+                List<MagicColor> colors = new List<MagicColor>();
                 foreach (Soldier s in Soldiers)
                 {
                     colors = colors.Concat(s.GetColors).ToList();

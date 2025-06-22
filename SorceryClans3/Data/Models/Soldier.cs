@@ -66,7 +66,7 @@ namespace SorceryClans3.Data.Models
         public Power? Power { get; set; }
         public Artifact? Artifact { get; set; }
         public Medical? Medical { get; set; }
-        public IList<Style> Styles { get; set; } = new List<Style>();
+        public List<Style> Styles { get; set; } = new List<Style>();
         public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();
         public IDictionary<MagicColor, double> ResearchSkill { get; set; } = new Dictionary<MagicColor, double>();
         public double ResearchAffinity { get; set; }
@@ -79,10 +79,10 @@ namespace SorceryClans3.Data.Models
                 return 1 + (PowerLevel / 1000);
             }
         }
-        public IList<Soldier> SubSoldiers { get; set; } = new List<Soldier>();
+        public List<Soldier> SubSoldiers { get; set; } = new List<Soldier>();
         public Soldier? SubTo { get; set; }
         public Guid? TypeID { get; set; }
-        public IList<Guid> Boosts { get; set; } = new List<Guid>();
+        public List<Guid> Boosts { get; set; } = new List<Guid>();
         public bool IsSub { get { return SubTo != null; } }
         public Soldier()
         {
@@ -134,7 +134,7 @@ namespace SorceryClans3.Data.Models
                 Styles.Add(clan.Style.CreateStyle());
             }
         }
-        public IList<MagicColor> GetColors
+        public List<MagicColor> GetColors
         {
             get
             {

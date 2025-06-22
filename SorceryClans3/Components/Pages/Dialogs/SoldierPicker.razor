@@ -44,7 +44,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public IList<Soldier> Soldiers { get; set; }
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowStats { get; set; } = false;
     private bool ViewSoldier { get; set; } = false;
     private Soldier? SelectedSoldier { get; set; }

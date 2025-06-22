@@ -52,7 +52,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public IList<Soldier> Soldiers { get; set; }
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowSubs { get; set; } = false;
     [Parameter] public Action<Soldier> ToggleLeader { get; set; }
     private bool ViewPow = false;

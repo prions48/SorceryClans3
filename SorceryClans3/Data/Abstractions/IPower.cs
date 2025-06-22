@@ -27,6 +27,6 @@ namespace SorceryClans3.Data.Abstractions
 		public int PowerIncrementForColor { get; set; }
 		public int MaxColors { get; set; }
         public MudBlazor.Color IconColor { get; }
-        public IList<MagicColor> GetColors(int powerlevel);
+        public List<MagicColor> GetColors(int powerlevel);
     }
 }
