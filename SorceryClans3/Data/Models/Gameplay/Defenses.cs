@@ -32,7 +32,8 @@ namespace SorceryClans3.Data.Models
     }
     public enum DefenseType
     {
-        WatchTower
+        WatchTower,
+        SafeHouse
     }
     public static class DefenseUtils
     {
@@ -41,6 +42,16 @@ namespace SorceryClans3.Data.Models
             switch (type)
             {
                 case DefenseType.WatchTower: return 10000;
+                case DefenseType.SafeHouse: return 15000;
+                default: return 0;
+            }
+        }
+        public static int Max(this DefenseType type)
+        {
+            switch (type)
+            {
+                case DefenseType.WatchTower: return 8;
+                case DefenseType.SafeHouse: return 8;
                 default: return 0;
             }
         }

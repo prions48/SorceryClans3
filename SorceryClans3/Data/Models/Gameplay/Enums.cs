@@ -88,7 +88,7 @@ namespace SorceryClans3.Data.Models
 		{
 			switch (health)
 			{
-				case HealthLevel.Uninjured: return MudBlazor.Color.Dark;
+				case HealthLevel.Uninjured: return MudBlazor.Color.Default;
 				case HealthLevel.Hurt: return MudBlazor.Color.Primary;
 				case HealthLevel.Wounded: return MudBlazor.Color.Warning;
 				case HealthLevel.Critical: return MudBlazor.Color.Error;
@@ -160,4 +160,10 @@ namespace SorceryClans3.Data.Models
 		HP = 3,
 		Heal = 4
 	}
+	public enum OccupiedStatus
+    {
+        All,
+        Occupied,
+        Unoccupied
+    }
 }

@@ -26,7 +26,11 @@
                         <td>@InProgress.Count(e => e == type)</td>
                         <td>@type.Cost()</td>
                         <td>
-                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AddBuild(type)" Disabled="Structures.Count(e => e.Type == type) + InProgress.Count(e => e == type) + ToBuild.Count(e => e == type) >= 5 || ToBuild.Sum(e => e.Cost()) > Money" />
+                            @if (ToBuild.Count(e => e == type) > 0)
+                            {
+                                <MudText>@ToBuild.Count(e => e == type)</MudText>
+                            }
+                            <MudIconButton Color="Color.Success" Icon="@Icons.Material.TwoTone.AddCircle" OnClick="() => AddBuild(type)" Disabled="Structures.Count(e => e.Type == type) + InProgress.Count(e => e == type) + ToBuild.Count(e => e == type) >= type.Max() || ToBuild.Sum(e => e.Cost()) > Money" />
                             <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => RemoveBuild(type)" Disabled="ToBuild.Count(e => e == type) == 0" />
                         </td>
                     </tr>
@@ -59,5 +63,5 @@
     {
         MudDialog.Close(DialogResult.Ok(ToBuild));
     }
-    private List<DefenseType> Types { get; set; } = new() { DefenseType.WatchTower };
+    private List<DefenseType> Types { get; set; } = new() { DefenseType.WatchTower, DefenseType.SafeHouse };
 }
