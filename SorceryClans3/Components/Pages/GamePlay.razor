@@ -241,9 +241,13 @@
                         <MudTd>@context.Type.ToString()</MudTd>
                         <MudTd>@context.Team?.TeamName</MudTd>
                         <MudTd>
-                            @if (context.Team != null)
+                            @if (context.Team == null)
                             {
                                 <MudIconButton Icon="@Icons.Material.TwoTone.Send" Color="Color.Info" OnClick="() => DefenseAssign(context)" />
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.Send" Color="Color.Info" OnClick="() => DefenseUnassign(context)" />
                             }
                         </MudTd>
                     </RowTemplate>
@@ -867,8 +871,6 @@
     }
     private async Task DefenseAssign(DefenseStructure structure)
     {
-        if (structure.Team == null)
-            return;
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
@@ -883,6 +885,10 @@
             Team? team = result.Data as Team;
             if (team != null)
             {
+                if (structure.Team != null)
+                {
+                    DefenseUnassign(structure);
+                }
                 Engine.AssignDefense(team, structure);
             }
         }

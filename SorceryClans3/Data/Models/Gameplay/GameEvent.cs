@@ -143,9 +143,10 @@ namespace SorceryClans3.Data.Models
         }
         public GameEventDisplay ResolveDefensePatrol()
         {
+            Random r = new();
             foreach (Soldier s in TeamInTransit!.GetAllSoldiers)
             {
-
+                s.GainPower(r.Next(50) + 20);
             }
             return new($"Team {TeamInTransit!.TeamName} completed defense cycle.", EventCompleted);//for testing?
         }

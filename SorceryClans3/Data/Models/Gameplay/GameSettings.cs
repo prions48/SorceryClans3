@@ -7,6 +7,7 @@ namespace SorceryClans3.Data.Models
         public bool RealTime { get; set; } = false;
         public DateTime GameTime { get; set; }
         public Random r { get; set; } = new();
+        public DateTime NextHeal { get; set; }
         public DateTime CurrentTime
         {
             get
@@ -103,6 +104,15 @@ namespace SorceryClans3.Data.Models
                 default: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
             }
         }
+        #region Healing
+        public void SetNextHeal()
+        {
+            if (RealTime)
+                NextHeal = CurrentTime.AddHours(1);//no clue if this is right
+            NextHeal = CurrentTime.AddHours(6);
+        }
+        public bool HealTime => CurrentTime >= NextHeal;
+        #endregion
         #endregion
 
         #region Probabilities

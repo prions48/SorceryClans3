@@ -39,9 +39,9 @@ namespace SorceryClans3.Data.Models
         {
             if (structure.Team != null)
             {
+                List<GameEvent> events = Events.Where(e => e.TeamInTransit?.ID == structure.Team.ID && e.Type == MissionType.Defending).ToList();
                 structure.Team.MissionID = null;
                 structure.Team = null;
-                List<GameEvent> events = Events.Where(e => e.TeamInTransit?.ID == structure.Team!.ID && e.Type == MissionType.Defending).ToList();
                 int ctr = 0;
                 while (ctr < Events.Count) //remove cycling missions
                 {
@@ -109,8 +109,20 @@ namespace SorceryClans3.Data.Models
             List<GameEvent> randoms = GenerateRandomEvents();
             Events.AddRange(randoms);
 
+            if (Settings.HealTime)
+            {
+                foreach (Soldier soldier in Soldiers)
+                {
+                    if (soldier.Health <= HealthLevel.Hurt)
+                    {
+                        soldier.MedicalHeal(5);//experimental
+                    }
+                }
+                Settings.SetNextHeal();
+            }
+
             //process
-            List<GameEvent> events = [];
+                List<GameEvent> events = [];
             int i = 0;
             while (i < Events.Count)
             {
@@ -199,7 +211,8 @@ namespace SorceryClans3.Data.Models
                     case MissionType.Defending: //defense assignment cycling
                         if (ev.TeamInTransit != null && ev.DefenseStructure != null)
                         {
-                            displays.Add(ev.ResolveDefensePatrol());
+                            ev.ResolveDefensePatrol();
+                            //displays.Add(ev.ResolveDefensePatrol());//for testing
                             Events.Add(new(ev.TeamInTransit, MissionType.Defending, Settings.DefenseDate(ev.DefenseStructure.Type), ev.DefenseStructure));
                         }
                         break;
