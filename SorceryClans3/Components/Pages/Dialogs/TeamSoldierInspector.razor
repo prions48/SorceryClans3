@@ -33,6 +33,12 @@
                 <MudIconButton Icon="@Icons.Material.Filled.ChangeCircle" Color="Color.Primary" OnClick="() => Toggle(s)" />
             }
         </td>
+        <td>
+            @if (ActionsAvailable)
+            {
+                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => Remove(s)" />
+            }
+        </td>
     </tr>
     <TeamSoldierInspector Soldiers="s.SubSoldiers" ShowSubs="true" />
 }
@@ -55,6 +61,8 @@
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowSubs { get; set; } = false;
     [Parameter] public Action<Soldier> ToggleLeader { get; set; }
+    [Parameter] public Action<Soldier> RemoveSoldier { get; set; }
+    [Parameter] public bool ActionsAvailable { get; set; } = false;
     private bool ViewPow = false;
     private Power? SelectedPower { get; set; }
     private int? PowerLevel { get; set; }
@@ -87,4 +95,10 @@
     {
         ToggleLeader.Invoke(sold);
     }
+    private void Remove(Soldier sold)
+    {
+        //confirm dialog here
+        RemoveSoldier.Invoke(sold);
+    }
+
 }

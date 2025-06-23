@@ -236,6 +236,10 @@ namespace SorceryClans3.Data.Models
                 ret  = 100000 + ((Seed - 100000) / 1000);
             return (ret / 1000 + r.Next(1000)) * ImportanceFactor;
         }
+        public int PowerGain()
+        {
+            return (CScore ?? 0) + (MScore ?? 0) + 4 * (SScore ?? 0) + 20 * (KScore ?? 0);
+        }
         protected int ImportanceFactor
         {
             get

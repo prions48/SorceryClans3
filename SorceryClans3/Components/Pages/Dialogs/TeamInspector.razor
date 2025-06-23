@@ -1,3 +1,4 @@
+@inject IDialogService dialogService
 <MudDialog>
     <DialogContent>
         <MudStack Row>
@@ -24,21 +25,22 @@
                     <th>Power</th>
                     <th>Artifact</th>
                     <th>Leadership</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <TeamSoldierInspector Soldiers="Team.Leaders" ToggleLeader="UnmakeLeader" />
+                <TeamSoldierInspector Soldiers="Team.Leaders" ToggleLeader="UnmakeLeader" RemoveSoldier="RemoveSoldier" ActionsAvailable="Team.MissionID == null && Team.IsAtHome" />
                 @if (Team.Leaders.Count > 0)
                 {
                     <tr>
-                        <td colspan="10"><hr /></td>
+                        <td colspan="11"><hr /></td>
                     </tr>
                 }
-                <TeamSoldierInspector Soldiers="Team.Soldiers" ToggleLeader="MakeLeader" />
+                <TeamSoldierInspector Soldiers="Team.Soldiers" ToggleLeader="MakeLeader" RemoveSoldier="RemoveSoldier" ActionsAvailable="Team.MissionID == null && Team.IsAtHome" />
                 @if (Team.GetColors.Count > 0)
                 {
                     <tr>
-                        <td colspan="10">
+                        <td colspan="11">
                             <MudStack Row=true>
                                 Team Magic:
                                 <MagicIcons Colors="Team.GetColors" />
@@ -69,5 +71,23 @@
         Team.Soldiers.Add(s);
         Team.Leaders.Remove(s);
         StateHasChanged();
+    }
+    private async void RemoveSoldier(Soldier s)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Small;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Text), $"Are you sure you want to remove {s.SoldierName} from {Team.TeamName}?");
+        parameters.Add(nameof(ConfirmDialog.Button), "Confirm");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Info);
+        var dialog = dialogService.Show<ConfirmDialog>("Confirm Removal", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team.Soldiers.Remove(s);
+            Team.Leaders.Remove(s);
+            StateHasChanged();
+        }
     }
 }

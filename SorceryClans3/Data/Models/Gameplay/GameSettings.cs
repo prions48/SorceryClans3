@@ -90,7 +90,17 @@ namespace SorceryClans3.Data.Models
             switch (type)
             {
                 case DefenseType.WatchTower: return RealTime ? CurrentTime.AddHours(4) : CurrentTime.AddDays(15);
+                case DefenseType.SafeHouse: return RealTime ? CurrentTime.AddHours(4) : CurrentTime.AddDays(15);
                 default: return CurrentTime;
+            }
+        }
+        public DateTime DefenseDate(DefenseType type)
+        {
+            switch (type)
+            {
+                case DefenseType.WatchTower: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
+                case DefenseType.SafeHouse: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
+                default: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
             }
         }
         #endregion

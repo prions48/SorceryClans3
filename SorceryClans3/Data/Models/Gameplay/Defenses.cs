@@ -32,8 +32,8 @@ namespace SorceryClans3.Data.Models
     }
     public enum DefenseType
     {
-        WatchTower,
-        SafeHouse
+        WatchTower = 0,
+        SafeHouse = 1
     }
     public static class DefenseUtils
     {

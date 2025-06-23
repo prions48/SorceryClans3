@@ -9,7 +9,8 @@ namespace SorceryClans3.Data.Models
 		GreaterSpirit,
 		LesserDemon,
 		GreaterDemon,
-		Beast
+		Beast,
+		Nephilim
 	}
 	public enum HealthLevel
 	{
@@ -141,7 +142,20 @@ namespace SorceryClans3.Data.Models
 				case SoldierType.GreaterSpirit: return false;
 				case SoldierType.LesserDemon: return false;
 				case SoldierType.GreaterDemon: return true;
+				case SoldierType.Nephilim: return true;
 				default: return false;
+			}
+		}
+		public static int PowerAdj(this SoldierType type, int factor)
+		{
+			switch (type)
+			{
+				case SoldierType.LesserSpirit: case SoldierType.LesserDemon: return 0;
+				case SoldierType.LesserUndead: case SoldierType.GreaterUndead: return factor / 3;
+				case SoldierType.Nephilim: return factor / 2;
+				case SoldierType.Standard: case SoldierType.GreaterDemon: case SoldierType.Beast: return factor;
+				case SoldierType.GreaterSpirit: return factor * 2;
+				default: return factor;
 			}
 		}
 	}

@@ -1,0 +1,20 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Color="@Color">@Text</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" OnClick="Submit" Color="ButtonColor">@Button</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string Text { get; set; } = "Are you sure you want to do that?";
+    [Parameter] public MudBlazor.Color Color { get; set; } = Color.Default;
+    [Parameter] public string Button { get; set; } = "Confirm";
+    [Parameter] public MudBlazor.Color ButtonColor { get; set; } = Color.Default;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+}

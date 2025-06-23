@@ -8,9 +8,11 @@ namespace SorceryClans3.Data.Models
         public bool Success { get; set; }
 
         public Dictionary<Soldier, int> HPDamage { get; set; } = [];
-        public TeamResult(Team team, bool success, int diff)
+        public List<(Guid, int, bool)> Gains { get; set; } = [];
+        public TeamResult(Team team, List<(Guid, int, bool)> gains, bool success, int diff)
         {
             Success = success;
+            Gains = gains;
             Random r = new();
             //do math
             List<Soldier> solds = team.GetAllSoldiers.ToList();

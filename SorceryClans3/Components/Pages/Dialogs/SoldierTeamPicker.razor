@@ -11,6 +11,7 @@
                 <MudTh>Com</MudTh>
                 <MudTh>Mag</MudTh>
                 <MudTh>Sub</MudTh>
+                <MudTh>Lead</MudTh>
                 <MudTh>Heal</MudTh>
                 <MudTh>HP</MudTh>
                 <MudTh>Actions</MudTh>
@@ -21,6 +22,12 @@
                 <MudTd>@context.Combat</MudTd>
                 <MudTd>@context.Magic</MudTd>
                 <MudTd>@context.Subtlety</MudTd>
+                <MudTd>
+                    @if (context.IsLeading)
+                    {
+                        <MudIconButton Icon="@Icons.Material.TwoTone.Group" Color="Color.Info" OnClick="() => ViewLeader(context)" />
+                    }
+                </MudTd>
                 <MudTd>@context.Heal</MudTd>
                 <MudTd>
                     <HPInspector Soldier="context" />
@@ -47,6 +54,15 @@
             </DialogContent>
             <DialogActions>
                 <MudButton OnClick="CloseDialog">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
+        <MudDialog @bind-Visible="ViewLeadDialog">
+            <TitleContent>@SelectedLeader?.SoldierName</TitleContent>
+            <DialogContent>
+                <LeadInspector Soldier="SelectedLeader" />
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Filled" OnClick="CloseLead">Close</MudButton>
             </DialogActions>
         </MudDialog>
     </DialogContent>
@@ -86,4 +102,16 @@
         MudDialog.Close(DialogResult.Ok(newteam));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private Soldier? SelectedLeader { get; set; }
+    private bool ViewLeadDialog = false;
+    private void ViewLeader(Soldier soldier)
+    {
+        SelectedLeader = soldier;
+        ViewLeadDialog = true;
+    }
+    private void CloseLead()
+    {
+        SelectedLeader = null;
+        ViewLeadDialog = false;
+    }
 }

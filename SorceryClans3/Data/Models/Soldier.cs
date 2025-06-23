@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.IdentityModel.Tokens;
 using MudBlazor;
 using MudBlazor.Extensions;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SorceryClans3.Data.Models
 {
@@ -84,12 +85,13 @@ namespace SorceryClans3.Data.Models
         public Guid? TypeID { get; set; }
         public List<Guid> Boosts { get; set; } = new List<Guid>();
         public bool IsSub { get { return SubTo != null; } }
+        Random r = new();
         public Soldier()
         {
             ID = Guid.NewGuid();
             ClanName = "Unknown";
             GivenName = "Soldier";
-            Random r = new Random();
+            r = new Random();
             PowerLevel = r.Next(100, 5000);
             ComBase = r.Next(11);
             MagBase = r.Next(11);
@@ -428,26 +430,9 @@ namespace SorceryClans3.Data.Models
                     case SoldierType.LesserUndead: return "Undead";
                     case SoldierType.LesserSpirit:
                     case SoldierType.GreaterSpirit: return "Spirit";
+                    case SoldierType.Nephilim: return "Nephilim";
                     case SoldierType.Standard: return "To do soon";
                     default: return "Unknown";
-                }
-            }
-        }
-        private bool GainXP//also can help with research?
-        {
-            get
-            {
-                switch (Type)
-                {
-                    case SoldierType.Beast: return true;
-                    case SoldierType.GreaterDemon: return true;
-                    case SoldierType.LesserDemon: return false;
-                    case SoldierType.GreaterUndead: return true;
-                    case SoldierType.LesserUndead: return false;
-                    case SoldierType.LesserSpirit: return false;
-                    case SoldierType.GreaterSpirit: return true;
-                    case SoldierType.Standard: return true;
-                    default: return true;
                 }
             }
         }
@@ -467,6 +452,63 @@ namespace SorceryClans3.Data.Models
                     return "Excellent";
                 return "Brilliant";
             }
+        }
+        public (Guid, int,bool) GainPower(int factor)
+        {
+            int pg = ModifyGain(factor);
+            bool hp = false;
+            if ((pg * 1.0 / PowerLevel > 0.15 || (pg > 200 && r.Next(2) == 0) || r.Next(8) == 0) && r.Next(15+Combat) > HPBase-10)
+            {
+                HPBase++;
+                HPCurrent++;
+                hp = true;
+            }
+            PowerLevel += pg;
+            LevelLead();
+            LevelMedic();
+            return (ID, pg, hp);
+        }
+        private void LevelLead()
+        {
+            if (!IsLeading)
+                return;
+            if (LeadershipXP < .5)
+                LeadershipXP += (r.NextDouble() * 0.05) + 0.02;
+            else if (LeadershipXP < .8)
+                LeadershipXP += (r.NextDouble() * 0.03) + 0.01;
+            else
+                LeadershipXP += r.NextDouble() * 0.02;
+            if (LeadershipXP > 1.0)
+                LeadershipXP = 1.0;
+        }
+        private void LevelMedic(int odds = 4)
+        {
+            if (IsHealer && r.Next(odds) == 0)
+            {
+                Medical!.GainMedicPower();
+            }
+        }
+        private int ModifyGain(int pg)
+        {
+            int lvl = (int)(pg / (3 + 2 * Math.Log10(PowerLevel + 1)));
+            lvl = Type.PowerAdj(lvl);
+            if (lvl == 0)
+                return 0;
+            if (Power != null)
+                lvl = (int)(0.85 * lvl);
+            if (PowerLevel > 1000 && lvl > PowerLevel)
+                    lvl = PowerLevel + (lvl - PowerLevel) / 5;
+            if (PowerLevel > 750 * PowerLimit)
+                lvl /= 2;
+            if (PowerLevel > 950 * PowerLimit)
+                lvl /= 3;
+            if (PowerLevel > 1100 * PowerLimit)
+                lvl /= 5;
+            if (PowerLevel > 1200 * PowerLimit)
+                lvl /= 10;
+            while (lvl > 1000)
+                lvl = (int)(lvl * 0.7);
+            return lvl;
         }
         public void Hurt(int hp)
         {

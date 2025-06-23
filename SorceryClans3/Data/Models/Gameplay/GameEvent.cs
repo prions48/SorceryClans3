@@ -13,6 +13,7 @@ namespace SorceryClans3.Data.Models
         public DateTime EventCompleted { get; set; }
         public DefenseType? DefenseType { get; set; }
         public ClientCity? City { get; set; }
+        public DefenseStructure? DefenseStructure { get; set; }
         public bool? RoundTrip { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
@@ -45,9 +46,19 @@ namespace SorceryClans3.Data.Models
             City = city;
             RoundTrip = roundtrip;
         }
+        public GameEvent(Team team, MissionType type, DateTime duedate, DefenseStructure structure)
+        {
+            //using for defense cycle, prob also for other invisible assignment cycles
+            TeamInTransit = team;
+            Type = type;
+            Visible = false;
+            FixedDate = false;
+            EventCompleted = duedate;
+            DefenseStructure = structure;
+        }
         public GameEvent(MissionType type, DateTime duedate, bool visible)
         {
-            //should only be used for bandit/clan/etc
+            //should only be used for bandit/clan/etc //also using for defense cycle, prob also for other invisible assignment cycles
             Type = type;
             Visible = visible;//for testing
             FixedDate = visible;//for testing
@@ -75,13 +86,18 @@ namespace SorceryClans3.Data.Models
             if (MissionToComplete?.AttemptingTeam == null)
                 throw new Exception("Failure to resolve missing mission or team");
             var results = MissionToComplete.CompleteMission();
-            //use diff to create game results
-            return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
+            List<(Guid, int, bool)> gains = [];
+            foreach (Soldier soldier in MissionToComplete.AttemptingTeam.GetAllSoldiers)
             {
-                DisplayMission = MissionToComplete,
-                DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
-                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, results.Item1, results.Item2)
-            };
+                gains.Add(soldier.GainPower(MissionToComplete.PowerGain()));
+            }
+            //use diff to create game results
+                return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
+                {
+                    DisplayMission = MissionToComplete,
+                    DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
+                    DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2)
+                };
         }
         public GameEventDisplay ResolveReturn(bool liaison = false)
         {
@@ -124,6 +140,14 @@ namespace SorceryClans3.Data.Models
             {
                 return new($"Team {TeamInTransit.TeamName} has delivered resources from {City.CityName} and is now returning.", EventCompleted);
             }
+        }
+        public GameEventDisplay ResolveDefensePatrol()
+        {
+            foreach (Soldier s in TeamInTransit!.GetAllSoldiers)
+            {
+
+            }
+            return new($"Team {TeamInTransit!.TeamName} completed defense cycle.", EventCompleted);//for testing?
         }
     }
 }

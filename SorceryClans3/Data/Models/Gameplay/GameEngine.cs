@@ -33,13 +33,25 @@ namespace SorceryClans3.Data.Models
         {
             structure.Team = team;
             team.MissionID = structure.ID;
+            Events.Add(new(team, MissionType.Defending, Settings.DefenseDate(structure.Type), structure));
         }
-        public void RemoveDefense(DefenseStructure structure)
+        public void UnassignDefense(DefenseStructure structure)
         {
             if (structure.Team != null)
             {
                 structure.Team.MissionID = null;
                 structure.Team = null;
+                List<GameEvent> events = Events.Where(e => e.TeamInTransit?.ID == structure.Team!.ID && e.Type == MissionType.Defending).ToList();
+                int ctr = 0;
+                while (ctr < Events.Count) //remove cycling missions
+                {
+                    if (events.Contains(Events[ctr]))
+                    {
+                        Events.RemoveAt(ctr);
+                    }
+                    else
+                        ctr++;
+                }
             }
         }
         public void StartBuilding(DefenseType type)
@@ -182,6 +194,13 @@ namespace SorceryClans3.Data.Models
                             {
                                 TeamCityTravel(ev.City!, ev.TeamInTransit, false, false);
                             }
+                        }
+                        break;
+                    case MissionType.Defending: //defense assignment cycling
+                        if (ev.TeamInTransit != null && ev.DefenseStructure != null)
+                        {
+                            displays.Add(ev.ResolveDefensePatrol());
+                            Events.Add(new(ev.TeamInTransit, MissionType.Defending, Settings.DefenseDate(ev.DefenseStructure.Type), ev.DefenseStructure));
                         }
                         break;
                     default:

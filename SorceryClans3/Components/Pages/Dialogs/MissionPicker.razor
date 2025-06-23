@@ -3,13 +3,14 @@
     <DialogContent>
         <MudTable Items="Missions">
             <HeaderContent>
-                <MudTh>CReq</MudTh>
-                <MudTh>MReq</MudTh>
-                <MudTh>SReq</MudTh>
-                <MudTh>KReq</MudTh>
-                <MudTh>$</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.CDisp ?? 0)">Com</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.MDisp ?? 0)">Mag</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.SDisp ?? 0)">Sub</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.KDisp ?? 0)">Heal</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.MoneyReward)">$</MudTableSortLabel></MudTh>
                 <MudTh>Distance</MudTh>
                 <MudTh>Time</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Mission, object>(x => x.ExpirationDate)">Expires</MudTableSortLabel></MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -22,6 +23,7 @@
                     <MudIcon Icon="@GetIcon(context)" Color="GetColor(context)" />
                 </MudTd>
                 <MudTd>@context.TravelDistance</MudTd>
+                <MudTd>@context.ExpirationDate.ToString(DTFormat)</MudTd>
                 <MudTd>@context.MissionDays</MudTd>
                 <MudTd>
                     @if (context.AttemptingTeam != null)
@@ -44,6 +46,7 @@
 @code {
     [Parameter] public List<Mission> Missions { get; set; } = [];
     [Parameter] public List<Team> Teams { get; set; } = [];
+    [Parameter] public bool RealTime { get; set; } = false;
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private async Task SelectTeamForMission(Mission mission)
@@ -83,6 +86,15 @@
         {
             case ClientImportance.Normal: return "";
             default: return Icons.Material.TwoTone.Warning;
+        }
+    }
+    private string DTFormat
+    {
+        get
+        {
+            if (RealTime)
+                return @"MM/dd/yy hh\:mm tt";
+            return "MMM d, Year y";
         }
     }
 }

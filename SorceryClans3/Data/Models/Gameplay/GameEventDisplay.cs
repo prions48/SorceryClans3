@@ -25,13 +25,42 @@ namespace SorceryClans3.Data.Models
             get
             {
                 string add = "";
-                if (DisplayResult != null)
+                if (DisplayResult != null && DisplayTeam != null)
                 {
-                    foreach (KeyValuePair<Soldier, int> hp in DisplayResult.HPDamage)
+                    //foreach (KeyValuePair<Soldier, int> hp in DisplayResult.HPDamage)
+                    foreach (Soldier sold in DisplayTeam.GetAllSoldiers)
                     {
-                        if (hp.Value > 0)
+                        if (sold.HPCurrent >= 0 && sold.Health < HealthLevel.Dead)
                         {
-                            add += "<br />" + hp.Key.SoldierName + " took " + hp.Value + " dmg and is currently " + hp.Key.Health.ToString();
+
+                            if (DisplayResult.HPDamage.TryGetValue(sold, out int dmg))
+                            {
+                                (Guid, int, bool)? gain = DisplayResult.Gains.FirstOrDefault(e => e.Item1 == sold.ID);
+                                if (gain != null)
+                                {
+                                    add += "<br />" + sold.SoldierName + " has gained " + gain.Value.Item2 + " power and taken " + dmg + " damage, and is now " + sold.Health.ToString();
+                                    if (gain.Value.Item3)
+                                        add += "<br />" + sold.SoldierName + " has become tougher from this experience!";
+                                }
+                                else
+                                {
+                                    add += "<br />" + sold.SoldierName + " participated.";//testing
+                                }
+                            }
+                            else
+                            {
+                                (Guid, int, bool)? gain = DisplayResult.Gains.FirstOrDefault(e => e.Item1 == sold.ID);
+                                if (gain != null)
+                                {
+                                    add += "<br />" + sold.SoldierName + " has gained " + gain.Value.Item2 + " power" + (gain.Value.Item3 ? " and has become tougher from this experience!" : ".");
+                                }
+                                else
+                                    add += "<br />" + sold.SoldierName + " participated.";//testing
+                            }
+                        }
+                        else
+                        {
+                            add += "<br />" + sold.SoldierName + " has been killed in battle!";
                         }
                     }
                 }

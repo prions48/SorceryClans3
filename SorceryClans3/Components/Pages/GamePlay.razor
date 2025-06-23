@@ -103,7 +103,12 @@
                 <MudTd>@context.SoldierName</MudTd>
                 <MudTd>@context.PowerLevel</MudTd>
                 <MudTd></MudTd>
-                <MudTd></MudTd>
+                <MudTd>
+                    @if (context.IsLeading)
+                    {
+                        <MudIconButton Icon="@Icons.Material.TwoTone.Group" Color="Color.Info" OnClick="() => ViewLeader(context)" />
+                    }
+                </MudTd>
                 <MudTd>@context.Power?.PowerName</MudTd>
                 <MudTd>@context.Artifact?.ArtifactName</MudTd>
                 <MudTd>@context.Team?.TeamName</MudTd>
@@ -226,6 +231,23 @@
             </MudTabPanel>
             <MudTabPanel Text="Defenses">
                 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="DefenseBuilds">Defense Buildings</MudButton>
+                <MudTable Items="Engine.Defenses.Structures">
+                    <HeaderContent>
+                        <MudTh>Building</MudTh>
+                        <MudTh>Team</MudTh>
+                        <MudTh>Assignment</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Type.ToString()</MudTd>
+                        <MudTd>@context.Team?.TeamName</MudTd>
+                        <MudTd>
+                            @if (context.Team != null)
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.Send" Color="Color.Info" OnClick="() => DefenseAssign(context)" />
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
             </MudTabPanel>
             <MudTabPanel Text="Academy">
                 <MudStack>
@@ -373,6 +395,15 @@
     </DialogActions>
 </MudDialog>
 
+<MudDialog @bind-Visible="ViewLeadDialog">
+    <TitleContent>@SelectedLeader?.SoldierName</TitleContent>
+    <DialogContent>
+        <LeadInspector Soldier="SelectedLeader" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="CloseLead">Close</MudButton>
+    </DialogActions>
+</MudDialog>
 @code {
     [CascadingParameter] public Auth0User? User { get; set; }
     private List<Clan> Clans { get { return Engine.Clans; } }
@@ -399,6 +430,18 @@
                 return @"MM/dd/yy hh\:mm tt";
             return "MMM d, Year y";
         }
+    }
+    private bool ViewLeadDialog = false;
+    private Soldier? SelectedLeader { get; set; } = null;
+    private void ViewLeader(Soldier soldier)
+    {
+        SelectedLeader = soldier;
+        ViewLeadDialog = true;
+    }
+    private void CloseLead()
+    {
+        SelectedLeader = null;
+        ViewLeadDialog = false;
     }
     protected override void OnInitialized()
     {
@@ -668,8 +711,9 @@
         options.FullWidth = true;
         options.MaxWidth = MaxWidth.ExtraLarge;
         var parameters = new DialogParameters();
-        parameters.Add("Missions", city.Missions);
-        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
+        parameters.Add(nameof(MissionPicker.Missions), city.Missions);
+        parameters.Add(nameof(MissionPicker.RealTime), Engine.Settings.RealTime);
+        parameters.Add(nameof(MissionPicker.Teams), Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
         var dialog = dialogService.Show<MissionPicker>("Missions for " + city.CityName, parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -738,8 +782,8 @@
         if (res.Money < 1000000)
             return $"${res.Money/1000}K{other}";
         if (res.Money < 1000000000)
-            return $"${res.Money/1000}M{other}";
-        return $"${res.Money/1000}B{other}";
+            return $"${res.Money/1000000}M{other}";
+        return $"${res.Money/1000000000}B{other}";
     }
     #endregion
 
@@ -820,6 +864,32 @@
                 }
             }
         }
+    }
+    private async Task DefenseAssign(DefenseStructure structure)
+    {
+        if (structure.Team == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Engine.Teams.Where(e => e.IsAtHome && e.MissionID == null).ToList());
+        parameters.Add(nameof(TeamPicker.AllScores), true);
+        var dialog = dialogService.Show<TeamPicker>("Assign to " + structure.Type.ToString(), parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+            {
+                Engine.AssignDefense(team, structure);
+            }
+        }
+    }
+    private void DefenseUnassign(DefenseStructure structure)
+    {
+        Engine.UnassignDefense(structure);
     }
     #endregion
 }
