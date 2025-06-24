@@ -1,0 +1,39 @@
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Soldiers" Striped Bordered>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Team</MudTh>
+                <MudTh>Potential</MudTh>
+                <MudTh>Training</MudTh>
+                <MudTh>Activate</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>@context.Team?.TeamName</MudTd>
+                <MudTd>@context.LeadPotentialDisplay</MudTd>
+                <MudTd>@context.LeadTrainDisplay</MudTd>
+                <MudTd>
+                    @if (context.PowerLevel >= 2500)
+                    {
+                        <MudIconButton OnClick="() => Activate(context)" Color="Color.Info" Icon="@Icons.Material.TwoTone.Group" Disabled="context.Team?.MissionID != null" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void Activate(Soldier soldier)
+    {
+        soldier.CreateLeader();
+        Soldiers.Remove(soldier);
+    }
+}

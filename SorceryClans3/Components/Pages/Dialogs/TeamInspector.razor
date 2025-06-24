@@ -52,6 +52,7 @@
         </MudSimpleTable>
     </DialogContent>
     <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AddSoldier">Add Soldier</MudButton>
         <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
     </DialogActions>
 </MudDialog>
@@ -59,6 +60,7 @@
 @code {
     [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
     [Parameter] public Team Team { get; set; } = new();
+    [Parameter] public List<Soldier> AvailableSoldiers { get; set; } = [];
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private void MakeLeader(Soldier s)
     {
@@ -88,6 +90,24 @@
             Team.Soldiers.Remove(s);
             Team.Leaders.Remove(s);
             StateHasChanged();
+        }
+    }
+    private async Task AddSoldier()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(SoldierPicker.Soldiers), AvailableSoldiers);
+        parameters.Add(nameof(SoldierPicker.ShowStats), true);
+        var dialog = dialogService.Show<SoldierPicker>("Add Soldier", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            if (result.Data is Soldier sold)
+            {
+                Team.Soldiers.Add(sold);
+            }
         }
     }
 }

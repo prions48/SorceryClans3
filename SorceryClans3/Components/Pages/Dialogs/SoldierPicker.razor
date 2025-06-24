@@ -12,6 +12,7 @@
                     <MudTh>C</MudTh>
                     <MudTh>M</MudTh>
                     <MudTh>S</MudTh>
+                    <MudTh>Lead</MudTh>
                 }
                 <MudTh>Actions</MudTh>
             </HeaderContent>
@@ -24,6 +25,12 @@
                     <MudTd>@context.Combat</MudTd>
                     <MudTd>@context.Magic</MudTd>
                     <MudTd>@context.Subtlety</MudTd>
+                    <MudTd>
+                        @if (context.IsLeading)
+                        {
+                            <MudIconButton OnClick="() => SelectLeader(context)" Icon="@Icons.Material.Filled.Group" Color="Color.Info" />
+                        }
+                    </MudTd>
                 }
                 <MudTd>
                     <MudIconButton OnClick="() => SelectSoldier(context)" Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" />
@@ -40,6 +47,17 @@
                 <MudButton OnClick="() => ViewSoldier = false">Close</MudButton>
             </DialogActions>
         </MudDialog>
+        <MudDialog @bind-Visible="ViewLeadership">
+            <DialogContent>
+                @if (SelectedSoldier != null)
+                {
+                    <LeadInspector Soldier="SelectedSoldier" />
+                }
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Filled" OnClick="UnselectLeader">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
     </DialogContent>
 </MudDialog>
 
@@ -47,6 +65,7 @@
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowStats { get; set; } = false;
     private bool ViewSoldier { get; set; } = false;
+    private bool ViewLeadership { get; set; } = false;
     private Soldier? SelectedSoldier { get; set; }
     private void SelectSoldier(Soldier sold)
     {
@@ -57,6 +76,16 @@
     {
         SelectedSoldier = null;
         ViewSoldier = false;
+    }
+    private void SelectLeader(Soldier sold)
+    {
+        SelectedSoldier = sold;
+        ViewLeadership = true;
+    }
+    private void UnselectLeader()
+    {
+        ViewLeadership = false;
+        SelectedSoldier = null;
     }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     void Submit(Soldier sold)

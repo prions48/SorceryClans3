@@ -89,31 +89,34 @@
         </MudTable>
     </MudTabPanel>
     <MudTabPanel Text="Soldiers">
-        <MudTable Items="Soldiers" Striped Outlined>
-            <HeaderContent>
-                <MudTh>Name</MudTh>
-                <MudTh>Lvl</MudTh>
-                <MudTh>Stats</MudTh>
-                <MudTh>Leader</MudTh>
-                <MudTh>Power</MudTh>
-                <MudTh>Artifact</MudTh>
-                <MudTh>Team</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.SoldierName</MudTd>
-                <MudTd>@context.PowerLevel</MudTd>
-                <MudTd></MudTd>
-                <MudTd>
-                    @if (context.IsLeading)
-                    {
-                        <MudIconButton Icon="@Icons.Material.TwoTone.Group" Color="Color.Info" OnClick="() => ViewLeader(context)" />
-                    }
-                </MudTd>
-                <MudTd>@context.Power?.PowerName</MudTd>
-                <MudTd>@context.Artifact?.ArtifactName</MudTd>
-                <MudTd>@context.Team?.TeamName</MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudStack>
+            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="LeadershipDialog">Leadership Assessment</MudButton>
+            <MudTable Items="Soldiers" Striped Outlined>
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Lvl</MudTh>
+                    <MudTh>Stats</MudTh>
+                    <MudTh>Leader</MudTh>
+                    <MudTh>Power</MudTh>
+                    <MudTh>Artifact</MudTh>
+                    <MudTh>Team</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.SoldierName</MudTd>
+                    <MudTd>@context.PowerLevel</MudTd>
+                    <MudTd></MudTd>
+                    <MudTd>
+                        @if (context.IsLeading)
+                        {
+                            <MudIconButton Icon="@Icons.Material.TwoTone.Group" Color="Color.Info" OnClick="() => ViewLeader(context)" />
+                        }
+                    </MudTd>
+                    <MudTd>@context.Power?.PowerName</MudTd>
+                    <MudTd>@context.Artifact?.ArtifactName</MudTd>
+                    <MudTd>@context.Team?.TeamName</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudStack>
     </MudTabPanel>
     <MudTabPanel Text="Teams">
         <MudStack>
@@ -336,7 +339,9 @@
                         </tr>
                         <tr>
                             <td>Leadership Training</td>
-                            <td>Button</td>
+                            <td>
+                                <MudButton OnClick="StartLeadership" Variant="Variant.Filled" Color="Color.Info">Select Team</MudButton>
+                            </td>
                         </tr>
                         <tr>
                             <td>Alchemy Training</td>
@@ -526,7 +531,8 @@
         options.MaxWidth = MaxWidth.ExtraExtraLarge;
         options.FullWidth = true;
         var parameters = new DialogParameters();
-        parameters.Add("Team", team);
+        parameters.Add(nameof(TeamInspector.Team), team);
+        parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null).ToList());
         var dialog = dialogService.Show<TeamInspector>("View Team " + team.TeamName, parameters, options);
         var result = await dialog.Result;
     }
@@ -896,6 +902,51 @@
     private void DefenseUnassign(DefenseStructure structure)
     {
         Engine.UnassignDefense(structure);
+    }
+    #endregion
+
+    #region Training
+    private async Task StartLeadership()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome).ToList());
+        parameters.Add(nameof(TeamPicker.AllScores), true);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            if (result.Data is Team team)
+            {
+                options = new DialogOptions();
+                options.CloseOnEscapeKey = true;
+                options.MaxWidth = MaxWidth.Large;
+                parameters = new DialogParameters();
+                parameters.Add(nameof(SoldierPicker.Soldiers), team.Leaders);
+                parameters.Add(nameof(SoldierPicker.ShowStats), true);
+                dialog = dialogService.Show<SoldierPicker>("Select leader to conduct training", parameters, options);
+                result = await dialog.Result;
+                if (result?.Canceled == false)
+                {
+                    if (result.Data is Soldier soldier)
+                    {
+                        Engine.StartTrainingMission(team, soldier);
+                    }
+                }
+            }
+        }
+    }
+    private async Task LeadershipDialog()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(LeadershipCensus.Soldiers), Engine.Soldiers.Where(e => !e.IsLeading).ToList());
+        var dialog = dialogService.Show<LeadershipCensus>("Select Team", parameters, options);
+        var result = await dialog.Result;
     }
     #endregion
 }

@@ -71,6 +71,11 @@ namespace SorceryClans3.Data.Models
                 city.RemoveTeam(team);
             }
         }
+        public void StartTrainingMission(Team team, Soldier soldier)
+        {
+            team.MissionID = Guid.Empty;
+            Events.Add(new(team, MissionType.LeadershipTraining, Settings.TrainingDate(), soldier));
+        }
         public List<DefenseType> InProgressBuildings(DefenseType? type = null)
         {
             return Events.Where(e => e.DefenseType != null && (type == null || e.DefenseType == type)).Select(e => e.DefenseType!.Value).ToList();
@@ -215,6 +220,9 @@ namespace SorceryClans3.Data.Models
                             //displays.Add(ev.ResolveDefensePatrol());//for testing
                             Events.Add(new(ev.TeamInTransit, MissionType.Defending, Settings.DefenseDate(ev.DefenseStructure.Type), ev.DefenseStructure));
                         }
+                        break;
+                    case MissionType.LeadershipTraining:
+                        displays.Add(ev.ResolveLeadershipTraining());
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));

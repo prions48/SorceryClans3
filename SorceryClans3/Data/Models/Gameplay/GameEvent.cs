@@ -9,6 +9,7 @@ namespace SorceryClans3.Data.Models
         public MissionType Type { get; set; }
         public Mission? MissionToComplete { get; set; }
         public Team? TeamInTransit { get; set; }
+        public Soldier? FocusSoldier { get; set;  }
         public MapLocation? Destination { get; set; }
         public DateTime EventCompleted { get; set; }
         public DefenseType? DefenseType { get; set; }
@@ -45,6 +46,17 @@ namespace SorceryClans3.Data.Models
             Destination = city.Location;
             City = city;
             RoundTrip = roundtrip;
+        }
+        public GameEvent(Team team, MissionType type, DateTime duedate, Soldier soldier)
+        {
+            //training missions
+            TeamInTransit = team;
+            FocusSoldier = soldier;
+            Type = type;
+            Visible = true;
+            FixedDate = false;
+            Cancelable = true;
+            EventCompleted = duedate;
         }
         public GameEvent(Team team, MissionType type, DateTime duedate, DefenseStructure structure)
         {
@@ -92,12 +104,12 @@ namespace SorceryClans3.Data.Models
                 gains.Add(soldier.GainPower(MissionToComplete.PowerGain()));
             }
             //use diff to create game results
-                return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
-                {
-                    DisplayMission = MissionToComplete,
-                    DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
-                    DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2)
-                };
+            return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
+            {
+                DisplayMission = MissionToComplete,
+                DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
+                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2)
+            };
         }
         public GameEventDisplay ResolveReturn(bool liaison = false)
         {
@@ -149,6 +161,12 @@ namespace SorceryClans3.Data.Models
                 s.GainPower(r.Next(50) + 20);
             }
             return new($"Team {TeamInTransit!.TeamName} completed defense cycle.", EventCompleted);//for testing?
+        }
+        public GameEventDisplay ResolveLeadershipTraining()
+        {
+            bool success = TeamInTransit!.LeadershipTraining(FocusSoldier!);
+            TeamInTransit.MissionID = null;
+            return new($"Team {TeamInTransit!.TeamName} has returned from leadership training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
         }
     }
 }

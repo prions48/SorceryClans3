@@ -104,6 +104,12 @@ namespace SorceryClans3.Data.Models
                 default: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
             }
         }
+        public DateTime TrainingDate()
+        {
+            if (RealTime)
+                return CurrentTime.AddHours(15 + r.Next(6));
+            return CurrentTime.AddDays(15 + r.Next(10)); //I'm just making these up at random right now
+        }
         #region Healing
         public void SetNextHeal()
         {

@@ -19,9 +19,9 @@ namespace SorceryClans3.Data.Models
             foreach (Soldier sold in Soldiers)
             {
                 if (!s.Teamwork.ContainsKey(sold.ID))
-                    s.Teamwork.Add(sold.ID,0);
+                    s.Teamwork.Add(sold.ID, 0);
                 if (!sold.Teamwork.ContainsKey(s.ID))
-                    sold.Teamwork.Add(s.ID,0);
+                    sold.Teamwork.Add(s.ID, 0);
             }
             Soldiers.Add(s);
         }
@@ -268,7 +268,7 @@ namespace SorceryClans3.Data.Models
                         }
                     }
                 }
-                return ret/(Soldiers.Count* (Soldiers.Count-1));
+                return ret / (Soldiers.Count * (Soldiers.Count - 1));
             }
         }
         public string TeamworkText
@@ -326,10 +326,10 @@ namespace SorceryClans3.Data.Models
             }
         }
         public Team()
-		{
+        {
             ID = Guid.NewGuid();
-			Soldiers = new List<Soldier>();
-			Leaders = new List<Soldier>();
+            Soldiers = new List<Soldier>();
+            Leaders = new List<Soldier>();
             Random r = new Random();
             if (r.NextSingle() < .2)
                 TeamName = "Tiger Squad";
@@ -358,35 +358,35 @@ namespace SorceryClans3.Data.Models
         public int ResearchPower(MagicColor color)
         {
             if (Leaders.Count == 0)
-				return 0;
-			double total = 0;
-			foreach (Soldier sold in Leaders)
-			{
-				if (sold.ResearchSkill.ContainsKey(color))
-				{
-					total += sold.ResearchSkill[color];
-				}
-			}
-			if (total < 0)
-				return 0;
-			return (int)(MScore * total / Leaders.Count);
+                return 0;
+            double total = 0;
+            foreach (Soldier sold in Leaders)
+            {
+                if (sold.ResearchSkill.ContainsKey(color))
+                {
+                    total += sold.ResearchSkill[color];
+                }
+            }
+            if (total < 0)
+                return 0;
+            return (int)(MScore * total / Leaders.Count);
         }
         public int ResearchPowerIncrement(MagicColor color)
-		{
-			if (Leaders.Count == 0)
-				return 0;
-			double total = 0;
-			foreach (Soldier sold in Leaders)
-			{
-				if (sold.ResearchSkill.ContainsKey(color))
-				{
-					total += sold.IncrementSkill(color);
-				}
-			}
-			if (total < 0)
-				return 0;
-			return (int)(MScore * total / Leaders.Count);
-		}
+        {
+            if (Leaders.Count == 0)
+                return 0;
+            double total = 0;
+            foreach (Soldier sold in Leaders)
+            {
+                if (sold.ResearchSkill.ContainsKey(color))
+                {
+                    total += sold.IncrementSkill(color);
+                }
+            }
+            if (total < 0)
+                return 0;
+            return (int)(MScore * total / Leaders.Count);
+        }
         public string ResearchDisplay
         {
             get
@@ -409,6 +409,24 @@ namespace SorceryClans3.Data.Models
                     return "Excellent";
                 return "Superior";
             }
+        }
+        public bool LeadershipTraining(Soldier soldier)
+        {
+            if (!Leaders.Contains(soldier))
+                return false;
+            soldier.LevelLead();
+            int rawlead = soldier.Charisma + soldier.Logistics + soldier.Tactics;
+            double totallead = soldier.LeadershipXP * rawlead;
+            Random r = new();
+            if (rawlead < 10 || r.NextDouble() * totallead < 3)
+                return false;
+            //success
+            foreach (Soldier sold in GetAllSoldiers)
+            {
+                sold.LevelLead();
+                sold.TrainLead();
+            }
+            return true;
         }
     }
 }

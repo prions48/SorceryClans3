@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using MudBlazor;
 using MudBlazor.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using MathNet.Numerics.Random;
 
 namespace SorceryClans3.Data.Models
 {
@@ -24,6 +26,8 @@ namespace SorceryClans3.Data.Models
         public int SubBase { get; set; }
         public int HPBase { get; set; }
         public double LeadershipXP { get; set; }
+        public bool LeadAssessed { get; set; } = false;
+        public int LeadTrainRemains { get; set; }
         public bool IsLeading { get; set; } = false;
         public int CharismaBase { get; set; }
         public int LogisticsBase { get; set; }
@@ -453,11 +457,11 @@ namespace SorceryClans3.Data.Models
                 return "Brilliant";
             }
         }
-        public (Guid, int,bool) GainPower(int factor)
+        public (Guid, int, bool) GainPower(int factor)
         {
             int pg = ModifyGain(factor);
             bool hp = false;
-            if ((pg * 1.0 / PowerLevel > 0.15 || (pg > 200 && r.Next(2) == 0) || r.Next(8) == 0) && r.Next(15+Combat) > HPBase-10)
+            if ((pg * 1.0 / PowerLevel > 0.15 || (pg > 200 && r.Next(2) == 0) || r.Next(8) == 0) && r.Next(15 + Combat) > HPBase - 10)
             {
                 HPBase++;
                 HPCurrent++;
@@ -468,7 +472,7 @@ namespace SorceryClans3.Data.Models
             LevelMedic();
             return (ID, pg, hp);
         }
-        private void LevelLead()
+        public void LevelLead()
         {
             if (!IsLeading)
                 return;
@@ -480,6 +484,23 @@ namespace SorceryClans3.Data.Models
                 LeadershipXP += r.NextDouble() * 0.02;
             if (LeadershipXP > 1.0)
                 LeadershipXP = 1.0;
+        }
+        public void TrainLead()
+        {
+            if (IsLeading)
+                return;
+            LeadAssessed = true;
+            if (LeadTrainRemains > 0)
+            {
+                Random r = new();
+                switch (r.Next(3))
+                {
+                    case 0: if (CharismaBase < 10) CharismaBase++; break;
+                    case 1: if (LogisticsBase < 10) LogisticsBase++; break;
+                    default: if (TacticsBase < 10) TacticsBase++; break;
+                }
+                LeadTrainRemains--;
+            }
         }
         private void LevelMedic(int odds = 4)
         {
@@ -497,7 +518,7 @@ namespace SorceryClans3.Data.Models
             if (Power != null)
                 lvl = (int)(0.85 * lvl);
             if (PowerLevel > 1000 && lvl > PowerLevel)
-                    lvl = PowerLevel + (lvl - PowerLevel) / 5;
+                lvl = PowerLevel + (lvl - PowerLevel) / 5;
             if (PowerLevel > 750 * PowerLimit)
                 lvl /= 2;
             if (PowerLevel > 950 * PowerLimit)
@@ -624,6 +645,55 @@ namespace SorceryClans3.Data.Models
             Medical.Assessed = true; //for testing
             Medical.Trained = true; //for testing
             Medical.MedicalPowerBase = 1;
+        }
+        public void CreateLeader()
+        {
+            if (PowerLevel < 2500)
+                return;
+            IsLeading = true;
+            LeadTrainRemains = 0;
+        }
+        public string LeadTrainDisplay
+        {
+            get
+            {
+                if (IsLeading)
+                    return "Trained";
+                if (!LeadAssessed)
+                    return "Unknown";
+                if (LeadTrainRemains <= 0)
+                    return "None";
+                if (LeadTrainRemains <= 3)
+                    return "Small";
+                if (LeadTrainRemains <= 6)
+                    return "Moderate";
+                if (LeadTrainRemains <= 9 || Charisma + Logistics + Tactics < 15)
+                    return "Great";
+                return "Tremendous";
+            }
+        }
+        public string LeadPotentialDisplay
+        {
+            get
+            {
+                if (IsLeading)
+                    return "Leading";
+                if (!LeadAssessed)
+                    return "Unknown";
+                int rawscore = Charisma + Logistics + Tactics;
+                int highscore = Math.Max(Math.Max(Charisma, Logistics),Tactics);
+                if (rawscore <= 5 && highscore <= 3)
+                    return "None";
+                if (rawscore <= 10 && highscore <= 5)
+                    return "Small";
+                if (rawscore <= 15 && highscore <= 7)
+                    return "Moderate";
+                if (rawscore <= 20 && highscore <= 9)
+                    return "Great";
+                if (rawscore <= 25)
+                    return "Tremendous";
+                return "Legendary";
+            }
         }
     }
 }
