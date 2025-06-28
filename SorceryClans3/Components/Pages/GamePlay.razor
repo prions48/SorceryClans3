@@ -912,7 +912,7 @@
         options.CloseOnEscapeKey = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome).ToList());
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome && e.Leaders.Count > 0).ToList());
         parameters.Add(nameof(TeamPicker.AllScores), true);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
@@ -920,20 +920,32 @@
         {
             if (result.Data is Team team)
             {
-                options = new DialogOptions();
-                options.CloseOnEscapeKey = true;
-                options.MaxWidth = MaxWidth.Large;
-                parameters = new DialogParameters();
-                parameters.Add(nameof(SoldierPicker.Soldiers), team.Leaders);
-                parameters.Add(nameof(SoldierPicker.ShowStats), true);
-                dialog = dialogService.Show<SoldierPicker>("Select leader to conduct training", parameters, options);
-                result = await dialog.Result;
-                if (result?.Canceled == false)
+                Soldier? leader = null;
+                if (team.Leaders.Count == 1)
                 {
-                    if (result.Data is Soldier soldier)
+                    leader = team.Leaders.FirstOrDefault();
+                }
+                else
+                {
+                    options = new DialogOptions();
+                    options.CloseOnEscapeKey = true;
+                    options.MaxWidth = MaxWidth.Large;
+                    parameters = new DialogParameters();
+                    parameters.Add(nameof(SoldierPicker.Soldiers), team.Leaders);
+                    parameters.Add(nameof(SoldierPicker.ShowStats), true);
+                    dialog = dialogService.Show<SoldierPicker>("Select leader to conduct training", parameters, options);
+                    result = await dialog.Result;
+                    if (result?.Canceled == false)
                     {
-                        Engine.StartTrainingMission(team, soldier);
+                        if (result.Data != null)
+                        {
+                            leader = result.Data as Soldier;
+                        }
                     }
+                }
+                if (leader != null)
+                {
+                    Engine.StartTrainingMission(team, leader);
                 }
             }
         }

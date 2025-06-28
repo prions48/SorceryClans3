@@ -1,11 +1,17 @@
+@inject IDialogService dialogService
 <MudDialog>
     <DialogContent>
         <MudTable Items="Soldiers" Striped Bordered>
             <HeaderContent>
                 <MudTh>Name</MudTh>
                 <MudTh>Team</MudTh>
-                <MudTh>Potential</MudTh>
-                <MudTh>Training</MudTh>
+                <MudTh>Lead Potential</MudTh>
+                <MudTh>Lead Training</MudTh>
+                <MudTh>Research Skill</MudTh>
+                <MudTh>Teaching Skill</MudTh>
+                <MudTh>Teaching Potential</MudTh>
+                <MudTh>CounterIntel Skill</MudTh>
+                <MudTh>CounterIntel Potential</MudTh>
                 <MudTh>Activate</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -13,6 +19,11 @@
                 <MudTd>@context.Team?.TeamName</MudTd>
                 <MudTd>@context.LeadPotentialDisplay</MudTd>
                 <MudTd>@context.LeadTrainDisplay</MudTd>
+                <MudTd>@context.ResearchDisplay</MudTd>
+                <MudTd>@context.TeachDisplay</MudTd>
+                <MudTd>@context.TeachDisplayPotential</MudTd>
+                <MudTd>@context.DisplayCounterIntel</MudTd>
+                <MudTd>@context.DisplayCounterPotential</MudTd>
                 <MudTd>
                     @if (context.PowerLevel >= 2500)
                     {
@@ -31,9 +42,31 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
-    private void Activate(Soldier soldier)
+    private async Task Activate(Soldier soldier)
     {
-        soldier.CreateLeader();
-        Soldiers.Remove(soldier);
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Small;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Text), $"Are you sure you want to promote {soldier.SoldierName} to a leader?{(soldier.LeadTrainRemains > 0 ? " They will lose the oppotunity to further develop as a leader." : "")}");
+        parameters.Add(nameof(ConfirmDialog.Button), "Confirm");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Info);
+        parameters.Add(nameof(ConfirmDialog.Color), soldier.LeadTrainRemains > 0 ? Color.Error : Color.Default);
+        var dialog = dialogService.Show<ConfirmDialog>("Confirm Removal", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            soldier.CreateLeader();
+            options = new DialogOptions();
+            options.CloseOnEscapeKey = true;
+            options.MaxWidth = MaxWidth.Small;
+            parameters = new DialogParameters();
+            parameters.Add(nameof(LeadershipDialog.Soldier), soldier);
+            dialog = dialogService.Show<LeadershipDialog>(soldier.SoldierName + " Leadership", parameters, options);
+            result = await dialog.Result;
+            //all done!
+            Soldiers.Remove(soldier);
+            StateHasChanged();
+        }
     }
 }

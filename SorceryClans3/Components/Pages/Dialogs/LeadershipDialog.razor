@@ -1,0 +1,14 @@
+<MudDialog>
+    <DialogContent>
+        <LeadInspector Soldier="Soldier" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter, EditorRequired] public Soldier Soldier { get; set; } = default!;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

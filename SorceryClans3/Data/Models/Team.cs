@@ -418,15 +418,21 @@ namespace SorceryClans3.Data.Models
             int rawlead = soldier.Charisma + soldier.Logistics + soldier.Tactics;
             double totallead = soldier.LeadershipXP * rawlead;
             Random r = new();
-            if (rawlead < 10 || r.NextDouble() * totallead < 3)
-                return false;
+            bool fail = rawlead < r.Next(16) + 5 || r.NextDouble() * totallead < 3;
             //success
             foreach (Soldier sold in GetAllSoldiers)
             {
-                sold.LevelLead();
-                sold.TrainLead();
+                if (fail)
+                {
+                    sold.LevelLead(10, 0.02);
+                }
+                else
+                {
+                    sold.LevelLead(4);
+                    sold.TrainLead();
+                }
             }
-            return true;
+            return !fail;
         }
     }
 }

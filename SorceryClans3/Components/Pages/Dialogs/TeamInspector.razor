@@ -89,6 +89,7 @@
         {
             Team.Soldiers.Remove(s);
             Team.Leaders.Remove(s);
+            s.Team = null;
             StateHasChanged();
         }
     }

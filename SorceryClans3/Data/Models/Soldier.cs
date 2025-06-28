@@ -27,7 +27,11 @@ namespace SorceryClans3.Data.Models
         public int HPBase { get; set; }
         public double LeadershipXP { get; set; }
         public bool LeadAssessed { get; set; } = false;
+        public double MaxTeach { get; set; }
+        public double TeachSkill { get; set; }
         public int LeadTrainRemains { get; set; }
+        public double CounterIntelMax { get; set; }
+        public double CounterIntelSkill { get; set; }
         public bool IsLeading { get; set; } = false;
         public int CharismaBase { get; set; }
         public int LogisticsBase { get; set; }
@@ -104,13 +108,31 @@ namespace SorceryClans3.Data.Models
             LogisticsBase = r.Next(11);
             TacticsBase = r.Next(11);
             IntegrityBase = r.Next(4, 8);
-            LeadershipXP = r.NextDouble() - 1.5;
+            SetSkills(r);
             CalcLimit();
             TravelBase = 5 + r.NextDouble() < .6 ? (r.Next(3) - 1) : r.Next(2);
             Medical = new Medical();
             HPBase = r.Next(5, 15);
             HPCurrent = HPMax;
-            ResearchAffinity = r.NextDouble() + 0.5;
+        }
+        private void SetSkills(Random r)
+        {
+            LeadershipXP = r.NextDouble() - 1.5;
+            LeadTrainRemains = r.Next(4) + (r.Next(2) == 0 ? r.Next(8) : r.Next(2));
+            MaxTeach = r.NextDouble() * 2; //linked to Charisma
+            ResearchAffinity = r.NextDouble() + 0.5; //linked to Logistics
+            CounterIntelMax = r.NextDouble();
+            if (MaxTeach < .7 && ResearchAffinity < 0.8 && CounterIntelMax < .5)
+            {
+                switch (r.Next(3))
+                {
+                    case 0: MaxTeach = .7 + r.NextDouble() * 1.3; if (CharismaBase < 6) CharismaBase = 6 + r.Next(5); break;
+                    case 1: ResearchAffinity = .8 + r.NextDouble() * 0.7; if (LogisticsBase < 6) LogisticsBase = 6 + r.Next(5); break;
+                    case 2: CounterIntelMax = 0.5 + r.NextDouble() * 0.5; if (TacticsBase < 6) TacticsBase = 6 + r.Next(5); break;
+                }
+            }
+            TeachSkill = MaxTeach * r.NextDouble();
+            CounterIntelSkill = CounterIntelMax * r.NextDouble();
         }
         public Soldier(Clan clan)
         {
@@ -129,12 +151,11 @@ namespace SorceryClans3.Data.Models
             LogisticsBase = r.Next(11);
             TacticsBase = r.Next(11);
             IntegrityBase = r.Next(4, 8);
-            LeadershipXP = r.NextDouble() - 1.5;
+            SetSkills(r);
             CalcLimit();
             HPBase = r.Next(5, 15) + clan.HPElite;
             HPCurrent = HPMax;
             Power = clan.Power?.GeneratePower();
-            ResearchAffinity = r.NextDouble() + 0.5;
             if (clan.Style != null && clan.Style.MinReqs.IsAbove(this))
             {
                 Styles.Add(clan.Style.CreateStyle());
@@ -440,23 +461,6 @@ namespace SorceryClans3.Data.Models
                 }
             }
         }
-        public string DisplayAffinity
-        {
-            get
-            {
-                if (ResearchAffinity < 0.6)
-                    return "Poor";
-                if (ResearchAffinity < 0.8)
-                    return "Fair";
-                if (ResearchAffinity < 1.0)
-                    return "Moderate";
-                if (ResearchAffinity < 1.2)
-                    return "Good";
-                if (ResearchAffinity < 1.4)
-                    return "Excellent";
-                return "Brilliant";
-            }
-        }
         public (Guid, int, bool) GainPower(int factor)
         {
             int pg = ModifyGain(factor);
@@ -472,18 +476,34 @@ namespace SorceryClans3.Data.Models
             LevelMedic();
             return (ID, pg, hp);
         }
-        public void LevelLead()
+        public void LevelLead(int additional = 10, double boost = 0.08)
         {
+            LevelExtraLeads(additional);
             if (!IsLeading)
                 return;
             if (LeadershipXP < .5)
-                LeadershipXP += (r.NextDouble() * 0.05) + 0.02;
+                LeadershipXP += (r.NextDouble() * boost) + 0.02;
             else if (LeadershipXP < .8)
-                LeadershipXP += (r.NextDouble() * 0.03) + 0.01;
+                LeadershipXP += (r.NextDouble() * boost / 2) + 0.01;
             else
-                LeadershipXP += r.NextDouble() * 0.02;
+                LeadershipXP += r.NextDouble() * boost / 4;
             if (LeadershipXP > 1.0)
                 LeadershipXP = 1.0;
+        }
+        private void LevelExtraLeads(int additional = 10)
+        {
+            if (additional > 1 && r.Next(additional) == 0)
+            {
+                CounterIntelSkill += r.NextDouble() * 0.05 + 0.02;
+                if (CounterIntelSkill > CounterIntelMax)
+                    CounterIntelSkill = CounterIntelMax;
+            }
+            if (additional > 1 && r.Next(additional) == 0)
+            {
+                TeachSkill += r.NextDouble() * 0.05 + 0.02;
+                if (TeachSkill > MaxTeach)
+                    TeachSkill = MaxTeach;
+            }
         }
         public void TrainLead()
         {
@@ -608,6 +628,8 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
+                if (!LeadAssessed)
+                    return "";
                 double total = ResearchAffinity;
                 if (total < .5)
                     return "Terrible";
@@ -660,14 +682,14 @@ namespace SorceryClans3.Data.Models
                 if (IsLeading)
                     return "Trained";
                 if (!LeadAssessed)
-                    return "Unknown";
+                    return "";
                 if (LeadTrainRemains <= 0)
-                    return "None";
+                    return "Achieved";
                 if (LeadTrainRemains <= 3)
                     return "Small";
                 if (LeadTrainRemains <= 6)
                     return "Moderate";
-                if (LeadTrainRemains <= 9 || Charisma + Logistics + Tactics < 15)
+                if (LeadTrainRemains <= 9)
                     return "Great";
                 return "Tremendous";
             }
@@ -679,20 +701,88 @@ namespace SorceryClans3.Data.Models
                 if (IsLeading)
                     return "Leading";
                 if (!LeadAssessed)
-                    return "Unknown";
+                    return "";
                 int rawscore = Charisma + Logistics + Tactics;
-                int highscore = Math.Max(Math.Max(Charisma, Logistics),Tactics);
+                int highscore = Math.Max(Math.Max(Charisma, Logistics), Tactics);
                 if (rawscore <= 5 && highscore <= 3)
                     return "None";
-                if (rawscore <= 10 && highscore <= 5)
+                if (rawscore <= 10 || highscore <= 5)
                     return "Small";
-                if (rawscore <= 15 && highscore <= 7)
+                if (rawscore <= 15 || highscore <= 7)
                     return "Moderate";
-                if (rawscore <= 20 && highscore <= 9)
+                if (rawscore <= 20 || highscore <= 9)
                     return "Great";
                 if (rawscore <= 25)
                     return "Tremendous";
                 return "Legendary";
+            }
+        }
+        public string TeachDisplay
+        {
+            get
+            {
+                if (!LeadAssessed)
+                    return "";
+                if (TeachSkill < .4)
+                    return "Terrible";
+                if (TeachSkill < .8)
+                    return "Mediocre";
+                if (TeachSkill < 1.2)
+                    return "Good";
+                if (TeachSkill < 1.6)
+                    return "Excellent";
+                return "Legendary";
+            }
+        }
+        public string TeachDisplayPotential
+        {
+            get
+            {
+                if (!LeadAssessed)
+                    return "";
+                double togain = MaxTeach - TeachSkill;
+                if (togain < .05)
+                    return "Achieved";
+                if (togain < .3)
+                    return "Integrating";
+                if (togain < .6)
+                    return "Progressing";
+                if (togain < .9)
+                    return "Developing";
+                return "Untapped";
+            }
+        }
+        public string DisplayCounterIntel
+        {
+            get
+            {
+                if (!LeadAssessed)
+                    return "";
+                if (CounterIntelSkill < .2)
+                    return "Poor";
+                if (CounterIntelSkill < .4)
+                    return "Fair";
+                if (CounterIntelSkill < .6)
+                    return "Good";
+                if (CounterIntelSkill < .85)
+                    return "Excellent";
+                return "Legendary";
+            }
+        }
+        public string DisplayCounterPotential
+        {
+            get
+            {
+                if (!LeadAssessed)
+                    return "";
+                double togain = CounterIntelMax - CounterIntelSkill;
+                if (togain < .05)
+                    return "Achieved";
+                if (togain < .2)
+                    return "Progressing";
+                if (togain < .6)
+                    return "Developing";
+                return "Untapped";
             }
         }
     }
