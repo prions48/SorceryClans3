@@ -36,8 +36,8 @@
 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Close" Disabled="!Completed">Close</MudButton>
 
 @code {
-    [Parameter] public Team MedicTeam { get; set; }
-    [Parameter] public Team PatientTeam { get; set; }
+    [Parameter, EditorRequired] public Team MedicTeam { get; set; }
+    [Parameter, EditorRequired] public Team PatientTeam { get; set; }
     [Parameter] public EventCallback CompleteMission { get; set; }
     private IList<MedicPatients> Medics { get; set; } = new List<MedicPatients>();
     private IList<Patient> Patients { get; set; } = new List<Patient>();

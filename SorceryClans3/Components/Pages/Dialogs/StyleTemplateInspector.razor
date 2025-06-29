@@ -1,4 +1,4 @@
-@namespace SorceryClans3.Components.Pages
+@namespace SorceryClans3.Components.Pages.Dialogs
 
 <MudSimpleTable Striped Bordered Outlined>
     <thead>
@@ -87,7 +87,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public StyleTemplate Style { get; set; }
+    [Parameter, EditorRequired] public StyleTemplate Style { get; set; }
     private bool ViewPower = false;
     private void OpenPower()
     {

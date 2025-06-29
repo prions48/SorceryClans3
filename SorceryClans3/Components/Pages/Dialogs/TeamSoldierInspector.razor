@@ -40,7 +40,8 @@
             }
         </td>
     </tr>
-    <TeamSoldierInspector Soldiers="s.SubSoldiers" ShowSubs="true" />
+
+@*    <TeamSoldierInspector Soldiers="s.SubSoldiers" ShowSubs="true" />*@  //beasts, lesser undead, etc...
 }
 
 <MudDialog @bind-Visible="ViewLead">
@@ -60,8 +61,8 @@
 @code {
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowSubs { get; set; } = false;
-    [Parameter] public Action<Soldier> ToggleLeader { get; set; }
-    [Parameter] public Action<Soldier> RemoveSoldier { get; set; }
+    [Parameter, EditorRequired] public Action<Soldier> ToggleLeader { get; set; }
+    [Parameter, EditorRequired] public Action<Soldier> RemoveSoldier { get; set; }
     [Parameter] public bool ActionsAvailable { get; set; } = false;
     private bool ViewPow = false;
     private Power? SelectedPower { get; set; }

@@ -118,7 +118,7 @@
 </MudSimpleTable>
 
 @code {
-    [Parameter] public Spell Spell { get; set; }
+    [Parameter, EditorRequired] public Spell Spell { get; set; }
     [Parameter] public IList<Soldier> AvailableSoldiers { get; set; } = [];
     private BeastHarvest? Harvest { get { return Spell?.Harvest; } }
     private async Task ApplyHarvest()
@@ -147,7 +147,7 @@
         parameters.Add("Soldiers", eligible);
         var dialog = dialogService.Show<SoldierPicker>("Select Soldier", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result?.Canceled == false)
         {
             Soldier? soldier = result.Data as Soldier;
             if (soldier != null)

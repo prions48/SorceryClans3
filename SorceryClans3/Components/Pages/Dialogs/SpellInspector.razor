@@ -75,6 +75,6 @@
 </MudStack>
 
 @code {
-    [Parameter] public Spell Spell { get; set; }
+    [Parameter, EditorRequired] public Spell Spell { get; set; }
     [Parameter] public IList<Soldier> AvailableSoldiers { get; set; } = [];
 }

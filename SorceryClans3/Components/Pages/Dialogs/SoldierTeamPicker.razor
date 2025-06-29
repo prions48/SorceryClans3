@@ -69,7 +69,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public List<Soldier> Soldiers { get; set; }
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     private bool ViewSoldierDialog { get; set; } = false;
     private List<Soldier> SelectedSoldiers { get; set; } = [];
     private Soldier? SelectedSoldier { get; set; }

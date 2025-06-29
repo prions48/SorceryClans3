@@ -96,7 +96,7 @@
         ViewLeadership = false;
         SelectedSoldier = null;
     }
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Submit(Soldier sold)
     {
         MudDialog.Close(DialogResult.Ok(sold));
