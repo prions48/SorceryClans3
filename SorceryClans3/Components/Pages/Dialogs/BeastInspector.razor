@@ -42,7 +42,7 @@
 
 @code {
     [Parameter, EditorRequired] public Beast Beast { get; set; }
-    private Soldier Soldier { get; set; }
+    private Soldier Soldier { get; set; } = new();
     protected override void OnInitialized()
     {
         Soldier = Beast.GenerateBeast();

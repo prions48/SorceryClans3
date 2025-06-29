@@ -85,7 +85,7 @@
 
 
 @code{
-    [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public IPower? Power { get; set; }
     [Parameter] public int? Powerlevel { get; set; }
     private void Cancel() => MudDialog.Cancel();

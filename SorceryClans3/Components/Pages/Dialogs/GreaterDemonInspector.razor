@@ -27,5 +27,5 @@
 <PowerInspector Power="@Demon.GeneratePower()" />
 
 @code {
-    [Parameter] public GreaterDemon Demon { get; set; }
+    [Parameter, EditorRequired] public GreaterDemon Demon { get; set; }
 }

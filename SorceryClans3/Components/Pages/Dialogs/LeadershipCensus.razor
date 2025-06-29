@@ -39,7 +39,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private async Task Activate(Soldier soldier)

@@ -36,7 +36,7 @@
 
 @code {
     [Parameter] public List<Artifact> Artifacts { get; set; } = [];
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private void SelectArtifact(Artifact art)
     {

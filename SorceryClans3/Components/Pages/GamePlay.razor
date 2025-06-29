@@ -467,7 +467,7 @@
                 Soldier soldier = new Soldier(clan);
                 if (r.Next(soldier.PowerLevel) > 1500)
                 {
-                    soldier.IsLeading = true;
+                    soldier.CreateLeader();
                     soldier.LeadershipXP = r.NextDouble()*1.3 - 0.4;
                 }
                 if (r.Next(2) == 0 && r.Next(soldier.PowerLevel) > 1000)
@@ -592,7 +592,7 @@
             }
         }
     }
-    private async Task StartTime() //for non-real-time
+    private void StartTime() //for non-real-time
     {
         List<GameEventDisplay> displays = [];
         bool continuing = false;
@@ -624,7 +624,7 @@
         HistoryEvents.AddRange(DisplayEvents);
         DisplayEvents.Clear();
     }
-    private Timer Timer { get; set; }
+    private Timer Timer { get; set; } = new();
     private bool ShowEventDialog { get; set; } = false;
 
     #region Academy functions
@@ -638,6 +638,7 @@
         parameters.Add("CScore", true);
         parameters.Add("MScore", true);
         parameters.Add("SScore", true);
+        parameters.Add("Teach", true);
         parameters.Add("KScore", false);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
@@ -658,10 +659,11 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add("Soldiers", Engine.Academy.Teams.SelectMany(e => e.GetAllSoldiers.Where(f => !Engine.Academy.HeadInstructors.Values.Select(g => g?.ID ?? Guid.Empty).Contains(f.ID))).ToList());
-        parameters.Add("ShowStats", true);
+        parameters.Add(nameof(SoldierPicker.Soldiers), Engine.Academy.Teams.SelectMany(e => e.GetAllSoldiers.Where(f => !Engine.Academy.HeadInstructors.Values.Select(g => g?.ID ?? Guid.Empty).Contains(f.ID))).ToList());
+        parameters.Add(nameof(SoldierPicker.ShowStats), true);
+        parameters.Add(nameof(SoldierPicker.ShowTeach), true);
         var dialog = dialogService.Show<SoldierPicker>("Select " + role.ToString(), parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

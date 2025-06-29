@@ -434,5 +434,23 @@ namespace SorceryClans3.Data.Models
             }
             return !fail;
         }
+        public string TeachDisplay
+        {
+            get
+            {
+                if (GetAllSoldiers.Count == 0)
+                    return "";
+                double avg = GetAllSoldiers.Where(e => e.LeadAssessed).Sum(e => e.TeachSkill) / GetAllSoldiers.Count;
+                if (avg < 0.3)
+                    return "Terrible";
+                if (avg < 0.6)
+                    return "Poor";
+                if (avg < 1.0)
+                    return "Mediocre";
+                if (avg < 1.5)
+                    return "Excellent";
+                return "Legendary";
+            }
+        }
     }
 }

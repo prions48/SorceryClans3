@@ -14,6 +14,10 @@
                     <MudTh>S</MudTh>
                     <MudTh>Lead</MudTh>
                 }
+                @if (ShowTeach)
+                {
+                    <MudTh>Teach</MudTh>
+                }
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -31,6 +35,10 @@
                             <MudIconButton OnClick="() => SelectLeader(context)" Icon="@Icons.Material.Filled.Group" Color="Color.Info" />
                         }
                     </MudTd>
+                }
+                @if (ShowTeach)
+                {
+                    <MudTd>@context.TeachDisplay</MudTd>
                 }
                 <MudTd>
                     <MudIconButton OnClick="() => SelectSoldier(context)" Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" />
@@ -64,6 +72,7 @@
 @code {
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
     [Parameter] public bool ShowStats { get; set; } = false;
+    [Parameter] public bool ShowTeach { get; set; } = false;
     private bool ViewSoldier { get; set; } = false;
     private bool ViewLeadership { get; set; } = false;
     private Soldier? SelectedSoldier { get; set; }

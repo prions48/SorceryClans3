@@ -58,7 +58,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Team Team { get; set; } = new();
     [Parameter] public List<Soldier> AvailableSoldiers { get; set; } = [];
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

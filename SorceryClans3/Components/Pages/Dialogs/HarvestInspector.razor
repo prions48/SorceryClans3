@@ -119,7 +119,7 @@
 
 @code {
     [Parameter] public Spell Spell { get; set; }
-    [Parameter] public IList<Soldier> AvailableSoldiers { get; set; }
+    [Parameter] public IList<Soldier> AvailableSoldiers { get; set; } = [];
     private BeastHarvest? Harvest { get { return Spell?.Harvest; } }
     private async Task ApplyHarvest()
     {

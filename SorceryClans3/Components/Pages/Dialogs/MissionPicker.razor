@@ -47,7 +47,7 @@
     [Parameter] public List<Mission> Missions { get; set; } = [];
     [Parameter] public List<Team> Teams { get; set; } = [];
     [Parameter] public bool RealTime { get; set; } = false;
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private async Task SelectTeamForMission(Mission mission)
     {

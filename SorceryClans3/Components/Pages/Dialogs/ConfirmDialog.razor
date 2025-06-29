@@ -9,7 +9,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public string Text { get; set; } = "Are you sure you want to do that?";
     [Parameter] public MudBlazor.Color Color { get; set; } = Color.Default;
     [Parameter] public string Button { get; set; } = "Confirm";

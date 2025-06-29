@@ -8,7 +8,7 @@
 </MudStack>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public int Max { get; set; } = 99;
     [Parameter] public string Label { get; set; } = "Enter Value";
     private int? Number { get; set; } = null;

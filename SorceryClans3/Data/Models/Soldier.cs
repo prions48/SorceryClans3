@@ -672,6 +672,7 @@ namespace SorceryClans3.Data.Models
         {
             if (PowerLevel < 2500)
                 return;
+            LeadAssessed = true; //for testing mostly
             IsLeading = true;
             LeadTrainRemains = 0;
         }

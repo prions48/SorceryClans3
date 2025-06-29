@@ -48,7 +48,7 @@
     [Parameter] public List<DefenseStructure> Structures { get; set; } = [];
     [Parameter] public List<DefenseType> InProgress { get; set; } = [];
     [Parameter] public int Money { get; set; }
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private void AddBuild(DefenseType type)
     {

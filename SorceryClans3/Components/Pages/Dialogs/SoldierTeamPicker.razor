@@ -92,7 +92,7 @@
         SelectedSoldier = null;
         ViewSoldierDialog = false;
     }
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Submit()
     {
         Team newteam = new Team() {

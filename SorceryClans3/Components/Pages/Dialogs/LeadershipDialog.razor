@@ -8,7 +8,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter, EditorRequired] public Soldier Soldier { get; set; } = default!;
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
 }

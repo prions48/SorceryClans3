@@ -75,7 +75,7 @@
 @code {
     [Parameter, EditorRequired] public ClientCity City { get; set; }
     [Parameter] public bool IncludeTeam { get; set; } = false;
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     private Team? SelectedTeam { get; set; } = null;
     private bool RoundTrip { get; set; } = false;
     private void Select(Team team, bool round)

@@ -22,6 +22,10 @@
                     {
                         <th>Healing</th>
                     }
+                    @if (Teach)
+                    {
+                        <th>Teach</th>
+                    }
                     <th>Color</th>
                     <th>Select</th>
                 </tr>
@@ -47,6 +51,10 @@
                         {
                             <td>@team.KScore</td>
                         }
+                        @if (Teach)
+                        {
+                            <td>@team.TeachDisplay</td>
+                        }
                         <td>
                             <MagicIcons Colors="@(team.GetColors)" />
                         </td>
@@ -62,13 +70,14 @@
 </MudDialog>
 
 @code {
-    [Parameter] public List<Team> AvailableTeams { get; set; }
+    [Parameter] public List<Team> AvailableTeams { get; set; } = [];
     [Parameter] public bool AllScores { get; set; } = false;
     [Parameter] public bool CScore { get; set; } = false;
     [Parameter] public bool MScore { get; set; } = false;
     [Parameter] public bool SScore { get; set; } = false;
+    [Parameter] public bool Teach { get; set; } = false;
     [Parameter] public bool KScore { get; set; } = false;
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Submit(Team team)
     {
         MudDialog.Close(DialogResult.Ok(team));
