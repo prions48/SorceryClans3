@@ -250,7 +250,7 @@
                             }
                             else
                             {
-                                <MudIconButton Icon="@Icons.Material.TwoTone.Send" Color="Color.Info" OnClick="() => DefenseUnassign(context)" />
+                                <MudIconButton Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Warning" OnClick="() => DefenseUnassign(context)" />
                             }
                         </MudTd>
                     </RowTemplate>
@@ -608,8 +608,7 @@
         ShowEventDialog = DisplayEvents.Count > 0;
         //await ShowEvents(DisplayEvents);
     }
-
-    private async void OnTimedEvent(Object? source, ElapsedEventArgs args)
+    private async void OnTimedEvent(Object? source, ElapsedEventArgs args) //for real time
     {
         await InvokeAsync(() => {
             DisplayEvents.AddRange(Engine.ResolveEvents());

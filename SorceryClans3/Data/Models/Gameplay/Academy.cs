@@ -71,11 +71,11 @@ namespace SorceryClans3.Data.Models
             List<AcademyRole> roles = [];
             foreach (Soldier sold in team.GetAllSoldiers)
             {
-                if (HeadInstructors.Values.Select(e => e.ID).Contains(sold.ID))
+                if (HeadInstructors.Values.Where(e => e != null).Select(e => e!.ID).Contains(sold.ID))
                 {
-                    foreach (KeyValuePair<AcademyRole, Soldier> kvp in HeadInstructors)
+                    foreach (KeyValuePair<AcademyRole, Soldier?> kvp in HeadInstructors)
                     {
-                        if (kvp.Value.ID == sold.ID)
+                        if (kvp.Value != null && kvp.Value.ID == sold.ID)
                         {
                             roles.Add(kvp.Key);
                         }

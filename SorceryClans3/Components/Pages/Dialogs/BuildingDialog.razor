@@ -20,7 +20,7 @@
                 @foreach (DefenseType type in Types)
                 {
                     <tr>
-                        <td>Watch Tower</td>
+                        <td>@type.ToString()</td>
                         <td>@Structures.Count(e => e.Type == type)</td>
                         <td>@Structures.Count(e => e.Type == type && e.Team != null)</td>
                         <td>@InProgress.Count(e => e == type)</td>
@@ -63,5 +63,5 @@
     {
         MudDialog.Close(DialogResult.Ok(ToBuild));
     }
-    private List<DefenseType> Types { get; set; } = new() { DefenseType.WatchTower, DefenseType.SafeHouse };
+    private List<DefenseType> Types { get; set; } = new() { DefenseType.WatchTower, DefenseType.SafeHouse, DefenseType.Hospital };
 }

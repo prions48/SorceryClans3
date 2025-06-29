@@ -2,8 +2,8 @@ namespace SorceryClans3.Data.Models
 {
     public class LesserDemon
     {
-        private string dtype;
-        private string dname;
+        private string dtype = "";
+        private string dname = "";
         public string DemonName { get { return dtype + " " + dname; } }
         private int power;
         private int cbase;

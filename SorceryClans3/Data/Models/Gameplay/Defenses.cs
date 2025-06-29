@@ -33,7 +33,8 @@ namespace SorceryClans3.Data.Models
     public enum DefenseType
     {
         WatchTower = 0,
-        SafeHouse = 1
+        SafeHouse = 1,
+        Hospital = 2
     }
     public static class DefenseUtils
     {
@@ -43,6 +44,7 @@ namespace SorceryClans3.Data.Models
             {
                 case DefenseType.WatchTower: return 10000;
                 case DefenseType.SafeHouse: return 15000;
+                case DefenseType.Hospital: return 7500;
                 default: return 0;
             }
         }
@@ -52,6 +54,7 @@ namespace SorceryClans3.Data.Models
             {
                 case DefenseType.WatchTower: return 8;
                 case DefenseType.SafeHouse: return 8;
+                case DefenseType.Hospital: return 3;
                 default: return 0;
             }
         }
