@@ -108,6 +108,7 @@
             if (result.Data is Soldier sold)
             {
                 Team.Soldiers.Add(sold);
+                sold.Team = Team;
             }
         }
     }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SorceryClans3.Data.Models
 {
     public class Mission
@@ -6,8 +8,8 @@ namespace SorceryClans3.Data.Models
         protected int Seed { get; set; }
         public Team? AttemptingTeam { get; set; }
         public MissionType Type { get; set; } = MissionType.Mercenary;
-        public ClientCity Client { get; set; }
-        public MapLocation Location { get; set; }
+        public ClientCity Client { get; set; } = new(0);
+        public MapLocation? Location { get; set; }
         public ClientImportance Importance { get; set; }
         public DateTime ExpirationDate { get; set; }
         public IList<string> Rewards

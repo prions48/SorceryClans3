@@ -105,7 +105,7 @@ namespace SorceryClans3.Data.Models
             }
             if (minusscore > mainscore)
                 return 0;
-            return (mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Blademaster ? 2 : 1);
+            return s.TeachSkill * (s.Charisma + mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Blademaster ? 2 : 1);
         }
         public static double MagAcadScore(Soldier? s, AcademyRole arole)
         {
@@ -123,7 +123,7 @@ namespace SorceryClans3.Data.Models
             }
             if (minusscore > mainscore)
                 return 0;
-            return (mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Spellmaster ? 2 : 1);
+            return s.TeachSkill * (s.Charisma + mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Spellmaster ? 2 : 1);
         }
         public static double SubAcadScore(Soldier? s, AcademyRole arole)
         {
@@ -141,7 +141,7 @@ namespace SorceryClans3.Data.Models
             }
             if (minusscore > mainscore)
                 return 0;
-            return (mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Spymaster ? 2 : 1);
+            return s.TeachSkill * (s.Charisma + mainscore - minusscore) * Math.Log10(s.PowerLevel) * (arole == AcademyRole.Spymaster ? 2 : 1);
         }
         public static double CoachScores(List<Soldier> solds, List<Guid> excludes)
         {
@@ -150,7 +150,7 @@ namespace SorceryClans3.Data.Models
             {
                 if (excludes.Contains(sold.ID) || sold.PowerLevel <= 1)
                     continue;
-                score += Math.Log10(sold.PowerLevel) * (sold.Combat + sold.Magic + sold.Subtlety) / 5;
+                score += Math.Log10(sold.PowerLevel) * sold.TeachSkill * (sold.Combat + sold.Magic + sold.Subtlety + sold.Charisma) / 5;
             }
             return score;
         }

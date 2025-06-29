@@ -259,9 +259,9 @@
             <MudTabPanel Text="Academy">
                 <MudStack>
                     <MudStack Row>
-                        <MudText>CScore: @Engine.Academy.CombatScore</MudText>
-                        <MudText>MScore: @Engine.Academy.MagicScore</MudText>
-                        <MudText>SScore: @Engine.Academy.SubtletyScore</MudText>
+                        <MudText>CScore: @Engine.Academy.CombatScore.ToString("N1")</MudText>
+                        <MudText>MScore: @Engine.Academy.MagicScore.ToString("N1")</MudText>
+                        <MudText>SScore: @Engine.Academy.SubtletyScore.ToString("N1")</MudText>
                     </MudStack>
                     <MudSimpleTable Striped Bordered>
                         <thead>
@@ -552,7 +552,7 @@
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
         var parameters = new DialogParameters();
-        parameters.Add("DisplayEvents", displays);
+        parameters.Add(nameof(DisplayEventDialog.DisplayEvents), displays);
         var dialog = dialogService.Show<DisplayEventDialog>("View Events", parameters, options);
         var result = await dialog.Result;
         int i = 0;
@@ -574,13 +574,13 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
         var parameters = new DialogParameters();
-        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null).ToList());
-        parameters.Add("CScore", mission.CScore.HasValue);
-        parameters.Add("MScore", mission.MScore.HasValue);
-        parameters.Add("SScore", mission.SScore.HasValue);
-        parameters.Add("KScore", mission.KScore.HasValue);
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null).ToList());
+        parameters.Add(nameof(TeamPicker.CScore), mission.CScore.HasValue);
+        parameters.Add(nameof(TeamPicker.MScore), mission.MScore.HasValue);
+        parameters.Add(nameof(TeamPicker.SScore), mission.SScore.HasValue);
+        parameters.Add(nameof(TeamPicker.KScore), mission.KScore.HasValue);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -632,14 +632,14 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
         var parameters = new DialogParameters();
-        parameters.Add("AvailableTeams", Teams.Where(e => e.IsAtHome && e.MissionID == null).ToList());
-        parameters.Add("CScore", true);
-        parameters.Add("MScore", true);
-        parameters.Add("SScore", true);
-        parameters.Add("Teach", true);
-        parameters.Add("KScore", false);
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.IsAtHome && e.MissionID == null).ToList());
+        parameters.Add(nameof(TeamPicker.CScore), true);
+        parameters.Add(nameof(TeamPicker.MScore), true);
+        parameters.Add(nameof(TeamPicker.SScore), true);
+        parameters.Add(nameof(TeamPicker.Teach), true);
+        parameters.Add(nameof(TeamPicker.KScore), false);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -684,11 +684,11 @@
         options.CloseOnEscapeKey = true;
         options.FullWidth = true;
         var parameters = new DialogParameters();
-        parameters.Add("AvailableTeams", Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison) || (e.Location == city.Location && !city.Teams.Contains(e) && !liaison))).ToList());
-        parameters.Add("CScore", true);
-        parameters.Add("MScore", true);
-        parameters.Add("SScore", true);
-        parameters.Add("KScore", true);
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison) || (e.Location == city.Location && !city.Teams.Contains(e) && !liaison))).ToList());
+        parameters.Add(nameof(TeamPicker.CScore), true);
+        parameters.Add(nameof(TeamPicker.MScore), true);
+        parameters.Add(nameof(TeamPicker.SScore), true);
+        parameters.Add(nameof(TeamPicker.KScore), true);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -747,9 +747,9 @@
         options.FullWidth = true;
         options.MaxWidth = MaxWidth.ExtraLarge;
         var parameters = new DialogParameters();
-        parameters.Add("Contracts", city.Contracts);
-        parameters.Add("Settings", Engine.Settings);
-        parameters.Add("Teams", Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
+        parameters.Add(nameof(ContractPicker.Contracts), city.Contracts);
+        parameters.Add(nameof(ContractPicker.Settings), Engine.Settings);
+        parameters.Add(nameof(ContractPicker.Teams), Teams.Where(e => e.IsAtHome && e.MissionID == null).Concat(city.AllTeams.Where(e => e.MissionID == null)).ToList());
         var dialog = dialogService.Show<ContractPicker>("Missions for " + city.CityName, parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -807,7 +807,7 @@
         options.FullWidth = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add("Artifacts", Engine.Resources.Artifacts);
+        parameters.Add(nameof(ArtifactPicker.Artifacts), Engine.Resources.Artifacts);
         var dialog = dialogService.Show<ArtifactPicker>("All Artifacts", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -820,9 +820,9 @@
                 options.FullWidth = true;
                 options.MaxWidth = MaxWidth.Large;
                 parameters = new DialogParameters();
-                parameters.Add("Artifact", artifact);
-                parameters.Add("Soldiers", Engine.Soldiers.Where(e => e.Team == null || (e.Team.IsAtHome && e.Team.MissionID == null)).ToList());
-                parameters.Add("SoldierPicker", true);
+                parameters.Add(nameof(ArtifactInspector.Artifact), artifact);
+                parameters.Add(nameof(ArtifactInspector.Soldiers), Engine.Soldiers.Where(e => e.Team == null || (e.Team.IsAtHome && e.Team.MissionID == null)).ToList());
+                parameters.Add(nameof(ArtifactInspector.SoldierPicker), true);
                 dialog = dialogService.Show<ArtifactInspector>(artifact.ArtifactName, parameters, options);
                 result = await dialog.Result;
                 if (result?.Canceled == false)
@@ -851,9 +851,9 @@
         options.FullWidth = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add("Money", Engine.Resources.Money);
-        parameters.Add("Structures", Engine.Defenses.Structures);
-        parameters.Add("InProgress", Engine.InProgressBuildings());
+        parameters.Add(nameof(BuildingDialog.Money), Engine.Resources.Money);
+        parameters.Add(nameof(BuildingDialog.Structures), Engine.Defenses.Structures);
+        parameters.Add(nameof(BuildingDialog.InProgress), Engine.InProgressBuildings());
         var dialog = dialogService.Show<BuildingDialog>("Buildings", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

@@ -4,8 +4,8 @@ namespace SorceryClans3.Components.Pages.Dialogs
 {
     public class MedicPatients
     {
-        public string MedicID { get; set; }
-        public string MedicName { get; set; }
+        public string MedicID { get; set; } = "";
+        public string MedicName { get; set; } = "";
         public int MPBase { get; set; }
         public int Fatigue { get; set; }
         public string FatigueIcon
