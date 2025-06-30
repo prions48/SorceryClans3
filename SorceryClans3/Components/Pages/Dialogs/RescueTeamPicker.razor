@@ -13,15 +13,24 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (Team team in AvailableTeams)
+                @foreach (RescueTeam team in Rescuers)
                 {
                     <tr>
-                        <td>@team.TeamName</td>
-                        <td>@team.KScore</td>
-                        <td>@Location.GetDistance(team.Location ?? MapLocation.HomeBase).ToString("N1")</td>
-                        <td>@team.DScore</td>
+                        <td>@team.Team.TeamName</td>
+                        <td>@team.Team.KScore</td>
                         <td>
-                            <MudIconButton OnClick="() => Submit(team)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Info" />
+                            @if (team.InterceptPoint == null)
+                            {
+                                <i>Out of range</i>
+                            }
+                            else
+                            {
+                                @team.InterceptPoint.GetDistance(team.Team.BaseLocation).ToString("N1")
+                            }
+                        </td>
+                        <td>@team.Team.DScore</td>
+                        <td>
+                            <MudIconButton OnClick="() => Submit(team.Team)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Info" />
                         </td>
                     </tr>
                 }
@@ -32,12 +41,23 @@
 </MudDialog>
 
 @code {
+    [Parameter, EditorRequired] public Team Rescuee { get; set; }
     [Parameter] public List<Team> AvailableTeams { get; set; } = [];
     [Parameter] public MapLocation Location { get; set; } = new();
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    private List<RescueTeam> Rescuers { get; set; } = [];
+    protected override void OnInitialized()
+    {
+        Rescuers = AvailableTeams.Select(e => new RescueTeam() { Team = e, InterceptPoint = Location.InterceptionPoint(Rescuee, e)}).ToList();
+    }
     void Submit(Team team)
     {
         MudDialog.Close(DialogResult.Ok(team));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    public class RescueTeam
+    {
+        public Team Team { get; set; }
+        public MapLocation? InterceptPoint { get; set; }
+    }
 }

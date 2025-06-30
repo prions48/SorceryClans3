@@ -469,11 +469,11 @@
         Timer.Elapsed += OnTimedEvent;
         Random r = new Random();
         int x = 3;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             Clan clan = new Clan(x);
             Engine.Clans.Add(clan);
-            for (int j = 0; j < r.Next(3)+3; j++)
+            for (int j = 0; j < r.Next(3)+6; j++)
             {
                 Soldier soldier = new Soldier(clan);
                 if (r.Next(soldier.PowerLevel) > 1500)
@@ -488,7 +488,7 @@
                 }
                 Engine.Soldiers.Add(soldier);
             }
-            x = 1;
+            x = 2;
         }
         //resources
         Engine.Resources.Money = 50000 + r.Next(10000);
@@ -1008,10 +1008,9 @@
         options2.CloseOnEscapeKey = true;
         options2.MaxWidth = MaxWidth.Medium;
         var parameters2 = new DialogParameters();
-        List<Team> teams = Teams.Where(e => e.MissionID == null && e.IsAtHome && e.KScore > 0).ToList();
-        teams.AddRange(display.DisplayMission.Client.AvailableTeams.Where(e => e.KScore > 0));
-        parameters2.Add(nameof(RescueTeamPicker.AvailableTeams), teams);
-        parameters2.Add(nameof(RescueTeamPicker.Location), midpoint);
+        parameters2.Add(nameof(RescueTeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.KScore > 0).ToList());
+        parameters2.Add(nameof(RescueTeamPicker.Rescuee), display.DisplayTeam);
+        parameters2.Add(nameof(RescueTeamPicker.Location), display.DisplayMission.Location!);
         var dialog2 = dialogService.Show<RescueTeamPicker>("Select Team", parameters2, options2);
         var result2 = await dialog2.Result;
         if (result2?.Canceled == false)

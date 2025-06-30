@@ -326,7 +326,7 @@ namespace SorceryClans3.Data.Models
                 switch (Health)
                 {
                     case HealthLevel.Uninjured: return 1.0;
-                    case HealthLevel.Hurt: return 1.0;
+                    case HealthLevel.Hurt: return 0.95;
                     case HealthLevel.Wounded: return 0.8;
                     case HealthLevel.Critical: return 0.5;
                     default: return 0;
