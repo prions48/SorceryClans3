@@ -1,0 +1,43 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Striped Bordered Outlined>
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>Medic</th>
+                    <th>Distance</th>
+                    <th>Speed</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Team team in AvailableTeams)
+                {
+                    <tr>
+                        <td>@team.TeamName</td>
+                        <td>@team.KScore</td>
+                        <td>@Location.GetDistance(team.Location ?? MapLocation.HomeBase).ToString("N1")</td>
+                        <td>@team.DScore</td>
+                        <td>
+                            <MudIconButton OnClick="() => Submit(team)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Info" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public List<Team> AvailableTeams { get; set; } = [];
+    [Parameter] public MapLocation Location { get; set; } = new();
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    void Submit(Team team)
+    {
+        MudDialog.Close(DialogResult.Ok(team));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

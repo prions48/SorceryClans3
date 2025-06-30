@@ -318,6 +318,7 @@ namespace SorceryClans3.Data.Models
         }
         public bool IsHealer { get { return Medical != null && Medical.Trained; } }
         public bool IsInjured { get { return HPCurrent < HPMax || Health != HealthLevel.Uninjured; } }
+        public bool IsAlive { get { return HPCurrent >= 1 && Health != HealthLevel.Dead; } }
         private double HurtFactor
         {
             get
@@ -567,6 +568,7 @@ namespace SorceryClans3.Data.Models
             {
                 Health = this.Health,
                 SoldierName = this.SoldierName,
+                PowerLevel = this.PowerLevel,
                 HPCurrent = this.HPCurrent,
                 _hpMax = this.HPMax,
                 PatientID = this.ID

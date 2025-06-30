@@ -380,27 +380,38 @@
 <MudDialog @bind-Visible="ShowEventDialog" Options="new DialogOptions() { CloseOnEscapeKey=false, BackdropClick=false, FullWidth=true, MaxWidth=MaxWidth.ExtraLarge }">
     <DialogContent>
         <MudSimpleTable Striped Bordered>
+            <thead>
+                <tr>
+                    <th>Info</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
             <tbody>
                 @foreach (GameEventDisplay display in DisplayEvents)
                 {
                     <tr>
                         <td>@display.DisplayText</td>
+                        <td>
+                            @if (display.OpenHealDialog)
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.MedicalServices" Color="Color.Error" OnClick="() => OpenHealDialog(display)" />
+                            }
+                            @if (display.DisplayTeam != null)
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.RemoveRedEye" Color="Color.Info" OnClick="() => ManageTeam(display.DisplayTeam, false)" />
+                            }
+                            @if (display.OpenRescueDialog)
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.ShieldMoon" Color="Color.Primary" OnClick="() => OpenRescueDialog(display)" />
+                            }
+                        </td>
                     </tr>
-                    @if (display.DisplayMission != null || display.DisplayTeam != null)
-                    {
-                        <tr>
-                            <td>
-                                @display.DisplayMission?.MoneyReward.ToString("C")
-                                @display.DisplayTeam?.TeamName
-                            </td>
-                        </tr>
-                    }
                 }
             </tbody>
         </MudSimpleTable>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" OnClick="CloseEventDialog">Close</MudButton>
+        <MudButton Variant="Variant.Filled" OnClick="CloseEventDialog" Disabled="DisplayEvents.Any(e => e.OpenHealDialog || e.OpenRescueDialog)">Close</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -524,7 +535,7 @@
             }
         }
     }
-    private async Task ManageTeam(Team team)
+    private async Task ManageTeam(Team team, bool addsoldiers = true)
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
@@ -532,7 +543,8 @@
         options.FullWidth = true;
         var parameters = new DialogParameters();
         parameters.Add(nameof(TeamInspector.Team), team);
-        parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null).ToList());
+        if (addsoldiers)
+            parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null).ToList());
         var dialog = dialogService.Show<TeamInspector>("View Team " + team.TeamName, parameters, options);
         var result = await dialog.Result;
     }
@@ -903,6 +915,114 @@
     private void DefenseUnassign(DefenseStructure structure)
     {
         Engine.UnassignDefense(structure);
+    }
+    private async Task OpenHealDialog(GameEventDisplay display)
+    {
+        if (!display.OpenHealDialog || display.DisplayTeam == null)
+            return;
+        Team? medic = null;
+        Team? patient = null;
+        List<Team> medics = Engine.Defenses.GetTeams(DefenseType.Hospital);
+        if (display.DisplayTeam2 != null)
+        {
+            medics = [display.DisplayTeam];
+            medic = display.DisplayTeam;
+            patient = display.DisplayTeam2;
+        }
+        else
+        {
+            patient = display.DisplayTeam;
+            if (medics.Count == 0)
+            {
+                Snackbar.Add("No available medics to heal at home base.", Severity.Warning);
+                display.OpenHealDialog = false;
+                return;
+            }
+            else if (medics.Count == 1)
+            {
+                medic = medics.FirstOrDefault();
+            }
+            else
+            {
+                var options2 = new DialogOptions();
+                options2.CloseOnEscapeKey = true;
+                options2.MaxWidth = MaxWidth.Large;
+                var parameters2 = new DialogParameters();
+                parameters2.Add(nameof(TeamPicker.AvailableTeams), medics);
+                parameters2.Add(nameof(TeamPicker.KScore), true);
+                var dialog2 = dialogService.Show<TeamPicker>("Assign Medics", parameters2, options2);
+                var result2 = await dialog2.Result;
+                if (result2?.Canceled == false)
+                {
+                    if (result2.Data is Team team)
+                    {
+                        medic = team;
+                    }
+                }
+            }
+        }
+        if (medic == null)
+        {
+            Snackbar.Add("No healing selected for Team " + display.DisplayTeam.TeamName + ".", Severity.Warning);
+            return;
+        }
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(HealDialog.PatientTeam), patient);
+        parameters.Add(nameof(HealDialog.MedicTeam), medic);
+        var dialog = dialogService.Show<HealDialog>("Healing for Team " + (patient.TeamName), parameters, options);
+        var result = await dialog.Result;
+        display.OpenHealDialog = false;
+    }
+    private async Task OpenRescueDialog(GameEventDisplay display)
+    {
+        if (display.DisplayTeam == null || display.DisplayMission == null)
+        {
+            display.OpenRescueDialog = false;
+            return;
+        }
+        if (!Engine.Teams.Any(e => e.IsAtHome && e.MissionID == null && e.KScore > 0) && !display.DisplayMission.Client.AvailableTeams.Any(e => e.MissionID == null && e.KScore > 0))
+        {
+            Snackbar.Add("No teams are available to rescue Team " + display.DisplayTeam.TeamName + ".", Severity.Warning);
+            display.OpenRescueDialog = false;
+            return;
+        }
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Small;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ConfirmDialog.Text), $"Do you want to send a rescue team to help Team " + display.DisplayTeam.TeamName + "?");
+        parameters.Add(nameof(ConfirmDialog.Button), "Yes, Send");
+        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Info);
+        var dialog = dialogService.Show<ConfirmDialog>("Confirm Removal", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == true)
+        {
+            display.OpenRescueDialog = false;
+            return;
+        }
+        MapLocation midpoint = display.DisplayMission.Location!.GetMidpoint(display.DisplayTeam.Location!);
+        var options2 = new DialogOptions();
+        options2.CloseOnEscapeKey = true;
+        options2.MaxWidth = MaxWidth.Medium;
+        var parameters2 = new DialogParameters();
+        List<Team> teams = Teams.Where(e => e.MissionID == null && e.IsAtHome && e.KScore > 0).ToList();
+        teams.AddRange(display.DisplayMission.Client.AvailableTeams.Where(e => e.KScore > 0));
+        parameters2.Add(nameof(RescueTeamPicker.AvailableTeams), teams);
+        parameters2.Add(nameof(RescueTeamPicker.Location), midpoint);
+        var dialog2 = dialogService.Show<RescueTeamPicker>("Select Team", parameters2, options2);
+        var result2 = await dialog2.Result;
+        if (result2?.Canceled == false)
+        {
+            Team? rescue = result2.Data as Team;
+            if (rescue != null)
+            {
+                Engine.StartRescueMission(rescue, display.DisplayTeam, midpoint);
+            }
+        }
+        display.OpenRescueDialog = false;
     }
     #endregion
 

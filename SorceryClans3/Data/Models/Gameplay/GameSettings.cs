@@ -92,6 +92,7 @@ namespace SorceryClans3.Data.Models
             {
                 case DefenseType.WatchTower: return RealTime ? CurrentTime.AddHours(4) : CurrentTime.AddDays(15);
                 case DefenseType.SafeHouse: return RealTime ? CurrentTime.AddHours(4) : CurrentTime.AddDays(15);
+                case DefenseType.Hospital: return RealTime ? CurrentTime.AddHours(12) : CurrentTime.AddDays(25);
                 default: return CurrentTime;
             }
         }
@@ -101,6 +102,7 @@ namespace SorceryClans3.Data.Models
             {
                 case DefenseType.WatchTower: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
                 case DefenseType.SafeHouse: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
+                case DefenseType.Hospital: return RealTime ? CurrentTime.AddHours(r.Next(8) + 16) : CurrentTime.AddDays(25 + r.Next(20));
                 default: return RealTime ? CurrentTime.AddHours(r.Next(6) + 12) : CurrentTime.AddDays(20 + r.Next(20));
             }
         }

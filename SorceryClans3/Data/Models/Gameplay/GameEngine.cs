@@ -71,6 +71,11 @@ namespace SorceryClans3.Data.Models
                 city.RemoveTeam(team);
             }
         }
+        public void StartRescueMission(Team rescuer, Team rescuee, MapLocation location)
+        {
+            rescuer.MissionID = rescuee.ID;
+            Events.Add(new(rescuer, rescuee, location, Settings.TravelCompletion(rescuer.Location ?? MapLocation.HomeBase, location, rescuer.DScore)));
+        }
         public void StartTrainingMission(Team team, Soldier soldier)
         {
             team.MissionID = Guid.Empty;
@@ -127,7 +132,7 @@ namespace SorceryClans3.Data.Models
             }
 
             //process
-                List<GameEvent> events = [];
+            List<GameEvent> events = [];
             int i = 0;
             while (i < Events.Count)
             {
@@ -151,10 +156,13 @@ namespace SorceryClans3.Data.Models
             }
             foreach (GameEvent ev in events)
             {
+                GameEventDisplay? disp = null;
+                GameEventDisplay? merc = null;
                 switch (ev.Type)
                 {
                     case MissionType.TravelToLocation:
-                        displays.Add(ev.ResolveReturn());
+                        disp = ev.ResolveReturn();
+                        displays.Add(disp);
                         break;
                     case MissionType.LiaisonAtLocation:
                         displays.Add(ev.ResolveReturn(true));
@@ -166,16 +174,25 @@ namespace SorceryClans3.Data.Models
                             displays.Add(payday);
                         MissionContract? contract = ev.MissionToComplete as MissionContract;
                         if (contract != null)
-                            Events.Add(new(contract, Settings.PayDay(contract),true));
+                            Events.Add(new(contract, Settings.PayDay(contract), true));
                         break;
                     case MissionType.Mercenary:
-                        var merc = ev.ResolveMercenary();
+                        merc = ev.ResolveMercenary();
                         //remove? or only if !failed?... for now only 1 try
                         //could allow retries on certain missions, do that logic here
                         merc.DisplayMission!.Client.FinishMission(merc);
                         merc.DisplayTeam!.MissionID = Guid.Empty;
                         displays.Add(merc);
-                        Events.Add(new GameEvent(merc.DisplayTeam, Settings.MissionTravelTime(merc.DisplayMission!), MissionType.TravelToLocation, merc.DisplayTeam!.Location ?? MapLocation.HomeBase));
+                        if (merc.DisplayTeam.GetAllSoldiers.Any(e => e.IsAlive))
+                        {
+                            Events.Add(new GameEvent(merc.DisplayTeam, Settings.MissionTravelTime(merc.DisplayMission!), MissionType.TravelToLocation, merc.DisplayTeam!.Location ?? MapLocation.HomeBase));
+                        }
+                        else
+                        {
+                            Teams.Remove(merc.DisplayTeam);
+                            merc.DisplayMission.Client.RemoveTeam(merc.DisplayTeam);
+                            displays.Add(new("Team " + merc.DisplayTeam.TeamName + " has been wiped out!", Settings.CurrentTime));
+                        }
                         break;
                     case MissionType.ContractMisson:
                         var merc2 = ev.ResolveMercenary();
@@ -194,7 +211,7 @@ namespace SorceryClans3.Data.Models
                                 StartContractMission(contract2, merc2.DisplayTeam);
                         }
                         //do other things later?
-                            break;
+                        break;
                     case MissionType.BanditAttack:
                         displays.Add(new("BANDITS HAVE ATTACKED!", Settings.CurrentTime));
                         break;
@@ -222,11 +239,24 @@ namespace SorceryClans3.Data.Models
                         }
                         break;
                     case MissionType.LeadershipTraining:
-                        displays.Add(ev.ResolveLeadershipTraining());
+                        disp = ev.ResolveLeadershipTraining();
+                        displays.Add(disp);
+                        break;
+                    case MissionType.MedicalRescue:
+                        displays.Add(ev.ResolveRescue());
+                        Events.Add(new GameEvent(ev.TeamInTransit!, Settings.TravelCompletion(ev.Destination!, ev.TeamInTransit!.Location ?? MapLocation.HomeBase, ev.TeamInTransit.DScore), MissionType.TravelToLocation, ev.TeamInTransit!.Location ?? MapLocation.HomeBase));
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));
                         break;
+                }
+                if (disp?.DisplayTeam != null && disp.DisplayTeam.IsAtHome && disp.DisplayTeam.GetAllSoldiers.Any(e => e.IsInjured) && Defenses.Structures.Any(e => e.Type == DefenseType.Hospital && e.Team != null))
+                {
+                    disp.OpenHealDialog = true;
+                }
+                if (merc?.DisplayTeam != null && merc.DisplayTeam.GetAllSoldiers.Any(e => e.IsInjured))
+                {
+                    merc.OpenRescueDialog = true;
                 }
             }
             return displays;

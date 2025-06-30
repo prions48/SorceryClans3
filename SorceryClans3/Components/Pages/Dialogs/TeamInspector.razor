@@ -52,7 +52,10 @@
         </MudSimpleTable>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AddSoldier">Add Soldier</MudButton>
+        @if (AvailableSoldiers.Count > 0)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="AddSoldier">Add Soldier</MudButton>
+        }
         <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
     </DialogActions>
 </MudDialog>

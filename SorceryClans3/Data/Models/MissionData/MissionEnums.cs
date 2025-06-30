@@ -17,6 +17,7 @@ namespace SorceryClans3.Data.Models
         MedicalTraining,
         LeadershipTraining,
         StyleTraining,
+        MedicalRescue,
         TameBeast,
         Harvest,
         AttackRivalBase,

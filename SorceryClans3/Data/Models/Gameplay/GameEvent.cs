@@ -9,7 +9,8 @@ namespace SorceryClans3.Data.Models
         public MissionType Type { get; set; }
         public Mission? MissionToComplete { get; set; }
         public Team? TeamInTransit { get; set; }
-        public Soldier? FocusSoldier { get; set;  }
+        public Team? TargetTeam { get; set; }
+        public Soldier? FocusSoldier { get; set; }
         public MapLocation? Destination { get; set; }
         public DateTime EventCompleted { get; set; }
         public DefenseType? DefenseType { get; set; }
@@ -93,6 +94,16 @@ namespace SorceryClans3.Data.Models
             FixedDate = true;
             EventCompleted = duedate;
         }
+        public GameEvent(Team team1, Team team2, MapLocation location, DateTime duedate)
+        {
+            Type = MissionType.MedicalRescue;
+            TeamInTransit = team1;
+            TargetTeam = team2;
+            EventCompleted = duedate;
+            Visible = true;
+            FixedDate = true;
+            Destination = location;
+        }
         public GameEventDisplay ResolveMercenary()
         {
             if (MissionToComplete?.AttemptingTeam == null)
@@ -166,7 +177,19 @@ namespace SorceryClans3.Data.Models
         {
             bool success = TeamInTransit!.LeadershipTraining(FocusSoldier!);
             TeamInTransit.MissionID = null;
-            return new($"Team {TeamInTransit!.TeamName} has returned from leadership training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
+            return new($"Team {TeamInTransit!.TeamName} has returned from leadership training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted)
+            {
+                DisplayTeam = TeamInTransit
+            };
+        }
+        public GameEventDisplay ResolveRescue()
+        {
+            return new("Team " + TeamInTransit!.TeamName + " has arrived to help Team " + TargetTeam!.TeamName + ".", EventCompleted)
+            {
+                OpenHealDialog = true,
+                DisplayTeam = TeamInTransit,
+                DisplayTeam2 = TargetTeam
+            };
         }
     }
 }

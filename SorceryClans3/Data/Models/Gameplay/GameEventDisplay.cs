@@ -10,7 +10,10 @@ namespace SorceryClans3.Data.Models
         public DateTime EventDate { get; set; }
         public Mission? DisplayMission { get; set; }
         public Team? DisplayTeam { get; set; }
+        public Team? DisplayTeam2 { get; set; }
         public TeamResult? DisplayResult { get; set; }
+        public bool OpenHealDialog { get; set; } = false;
+        public bool OpenRescueDialog { get; set; } = false;
         //add more things
         //e.g. results of spells, bandit attacks, etc etc
         //add rewards object?

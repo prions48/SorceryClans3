@@ -1,0 +1,15 @@
+<MudDialog>
+    <DialogContent>
+        <HealInspector CompleteMission="Close" MedicTeam="MedicTeam" PatientTeam="PatientTeam" />
+    </DialogContent>
+</MudDialog>
+
+@code{
+    [Parameter, EditorRequired] public Team MedicTeam { get; set; }
+    [Parameter, EditorRequired] public Team PatientTeam { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    private void Close()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+}

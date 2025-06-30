@@ -79,6 +79,16 @@ namespace SorceryClans3.Data.Models
         {
             return Math.Sqrt(SQ(location1.X - location2.X) + SQ(location1.Y - location2.Y));
         }
+        /// <summary>
+        /// Midpoint function will eventually be replaced by some fancy trigonometry to identify the interception point
+        /// </summary>
+        /// <param name="location1"></param>
+        /// <param name="location2"></param>
+        /// <returns></returns>
+        public static MapLocation GetMidpoint(this MapLocation location1, MapLocation location2)
+        {
+            return new MapLocation((location1.X + location2.X) / 2, (location1.Y + location2.Y) / 2);
+        }
         private static double SQ(double x)
         {
             return x * x;

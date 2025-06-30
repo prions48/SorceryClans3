@@ -91,7 +91,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
+                IList<Soldier> solds = Soldiers.OrderBy(e => e.Magic).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].Magic * solds[i].PowerLevel;
@@ -104,7 +104,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
+                IList<Soldier> solds = Soldiers.OrderBy(e => e.Subtlety).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].Subtlety * solds[i].PowerLevel;
@@ -120,10 +120,15 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
+                IList<Soldier> solds = Soldiers.OrderBy(e => e.HealScore).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].HealScore;
+                }
+                solds = Leaders.OrderBy(e => e.HealScore).ToList();
+                for (int i = 0; i < solds.Count; i++)
+                {
+                    score += solds[i].HealScore / 2;
                 }
                 return score; //should teamwork or leadership be involved at all???
             }
@@ -425,6 +430,8 @@ namespace SorceryClans3.Data.Models
                 if (fail)
                 {
                     sold.LevelLead(10, 0.02);
+                    if (r.Next(3) == 0)
+                        sold.Hurt(r.Next(4) + 1);
                 }
                 else
                 {
@@ -432,7 +439,27 @@ namespace SorceryClans3.Data.Models
                     sold.TrainLead();
                 }
             }
+            Cleanup();
             return !fail;
+        }
+        public void Cleanup()
+        {
+            int i = 0;
+            while (i < Leaders.Count)
+            {
+                if (Leaders[i].IsAlive)
+                    i++;
+                else
+                    Leaders.RemoveAt(i);
+            }
+            i = 0;
+            while (i < Soldiers.Count)
+            {
+                if (Soldiers[i].IsAlive)
+                    i++;
+                else
+                    Soldiers.RemoveAt(i);
+            }
         }
         public string TeachDisplay
         {

@@ -23,7 +23,7 @@
     <ItemRenderer>
         <MudPaper Elevation="10">
             <MudStack Spacing="1">
-                <MudText>@context.SoldierName</MudText>
+                <MudText>@context.SoldierName (@context.PowerLevel)</MudText>
                 <MudBadge Color="@context.Status.Color()" Icon="@context.Status.Icon()" Visible="@(context.Status != HealStatus.NotYet)">
                     <HPInspector Soldier="context" />
                 </MudBadge>
@@ -34,6 +34,7 @@
 
 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Complete" Disabled="Completed">Complete</MudButton>
 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Close" Disabled="!Completed">Close</MudButton>
+
 
 @code {
     [Parameter, EditorRequired] public Team MedicTeam { get; set; }
