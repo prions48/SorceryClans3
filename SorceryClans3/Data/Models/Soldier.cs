@@ -370,13 +370,16 @@ namespace SorceryClans3.Data.Models
                 return Medical.HealBase + (Power?.KBonus ?? 0) + (Artifact?.HealBoost ?? 0) + Styles.Select(e => e.KBonus).Sum();
             }
         }
-        public int HealScore
+        /// <summary>
+        /// Max 1000 (bonus for eliteness, powers, artifact, etc)
+        /// </summary>
+        public int? HealScore
         {
             get
             {
-                if (Medical == null || !Medical.Assessed || !Medical.Trained)
-                    return 0;
-                return (Heal ?? 0) * Medical.MedicalPower;
+                if (Medical == null || !Medical.Assessed || !Medical.Trained || Heal == null)
+                    return null;
+                return Heal.Value * Medical.MedicalPower;
             }
         }
         public int ComLeadership
@@ -608,6 +611,7 @@ namespace SorceryClans3.Data.Models
             LeadTrainRemains = 0;
         }
         #region Displays
+        public string MedicalPotential => Medical?.MedicalStatus ?? "Unknown";
         public string GetSkillDisplay(MagicColor color)
         {
             double total = ResearchAffinity / 3;

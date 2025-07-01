@@ -9,13 +9,13 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-				if (MedicFatigue < 3)
-					return 1.0;
+                if (MedicFatigue < 3)
+                    return 1.0;
                 if (MedicFatigue < 5)
                     return .95;
                 if (MedicFatigue < 7)
                     return .8;
-				return 5.0 / MedicFatigue;
+                return 5.0 / MedicFatigue;
             }
         }
         public int HealBase { get; set; }
@@ -41,17 +41,17 @@ namespace SorceryClans3.Data.Models
                     return "Unskilled";
                 if (HealBase <= 4)
                     return "Mediocre";
-                if (HealBase <= 6)
+                if (HealBase <= 7)
                     return "Capable";
-                if (HealBase <= 8)
+                if (HealBase <= 9)
                     return "Talented";
                 return "Exceptional";
             }
         }
-		public string MedicRankText
-		{
-			get
-			{
+        public string MedicRankText
+        {
+            get
+            {
                 if (MedicalPower <= 20)
                     return "Intern";
                 if (MedicalPower <= 50)
@@ -59,35 +59,35 @@ namespace SorceryClans3.Data.Models
                 if (MedicalPower <= 80)
                     return "Doctor";
                 return "Surgeon";
-			}
-		}
-		public string FatigueText
-		{
-			get
-			{
-				if (MedicFatigue <= 0)
-					return "None";
-				if (MedicFatigue < 3)
-					return "Low";
+            }
+        }
+        public string FatigueText
+        {
+            get
+            {
+                if (MedicFatigue <= 0)
+                    return "None";
+                if (MedicFatigue < 3)
+                    return "Low";
                 if (MedicFatigue < 5)
                     return "Medium";
                 if (MedicFatigue < 7)
                     return "High";
-				return "Extreme";
+                return "Extreme";
             }
-		}
+        }
         public string FatigueIcon
         {
             get
             {
                 if (MedicFatigue <= 0)
-					return MudBlazor.Icons.Material.TwoTone.SentimentVerySatisfied;
-				if (MedicFatigue < 3)
-					return MudBlazor.Icons.Material.TwoTone.SentimentSatisfiedAlt;
+                    return MudBlazor.Icons.Material.TwoTone.SentimentVerySatisfied;
+                if (MedicFatigue < 3)
+                    return MudBlazor.Icons.Material.TwoTone.SentimentSatisfiedAlt;
                 if (MedicFatigue < 5)
-					return MudBlazor.Icons.Material.TwoTone.SentimentNeutral;
+                    return MudBlazor.Icons.Material.TwoTone.SentimentNeutral;
                 if (MedicFatigue < 7)
-					return MudBlazor.Icons.Material.TwoTone.SentimentDissatisfied;
+                    return MudBlazor.Icons.Material.TwoTone.SentimentDissatisfied;
                 return MudBlazor.Icons.Material.TwoTone.SentimentVeryDissatisfied;
             }
         }
@@ -96,21 +96,30 @@ namespace SorceryClans3.Data.Models
             get
             {
                 if (MedicFatigue <= 0)
-					return MudBlazor.Color.Success;
-				if (MedicFatigue < 3)
-					return MudBlazor.Color.Primary;
+                    return MudBlazor.Color.Success;
+                if (MedicFatigue < 3)
+                    return MudBlazor.Color.Primary;
                 if (MedicFatigue < 5)
-					return MudBlazor.Color.Info;
+                    return MudBlazor.Color.Info;
                 if (MedicFatigue < 7)
-					return MudBlazor.Color.Warning;
+                    return MudBlazor.Color.Warning;
                 return MudBlazor.Color.Error;
             }
         }
-        public void GainMedicPower()
-		{
-			Random r = new Random();
-			if (MedicalPowerBase < HealBase * 10 && MedicalPowerBase < 100 && r.NextSingle() < HealBase * 0.1)
-				MedicalPowerBase++;
-		}
+        public int GainMedicPower(int reps = 1)
+        {
+            Random r = new Random();
+            int z = 0;
+            for (int i = 0; i < reps; i++)
+            {
+                if (CanTrain && r.NextSingle() < HealBase * 0.1)
+                {
+                    MedicalPowerBase++;
+                    z++;
+                }
+            }
+            return z;
+        }
+        public bool CanTrain => MedicalPowerBase < HealBase * 10 && MedicalPowerBase < 100;
     }
 }

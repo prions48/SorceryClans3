@@ -1,0 +1,50 @@
+@inject IDialogService dialogService
+<MudDialog>
+    <DialogContent>
+        <MudTable Striped Bordered Items="Soldiers">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Team</MudTh>
+                <MudTh>Powerlevel</MudTh>
+                <MudTh>Medic Potential</MudTh>
+                <MudTh>Activate</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>@context.Team?.TeamName</MudTd>
+                <MudTd>@context.PowerLevel</MudTd>
+                <MudTd>@context.MedicalPotential</MudTd>
+                <MudTd>
+                    <MudIconButton OnClick="() => CreateMedic(context)" Icon="@Icons.Material.TwoTone.MedicalInformation" Color="Color.Error" Disabled="context.PowerLevel < 500" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code{
+    [Parameter] public List<Soldier> Soldiers { get; set; } = [];
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    private void Close()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+    private async Task CreateMedic(Soldier sold)
+    {
+        sold.CreateHealer();
+        if (sold.Medical!.Trained)
+        {
+            var options = new DialogOptions();
+            options.CloseOnEscapeKey = true;
+            options.MaxWidth = MaxWidth.Small;
+            var parameters = new DialogParameters();
+            parameters.Add(nameof(MedicDialog.Medic), sold);
+            var dialog = dialogService.Show<MedicDialog>("New Medic", parameters, options);
+            var result = await dialog.Result;
+            Soldiers.Remove(sold);
+        }
+    }
+}

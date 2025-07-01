@@ -48,7 +48,7 @@
         foreach (Soldier medic in MedicTeam.Soldiers)
         {
             if (medic.IsHealer)
-                Medics.Add(new MedicPatients { MedicID = medic.ID.ToString(), MedicName = medic.SoldierName, MPBase = medic.HealScore, Fatigue = medic.Medical!.MedicFatigue } );
+                Medics.Add(new MedicPatients { MedicID = medic.ID.ToString(), MedicName = medic.SoldierName, MPBase = medic.HealScore ?? 0, Fatigue = medic.Medical!.MedicFatigue } );
         }
         Medics = Medics.OrderByDescending(e => e.MPBase).ToList();
         foreach (Soldier patient in PatientTeam.GetAllSoldiers)

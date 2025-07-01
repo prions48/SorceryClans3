@@ -182,6 +182,12 @@ namespace SorceryClans3.Data.Models
                 DisplayTeam = TeamInTransit
             };
         }
+        public GameEventDisplay ResolveMedicalTraining()
+        {
+            bool success = TeamInTransit!.MedicalTraining(FocusSoldier!);
+            TeamInTransit.MissionID = null;
+            return new($"Team {TeamInTransit.TeamName} has returned from medical training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
+        }
         public GameEventDisplay ResolveRescue()
         {
             return new("Team " + TeamInTransit!.TeamName + " has arrived to help Team " + TargetTeam!.TeamName + ".", EventCompleted)

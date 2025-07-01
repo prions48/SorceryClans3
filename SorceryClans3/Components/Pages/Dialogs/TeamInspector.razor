@@ -104,6 +104,7 @@
         var parameters = new DialogParameters();
         parameters.Add(nameof(SoldierPicker.Soldiers), AvailableSoldiers);
         parameters.Add(nameof(SoldierPicker.ShowStats), true);
+        parameters.Add(nameof(SoldierPicker.ShowMedic), true);
         var dialog = dialogService.Show<SoldierPicker>("Add Soldier", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

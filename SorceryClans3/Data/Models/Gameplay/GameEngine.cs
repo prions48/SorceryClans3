@@ -78,8 +78,13 @@ namespace SorceryClans3.Data.Models
         }
         public void StartTrainingMission(Team team, Soldier soldier)
         {
-            team.MissionID = Guid.Empty;
+            team.MissionID = soldier.ID;
             Events.Add(new(team, MissionType.LeadershipTraining, Settings.TrainingDate(), soldier));
+        }
+        public void StartMedTrainMission(Team team, Soldier medic)
+        {
+            team.MissionID = medic.ID;
+            Events.Add(new(team, MissionType.MedicalTraining, Settings.TrainingDate(), medic));
         }
         public List<DefenseType> InProgressBuildings(DefenseType? type = null)
         {
@@ -241,6 +246,9 @@ namespace SorceryClans3.Data.Models
                     case MissionType.LeadershipTraining:
                         disp = ev.ResolveLeadershipTraining();
                         displays.Add(disp);
+                        break;
+                    case MissionType.MedicalTraining:
+                        displays.Add(ev.ResolveMedicalTraining());
                         break;
                     case MissionType.MedicalRescue:
                         displays.Add(ev.ResolveRescue());

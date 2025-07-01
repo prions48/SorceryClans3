@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using MudBlazor.Extensions;
 
 namespace SorceryClans3.Data.Models
 {
@@ -124,12 +125,12 @@ namespace SorceryClans3.Data.Models
                 IList<Soldier> solds = Soldiers.OrderBy(e => e.HealScore).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
-                    score += solds[i].HealScore;
+                    score += solds[i].HealScore ?? 0;
                 }
                 solds = Leaders.OrderBy(e => e.HealScore).ToList();
                 for (int i = 0; i < solds.Count; i++)
                 {
-                    score += solds[i].HealScore / 2;
+                    score += (solds[i].HealScore ?? 0) / 2;
                 }
                 return score; //should teamwork or leadership be involved at all???
             }
@@ -442,6 +443,29 @@ namespace SorceryClans3.Data.Models
             }
             Cleanup();
             return !fail;
+        }
+        public bool MedicalTraining(Soldier medic)
+        {
+            if (!GetAllSoldiers.Contains(medic) || medic.HealScore == null)
+                return false;
+            medic.Medical!.GainMedicPower();
+            Random r = new();
+            if (r.Next((int)(medic.HealScore * medic.TeachSkill)) < 200)
+                return false;
+            foreach (Soldier soldier in GetAllSoldiers)
+            {
+                if (soldier.Medical == null)
+                    soldier.Medical = new();
+                if (!soldier.Medical.Assessed)
+                {
+                    soldier.Medical.Assessed = true;
+                }
+                else
+                {
+                    soldier.Medical.GainMedicPower(5);
+                }
+            }
+            return true;
         }
         public void Cleanup()
         {

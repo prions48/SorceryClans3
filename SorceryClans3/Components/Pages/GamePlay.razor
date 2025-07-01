@@ -90,7 +90,10 @@
     </MudTabPanel>
     <MudTabPanel Text="Soldiers">
         <MudStack>
+            <MudStack Row>
+            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="NewMedicDialog">Medical Assessment</MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="LeadershipDialog">Leadership Assessment</MudButton>
+            </MudStack>
             <MudTable Items="Soldiers" Striped Outlined>
                 <HeaderContent>
                     <MudTh>Name</MudTh>
@@ -335,7 +338,9 @@
                     <tbody>
                         <tr>
                             <td>Medical Training</td>
-                            <td>Button</td>
+                            <td>
+                                <MudButton OnClick="StartMedicTraining" Variant="Variant.Filled" Color="Color.Info">Select Team</MudButton>
+                            </td>
                         </tr>
                         <tr>
                             <td>Leadership Training</td>
@@ -473,7 +478,7 @@
         {
             Clan clan = new Clan(x);
             Engine.Clans.Add(clan);
-            for (int j = 0; j < r.Next(3)+6; j++)
+            for (int j = 0; j < r.Next(3)+4; j++)
             {
                 Soldier soldier = new Soldier(clan);
                 if (r.Next(soldier.PowerLevel) > 1500)
@@ -488,7 +493,10 @@
                 }
                 Engine.Soldiers.Add(soldier);
             }
-            x = 2;
+            if (x == 3)
+                x = 2;
+            else
+                x = 1;
         }
         //resources
         Engine.Resources.Money = 50000 + r.Next(10000);
@@ -693,7 +701,7 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
         parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && (e.IsAtHome || (e.Location == city.Location && !city.Liaisons.Contains(e) && liaison) || (e.Location == city.Location && !city.Teams.Contains(e) && !liaison))).ToList());
         parameters.Add(nameof(TeamPicker.CScore), true);
@@ -1077,8 +1085,51 @@
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
         parameters.Add(nameof(LeadershipCensus.Soldiers), Engine.Soldiers.Where(e => !e.IsLeading).ToList());
-        var dialog = dialogService.Show<LeadershipCensus>("Select Team", parameters, options);
+        var dialog = dialogService.Show<LeadershipCensus>("Potential Leaders", parameters, options);
         var result = await dialog.Result;
+    }
+    private async Task NewMedicDialog()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(HealCensus.Soldiers), Engine.Soldiers.Where(e => e.Medical?.Assessed == true && e.Medical?.Trained == false).ToList());
+        var dialog = dialogService.Show<HealCensus>("Potential Medics", parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task StartMedicTraining()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome && e.GetAllSoldiers.Any(f => ((f.PowerLevel >= 500 && f.Medical?.Assessed == false) || (f.Medical?.CanTrain == true)) && (f.HealScore.HasValue))).ToList());
+        parameters.Add(nameof(TeamPicker.KScore), true);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+            {
+                options = new DialogOptions();
+                options.CloseOnEscapeKey = true;
+                options.MaxWidth = MaxWidth.Large;
+                parameters = new DialogParameters();
+                parameters.Add(nameof(SoldierPicker.Soldiers), team.GetAllSoldiers.Where(e => e.HealScore.HasValue).ToList());
+                parameters.Add(nameof(SoldierPicker.ShowMedic), true);
+                parameters.Add(nameof(SoldierPicker.ShowTeach), true);
+                dialog = dialogService.Show<SoldierPicker>("Select Attending", parameters, options);
+                result = await dialog.Result;
+                if (result?.Canceled == false)
+                {
+                    Soldier? medic = result.Data as Soldier;
+                    if (medic != null)
+                        Engine.StartMedTrainMission(team, medic);
+                }
+            } 
+        }
     }
     #endregion
 }
