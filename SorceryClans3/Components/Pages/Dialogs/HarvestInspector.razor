@@ -88,10 +88,10 @@
             }
             <tr>
                 <td>
-                    <b>Raw @Spell.ConsumablePrint: </b> @Spell.Consumables
+                    <b>Raw @Spell.ConsumablePrint(0): </b> @Spell.Consumables
                 </td>
                 <td>
-                     <b>Processed @Spell.ConsumablePrint:</b> @Spell.ProcessedConsumables
+                     <b>Processed @Spell.ConsumablePrint(0):</b> @Spell.UnprocessedConsumables
                 </td>
                 <td>
                     @if (AvailableSoldiers != null)
@@ -125,9 +125,9 @@
     {
         if (Harvest == null)
             return;
-        if (Spell.ProcessedConsumables <= 0)
+        if (Spell.Consumables <= 0)
         {
-            Snackbar.Add("No processed " + Spell.ConsumablePrint + " prepared!", Severity.Warning);
+            Snackbar.Add("No processed " + Spell.ConsumablePrint(0) + " prepared!", Severity.Warning);
             return;
         }
         if (AvailableSoldiers == null)
@@ -154,7 +154,7 @@
             {
                 Harvest.Apply(soldier);
                 Snackbar.Add(Harvest.HarvestName + " applied to " + soldier.SoldierName + "!", Severity.Success);
-                Spell.ProcessedConsumables--;
+                Spell.Consumables--;
             }
         }
     }

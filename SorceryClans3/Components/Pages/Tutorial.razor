@@ -106,7 +106,7 @@
             @if (Soldier.IsLeading)
             {
                 <MudStack Row=true>
-                    <MudNumericField Label="Experience" @bind-Value="Soldier.LeadershipXP" T="double" Step=".1" />
+                    <MudNumericField Label="Experience" @bind-Value="Soldier.LeadershipXPBase" T="double" Step=".1" />
                     <MudNumericField Label="Charisma" @bind-Value="Soldier.CharismaBase" Min="0" Max="10" Step="1" />
                     <MudNumericField Label="Logistics" @bind-Value="Soldier.LogisticsBase" Min="0" Max="10" Step="1" />
                     <MudNumericField Label="Tactics" @bind-Value="Soldier.TacticsBase" Min="0" Max="10" Step="1" />
@@ -580,9 +580,18 @@
         }
     }
     private IList<Soldier> DeadSoldiers { get; set; } = new List<Soldier>();
-    private Research Research { get; set; } = new Research();
+    private Research Research { get; set; }
+    private void AddSoldierToResearch(List<Soldier> soldiers)
+    {
+        Team.Soldiers.AddRange(soldiers);
+    }
+    private void AddArtifact(Artifact artifact)
+    {
+        //
+    }
     protected override void OnInitialized()
     {
+        Research = new Research(AddSoldierToResearch, AddArtifact);
         Clan = new Clan();
         Soldier = new Soldier(Clan);
         Team = new Team();
@@ -668,7 +677,7 @@
     private Soldier? SelectedSoldier { get; set; }
     private void CreateLeadership(Soldier sold)
     {
-        sold.LeadershipXP = r.NextDouble()*1.3 - 0.4;
+        sold.LeadershipXPBase = r.NextDouble()*1.3 - 0.4;
         sold.IsLeading = true;
     }
     private void ViewLeadership(Soldier sold)
@@ -747,8 +756,8 @@
     {
         for (int i = 0; i < NumDays; i++)
         {
-            IList<string> msgs = Research.IncrementDay();
-            IList<Team> UnBusy = new List<Team>();
+            List<string> msgs = Research.IncrementDay();
+            List<Team> UnBusy = new List<Team>();
             int j = 0;
             while (j < HunterMissions.Count)
             {
@@ -800,9 +809,10 @@
             j = 0;
             while (j < SpellMissions.Count)
             {
-                Spell? spell = SpellMissions[j].AdvanceDay();
-                if (spell != null)
+                SpellCastMission? spellmission = SpellMissions[j].IncrementDay();
+                if (spellmission != null)
                 {
+                    Spell spell = spellmission.CastingSpell;
                     if (spell.Power != null && SpellMissions[j].TargetSoldier != null)
                     {
                         SpellMissions[j].TargetSoldier!.Power = spell.Power.GeneratePower();
@@ -815,8 +825,8 @@
                     }
                     else if (spell.Harvest != null)
                     {
-                        SpellMissions[j].CastingSpell.Consumables-=SpellMissions[j].NumConsumables;
-                        SpellMissions[j].CastingSpell.ProcessedConsumables+=SpellMissions[j].NumConsumables;
+                        SpellMissions[j].CastingSpell.UnprocessedConsumables-=SpellMissions[j].NumConsumables;
+                        SpellMissions[j].CastingSpell.Consumables+=SpellMissions[j].NumConsumables;
                         Snackbar.Add(spell.Harvest.HarvestName + " prepared!", Severity.Success);
                     }
                     else if (spell.Spirit != null)
@@ -834,7 +844,7 @@
                     else if (spell.LesserUndead != null)
                     {
                         spell.Consumables += SpellMissions[j].NumConsumables;
-                        Snackbar.Add(SpellMissions[j].NumConsumables + " " + spell.ConsumablePrint + " built to summon " + spell.LesserUndead.UndeadName + (SpellMissions[j].NumConsumables == 1 ? "" : "s"), Severity.Success);
+                        Snackbar.Add(SpellMissions[j].NumConsumables + " " + spell.ConsumablePrint(SpellMissions[j].NumConsumables) + " built to summon " + spell.LesserUndead.UndeadName + (SpellMissions[j].NumConsumables == 1 ? "" : "s"), Severity.Success);
                     }
                     else if (spell.GreaterUndead != null && SpellMissions[j].TargetSoldier != null)
                     {
@@ -869,7 +879,7 @@
             foreach (Team team in UnBusy)
             {
                 bool found = false;
-                foreach (SpellMission mission in SpellMissions)
+                foreach (SpellCastMission mission in SpellMissions)
                 {
                     if (team.ID == mission.TargetSoldier?.Team?.ID)
                     {
@@ -924,7 +934,7 @@
         SelectedProject2 = project;
         ViewSelectedProject = true;
     }
-    private IList<SpellMission> SpellMissions { get; set; } = new List<SpellMission>();
+    private IList<SpellCastMission> SpellMissions { get; set; } = new List<SpellCastMission>();
     private async Task SelectTeamForSpell(Spell spell)
     {
         IList<Team> EligibleTeams = AvailableTeams.Where(e => spell.ColorToCast == 0 || e.GetColors.Count(f => f == spell.Color) > 0).ToList();
@@ -1011,13 +1021,13 @@
                             {
                                 soldier.Team.MissionID = Guid.Empty;
                             }
-                            SpellMissions.Add(new SpellMission(spell, team, caster, soldier, quantity));
+                            SpellMissions.Add(new SpellCastMission(spell, team, caster, soldier, quantity));
                         }
                     }
                 }
                 else
                 {
-                    SpellMissions.Add(new SpellMission(spell, team, caster, null, quantity));
+                    SpellMissions.Add(new SpellCastMission(spell, team, caster, null, quantity));
                 }
             }
         }

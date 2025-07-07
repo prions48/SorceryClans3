@@ -318,7 +318,66 @@
                 </MudStack>
             </MudTabPanel>
             <MudTabPanel Text="Research">
-                Do the thing
+                <MudStack>
+                    <MudStack Row>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="CreateFacility" Disabled="Engine.Research.Facilities.Count >= Engine.Settings.FacilityLimit">Build New Research Facility</MudButton>
+                    </MudStack>
+                    <MudTable Striped Bordered Items="Engine.Research.Facilities">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Research Facilities</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Info</MudTh>
+                            <MudTh>Project</MudTh>
+                            <MudTh>Upgrade</MudTh>
+                            <MudTh>Teams</MudTh>
+                            <MudTh>Research</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.DisplayInfo</MudTd>
+                            <MudTd>
+                                @if (context.Project == null)
+                                {
+                                    <MudButton Size="Size.Small" Color="Color.Info" OnClick="() => CreateProject(context)">Create</MudButton>
+                                }
+                                else
+                                {
+                                    <MagicIcons Colors="new List<MagicColor>() { context.Project.GetColor }" />
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudIconButton Color="Color.Info" OnClick="() => UpgradeFacility(context)" Disabled="context.NumTeams >= Engine.Settings.FacilityMaxTeams" Icon="@Icons.Material.TwoTone.BuildCircle" />
+                            </MudTd>
+                            <MudTd>
+                                <MudIconButton Color="Color.Info" OnClick="() => ManageFacility(context)" Icon="@Icons.Material.TwoTone.Groups" />
+                            </MudTd>
+                            <MudTd>@((context.Project?.Missions.Count ?? 0).ToString()) Teams</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                    <MudTable Striped Bordered Items="Engine.Research.Spells">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Spells</MudText>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Type</MudTh>@*add search/filter and sort stuff soon...*@
+                            <MudTh>Power</MudTh>
+                            <MudTh>Money</MudTh>
+                            <MudTh>Consumables</MudTh>
+                            <MudTh>Cast</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.SpellName</MudTd>
+                            <MudTd>@context.Color.ToString()</MudTd>
+                            <MudTd>@context.CastDisplay</MudTd>
+                            <MudTd>@context.MoneyToCast.ToString("C")</MudTd>
+                            <MudTd>@context.ConsumableCountDisplay</MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.TwoTone.MenuBook" Color="Color.Info" OnClick="() => StartCastSpell(context)" Disabled="!context.Castable" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudStack>
             </MudTabPanel>
         </MudTabs>
     </MudTabPanel>
@@ -484,7 +543,7 @@
                 if (r.Next(soldier.PowerLevel) > 1500)
                 {
                     soldier.CreateLeader();
-                    soldier.LeadershipXP = r.NextDouble()*1.3 - 0.4;
+                    soldier.LeadershipXPBase = r.NextDouble()*1.3 - 0.4;
                 }
                 if (r.Next(2) == 0 && r.Next(soldier.PowerLevel) > 1000)
                 {
@@ -1130,6 +1189,75 @@
                 }
             } 
         }
+    }
+    #endregion
+
+    #region Research
+    private async Task CreateFacility()
+    {
+        Engine.Research.AddFacility();
+    }
+    private async Task UpgradeFacility(ResearchFacility facility)
+    {
+        //dummy for the moment
+        facility.NumTeams++;
+        //spend money, confirm dialog?
+    }
+    private async Task CreateProject(ResearchFacility facility)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(ColorPicker.AvailableColors), Engine.Research.AvailableColors.ToList());
+        var dialog = dialogService.Show<ColorPicker>("Select Color", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            MagicColor? color = result.Data as MagicColor?;
+            if (color != null)
+                Engine.Research.StartProject(facility, color.Value);
+        }
+    }
+    private async Task ManageFacility(ResearchFacility facility)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(FacilityDialog.Facility), facility);
+        parameters.Add(nameof(FacilityDialog.AvailableColors), Engine.Research.AvailableColors);
+        parameters.Add(nameof(FacilityDialog.AvailableTeams), Engine.Teams.Where(e => e.IsAtHome && e.MissionID == null && e.Leaders.Count > 0).ToList());
+        var dialog = dialogService.Show<FacilityDialog>("Select Team", parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task StartCastSpell(Spell spell)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Engine.Research.GetAvailableTeams);
+        parameters.Add(nameof(TeamPicker.MScore), true);
+        var dialog = dialogService.Show<TeamPicker>("Select Casting Team ", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+            {
+                ResearchFacility? facility = Engine.Research.Facilities.FirstOrDefault(e => e.ID == team.MissionID);
+                if (facility != null)
+                {
+                    int? amount = null;
+                    if (spell.CastQuantity)
+                        amount = 1;//get from dialog
+                    facility.StartCastSpell(team, spell, amount);
+                }
+            }
+        }
+
     }
     #endregion
 }

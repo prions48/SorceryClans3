@@ -146,6 +146,22 @@ namespace SorceryClans3.Data.Models
 				default: return false;
 			}
 		}
+		public static bool CanSpellcast(this SoldierType type)
+		{
+			switch (type)
+			{
+				case SoldierType.Standard: return true;
+				case SoldierType.Beast: return true;
+				case SoldierType.LesserUndead: return false;
+				case SoldierType.GreaterUndead: return true;
+				case SoldierType.LesserSpirit: return false;
+				case SoldierType.GreaterSpirit: return false;
+				case SoldierType.LesserDemon: return false;
+				case SoldierType.GreaterDemon: return true;
+				case SoldierType.Nephilim: return true;
+				default: return false;
+			}
+		}
 		public static int PowerAdj(this SoldierType type, int factor)
 		{
 			switch (type)

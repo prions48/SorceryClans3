@@ -15,11 +15,19 @@ namespace SorceryClans3.Data.Models
         BeastHarvest,
         Angel,
         Nephilim,
-        IconImprovement,
         AngelStatue,
         SummonFaerie,
         FaerieBargain
     }
+    //do extension spells get their own system?
+    /*
+    ImprovePet (done by beast tamer),
+    ImproveIcon (done by Nephilim),
+    ImproveNecroArtifact (done by greater undead),
+    ImproveWeather (done by spirit attuned),
+    ImproveFaeriesomethingorother (done by ???)
+    ImproveDemonicCurse (done by greater demon)
+    */
     public static class ResearchUtils
     {
         public static int PointsToScore(this int i, ResearchDiscovery disco)
@@ -35,8 +43,8 @@ namespace SorceryClans3.Data.Models
                     return (i - 100000) / 450000;
                 case ResearchDiscovery.LesserDemon:
                 case ResearchDiscovery.GreaterDemon:
+                case ResearchDiscovery.Angel:
                     return (i - 100000) / 200000;
-
                 case ResearchDiscovery.Power:
                 default:
                     return 1 + (i - 100000) / 300000;

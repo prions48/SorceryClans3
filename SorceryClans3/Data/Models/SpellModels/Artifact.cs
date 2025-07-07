@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
@@ -25,16 +26,41 @@ namespace SorceryClans3.Data.Models
     public class Artifact
     {
         public Guid ID { get; set; } = Guid.NewGuid();
+        public Guid? IconID { get; set; }
         public string ArtifactName { get; set; }
         public Soldier? AssignedSoldier { get; set; } = null;
         public int ComBoost { get; set; }
         public int MagBoost { get; set; }
         public int SubBoost { get; set; }
+        public int TravelBoost { get; set; }
+        public int GroupTravelBoost { get; set; }
         public int ChaBoost { get; set; }
         public int LogBoost { get; set; }
         public int TacBoost { get; set; }
         public int HPBoost { get; set; }
         public int HealBoost { get; set; }
+        //icon only stats
+        public int TeachBoost { get; set; }
+        public int CounterBoost { get; set; }
+        public int LeadBoost { get; set; }
+        public int ResearchBoost { get; set; }
+        public Artifact(AngelIcon icon) //for icons, for now
+        {
+            ID = Guid.NewGuid();
+            ArtifactName = icon.ArtifactName();
+            ComBoost = icon.Com ?? 0;
+            MagBoost = icon.Mag ?? 0;
+            SubBoost = icon.Sub ?? 0;
+            GroupTravelBoost = icon.Tra ?? 0;
+            ChaBoost = icon.Cha ?? 0;
+            LogBoost = icon.Log ?? 0;
+            TacBoost = icon.Tac ?? 0;
+            TeachBoost = icon.Teach ?? 0;
+            CounterBoost = icon.Counter ?? 0;
+            LeadBoost = icon.Lead ?? 0;
+            ResearchBoost = icon.Research ?? 0;
+            HPBoost = icon.HPCost;
+        }
         public Artifact()
         {
             ID = Guid.NewGuid();

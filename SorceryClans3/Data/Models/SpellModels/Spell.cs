@@ -11,7 +11,7 @@ namespace SorceryClans3.Data.Models
 		public int PowerToCast { get; set; }
 		public int ColorToCast { get; set; }
 		public MagicColor Color { get; set; }
-		public int? ProcessedConsumables { get; set; } = null;
+		public int? UnprocessedConsumables { get; set; } = null;
 		public int? Consumables { get; set; } = null;
 		//main caster reqs
 		public int? MagPowerToCast { get; set; }
@@ -54,6 +54,7 @@ namespace SorceryClans3.Data.Models
 		public GreaterUndead? GreaterUndead { get; set; }
 		public LesserDemon? LesserDemon { get; set; }
 		public GreaterDemon? GreaterDemon { get; set; }
+		public AngelIcon? AngelIcon { get; set; }
 		public bool Castable
 		{
 			get
@@ -76,28 +77,40 @@ namespace SorceryClans3.Data.Models
 					return true;
 				if (GreaterDemon != null)
 					return GreaterDemon.Invested == null;
+				if (AngelIcon != null)
+					return true;
 				return true;
 			}
 		}
-		public bool CastQuantity
-		{
-			get
-			{
-				if (Harvest != null)
-					return true;
-				if (LesserUndead != null)
-					return true;
-				if (LesserDemon != null)
-					return true;
-				return false;
-			}
-		}
+		public bool CastQuantity => Harvest != null || LesserUndead != null || LesserDemon != null || Beast != null || AngelIcon != null;
+		public bool ProcessesConsumables => Harvest != null;
+		public bool UsesConsumables => Harvest != null || LesserUndead != null || Beast != null;
+		public bool GeneratesSoldier => LesserUndead != null || Spirit != null;
+		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null;//soon to add more!
+		
 		public int CastLimit(int money)
 		{
 			int lim = money / MoneyToCast;
-			if (Harvest != null && Consumables != null && Consumables < lim)
-				lim = Consumables.Value;
+			if (Harvest != null && UnprocessedConsumables != null && UnprocessedConsumables < lim)
+				lim = UnprocessedConsumables.Value;
 			return lim;
+		}
+		public Soldier? GenerateSoldier()
+		{
+			if (Spirit != null)
+				return Spirit.GenerateSoldier();
+			if (LesserDemon != null)
+				return LesserDemon.GenerateSoldier();
+			//the rest are generated from missions using the items prepared here (beast, necromancy, etc)
+			return null;
+		}
+		public Artifact? GenerateArtifact()
+		{
+			if (SpiritArtifact != null)
+				return SpiritArtifact.Artifact;
+			if (AngelIcon != null)
+				return AngelIcon.GenerateIcon();
+			return null;
 		}
 		public string SpellName
 		{
@@ -114,13 +127,15 @@ namespace SorceryClans3.Data.Models
 				if (SpiritArtifact != null)
 					return "Construct " + SpiritArtifact.Artifact.ArtifactName;
 				if (LesserUndead != null)
-					return "Build " + ConsumablePrint + " to resurrect " + LesserUndead.UndeadName;
+					return "Build " + ConsumablePrint(0) + " to resurrect " + LesserUndead.UndeadName;
 				if (GreaterUndead != null)
 					return "Resurrect " + GreaterUndead.UndeadName;
 				if (LesserDemon != null)
 					return "Summon " + LesserDemon.DemonName;
 				if (GreaterDemon != null)
 					return "Invest " + GreaterDemon.DemonName;
+				if (AngelIcon != null)
+					return "Create " + AngelIcon.ArtifactName();
 				return "Unknown";
 			}
 		}
@@ -137,20 +152,36 @@ namespace SorceryClans3.Data.Models
 				return null;
 			}
 		}
-		public string? ConsumablePrint
+		public string? ConsumableCountDisplay
 		{
 			get
 			{
-				string? con = ConsumableName;
-				if (con == null)
-					return null;
-				if (Consumables != 1 && con[con.Length-1] != 's')
-				{
-					if (con == "harness")
-						con = con + "e";
-					con = con + "s";
-				}
-				return con.Substring(0,1).ToUpper() + con.Substring(1);
+				return Consumables.ToString() + " " + ConsumablePrint();
+			}
+		}
+		public string? ConsumablePrint(int? count = null)
+		{
+			string? con = ConsumableName;
+			if (con == null)
+				return null;
+			if (count == null)
+				count = Consumables ?? 0;
+			if (count != 1 && con[con.Length - 1] != 's')
+			{
+				if (con == "harness")
+					con = con + "e";
+				con = con + "s";
+			}
+			return con.Substring(0, 1).ToUpper() + con.Substring(1);
+		}
+		public string CastDisplay
+		{
+			get
+			{
+				string color = "";
+				if (ColorToCast > 0)
+					color = " and " + ColorToCast.ToString() + " " + Color.ToString() + " color";
+				return PowerToCast.ToString() + " power" + color;
 			}
 		}
 		public Spell()
@@ -179,21 +210,24 @@ namespace SorceryClans3.Data.Models
 				}
 			}
 			Color = color;
+			int pts = powerpts.PointsToScore(disco);
 			switch (disco)
 			{
-				case ResearchDiscovery.Power: Power = Power = new PowerTemplate(Guid.Empty, powerpts.PointsToScore(disco), color) { Heritability = null }; break;
+				case ResearchDiscovery.Power: Power = Power = new PowerTemplate(Guid.Empty, pts, color) { Heritability = null }; break;
 				case ResearchDiscovery.BeastTame:
 					Beast = new Beast(powerpts.PointsToScore(disco));
 					Consumables = r.Next(3) + 3; //testing
 					break;
-				case ResearchDiscovery.BeastHarvest: Consumables = 3; ProcessedConsumables = 3; break;//set in Research.cs
-				case ResearchDiscovery.SpiritSoldier: Spirit = new LesserSpirit(powerpts.PointsToScore(disco),r.NextDouble() < .15); break;
-				case ResearchDiscovery.SpiritArtifact: SpiritArtifact = new GreaterSpirit(powerpts.PointsToScore(disco)); Built = false; break;
-				case ResearchDiscovery.LesserUndead: LesserUndead = new LesserUndead(powerpts.PointsToScore(ResearchDiscovery.LesserUndead));
-					Consumables = r.Next(3) + 3;  break;
-				case ResearchDiscovery.GreaterUndead: GreaterUndead = new GreaterUndead(powerpts.PointsToScore(ResearchDiscovery.GreaterUndead)); break;
-				case ResearchDiscovery.LesserDemon: LesserDemon = new LesserDemon(powerpts.PointsToScore(ResearchDiscovery.LesserDemon)); break;
-				case ResearchDiscovery.GreaterDemon: GreaterDemon = new GreaterDemon(powerpts.PointsToScore(ResearchDiscovery.GreaterDemon)); break;
+				case ResearchDiscovery.BeastHarvest: Consumables = 3; UnprocessedConsumables = 3; break;//set in Research.cs
+				case ResearchDiscovery.SpiritSoldier: Spirit = new LesserSpirit(pts, r.NextDouble() < .15); break;
+				case ResearchDiscovery.SpiritArtifact: SpiritArtifact = new GreaterSpirit(pts); Built = false; break;
+				case ResearchDiscovery.LesserUndead:
+					LesserUndead = new LesserUndead(pts);
+					Consumables = r.Next(3) + 3; break;
+				case ResearchDiscovery.GreaterUndead: GreaterUndead = new GreaterUndead(pts); break;
+				case ResearchDiscovery.LesserDemon: LesserDemon = new LesserDemon(pts); break;
+				case ResearchDiscovery.GreaterDemon: GreaterDemon = new GreaterDemon(pts); break;
+				case ResearchDiscovery.Angel: Angel angel = new Angel(pts); AngelIcon = new(angel); break;
 				default: break;
 			}
 			SetCosts(powerpts, disco.NeedsCaster(), zerocolor);

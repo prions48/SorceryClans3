@@ -1,0 +1,111 @@
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+<MudDialog>
+    <DialogContent>
+        <MudButton OnClick="AddTeam" Variant="Variant.Filled" Color="Color.Info">Add Team</MudButton>
+        <MudTable Striped Bordered Items="Facility.Teams">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Teams</MudText>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>SPELL</MudTh>
+                <MudTh>MAG</MudTh>
+                <MudTh>MED</MudTh>
+                <MudTh>RESEARCH</MudTh>
+                <MudTh>Assignment</MudTh>
+                <MudTh>Release</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.TeamName</MudTd>
+                <MudTd>@context.MSpellScore</MudTd>
+                <MudTd>@context.MScore</MudTd>
+                <MudTd>@context.KScore</MudTd>
+                <MudTd>@context.ResearchDisplay</MudTd>
+                <MudTd>
+                    @if (context.MissionID == Facility.ID)
+                    {
+                        <i>Ready</i>
+                        @if (Facility.Project != null)
+                        {
+                            <MudIconButton OnClick="() => StartResearch(context)" Icon="@Icons.Material.TwoTone.LibraryBooks" Color="Color.Primary" />
+                        }
+                    }
+                    else if (Facility.Project?.Missions.Any(e => e.Team?.ID == context.ID) == true)
+                    {
+                        <i>Researching</i>
+                        <MudIconButton OnClick="() => EndResearch(context, false)" Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Warning" Disabled="Facility.Project?.Missions.FirstOrDefault(e => e.Team?.ID == context.ID)?.Cycle == false" />
+                        <MudIconButton OnClick="() => EndResearch(context, true)" Icon="@Icons.Material.TwoTone.Cancel" Color="Color.Error" />
+                    }
+                    else
+                    {
+                        <i>Casting</i>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudIconButton OnClick="() => RemoveFromFacility(context)" Icon="@Icons.Material.TwoTone.Cancel" Color="Color.Error" Disabled="context.MissionID != Facility.ID" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public ResearchFacility Facility { get; set; } = default!;
+    [Parameter, EditorRequired] public HashSet<MagicColor> AvailableColors { get; set; } = [];
+    [Parameter] public List<Team> AvailableTeams { get; set; } = [];
+    MagicColor SelectedColor { get; set; } = MagicColor.None;
+    void Close() => MudDialog.Close(DialogResult.Cancel());
+    private async Task AddTeam()
+    {
+        if (AvailableTeams.Count == 0)
+        {
+            Snackbar.Add("No teams available!", Severity.Warning);
+            return;
+        }
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), AvailableTeams);
+        parameters.Add(nameof(TeamPicker.ResearchScores), true);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+            {
+                Facility.AddTeam(team);
+                AvailableTeams.Remove(team);
+            }
+        }
+    }
+    private void StartResearch(Team team)
+    {
+        Facility.Project!.StartMission(team);
+    }
+    private void EndResearch(Team team, bool interrupt = false)
+    {
+        ResearchMission? mission = Facility.Project?.Missions.FirstOrDefault(e => e.Team?.ID == team.ID);
+        if (mission != null)
+        {
+            if (interrupt)
+            {
+                team.MissionID = Facility.ID;
+                Facility.Project!.Missions.Remove(mission);
+            }
+            else
+                mission.Cycle = false;
+        }
+    }
+    private void RemoveFromFacility(Team team)
+    {
+        Facility.RemoveTeam(team);
+    }
+
+}

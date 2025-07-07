@@ -1,21 +1,42 @@
 ﻿using System;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
 namespace SorceryClans3.Data.Models
 {
 	public class Research
 	{
 		public IList<ResearchFacility> Facilities { get; set; } = new List<ResearchFacility>();
+		public List<Team> GetAllTeams { get { return Facilities.SelectMany(e => e.Teams).ToList(); } }
+		public List<Team> GetAvailableTeams { get { return Facilities.SelectMany(e => e.Teams.Where(f => f.MissionID == e.ID)).ToList(); } }
 		IDictionary<MagicColor, BodyOfKnowledge> Body { get; set; } = new Dictionary<MagicColor,BodyOfKnowledge>();
+		public Action<List<Soldier>> CreateSoldiers { get; set; }
+		public Action<Artifact> AddArtifact { get; set; }
 		Random r = new Random();
 		public IList<Spell> Spells { get; set; } = new List<Spell>();
+		public Research(Action<List<Soldier>> createSoldiers, Action<Artifact> addArtifact)
+		{
+			CreateSoldiers = createSoldiers;
+			AddArtifact = addArtifact;
+		}
 		public void AddFacility(int n = 1)
 		{
-			Facilities.Add(new ResearchFacility { NumTeams = n });
+			Facilities.Add(new ResearchFacility(AddKnowledge) { NumTeams = n });
+		}
+		public void AddKnowledge()
+		{
+			foreach (ResearchFacility facility in Facilities)
+			{
+				foreach (Team team in facility.Teams)
+				{
+					AddColorFromTeam(team);
+				}
+			}
 		}
 		public void UpgradeFacility(Guid facilityid, int n)
 		{
 			ResearchFacility? fac = Facilities.FirstOrDefault(e => e.ID == facilityid);
 			if (fac != null)
-				fac.NumTeams = n; 
+				fac.NumTeams = n;
 		}
 		public void StartProject(ResearchFacility facility, MagicColor Color = MagicColor.None)
 		{
@@ -23,7 +44,7 @@ namespace SorceryClans3.Data.Models
 			{
 				Body.Add(Color, new BodyOfKnowledge());
 			}
-			ResearchProject project = new ResearchProject(Color)
+			ResearchProject project = new ResearchProject(facility.ID, Color)
 			{
 				CurrentThreshold = 1
 			};
@@ -43,32 +64,37 @@ namespace SorceryClans3.Data.Models
 						Body.Add(color, new BodyOfKnowledge());
 			}
 		}
-		public IList<MagicColor> AvailableColors
+		public HashSet<MagicColor> AvailableColors
 		{
 			get
 			{
-				IList<MagicColor> Colors = new List<MagicColor>();
-				foreach (KeyValuePair<MagicColor,BodyOfKnowledge> color in Body)
-				{
-					//if (color.Value.PowerPoints > 1000)
-					Colors.Add(color.Key);
-				}
-				if (!Colors.Contains(MagicColor.None))
-					Colors.Add(MagicColor.None);
-				return Colors;
+				HashSet<MagicColor> colors = Body.Keys.ToHashSet();
+				colors.Add(MagicColor.None);
+				return colors;
 			}
 		}
-		public IList<string> IncrementDay()
+		public List<string> IncrementDay()
 		{
-			IList<string> msgs = new List<string>();
-			IList<ProjectResult> results = new List<ProjectResult>();
+			List<string> msgs = [];
+			List<ProjectResult> results = [];
+			List<SpellCastMission> results2 = [];
 			foreach (ResearchFacility facility in Facilities)
 			{
+				results2.AddRange(facility.IncrementDay());
+				CreateSoldiers.Invoke(results2.SelectMany(e => e.AddedSoldiers).ToList());
+				foreach (SpellCastMission mission in results2)
+				{
+					if (mission.CastingSpell.GeneratesArtifact)
+					{
+						AddArtifact.Invoke(mission.CastingSpell.GenerateArtifact()!);
+					}
+				}
 				if (facility.Project != null)
 				{
 					results.Add(facility.Project.IncrementDay());
 				}
 			}
+			msgs.AddRange(results2.Select(e => e.CreateMessage()));
 			foreach (ProjectResult result in results)
 			{
 				Body[result.Color].PowerPoints += result.PowerPoints;
@@ -81,41 +107,44 @@ namespace SorceryClans3.Data.Models
 					int powerpts = disco.PowerPoints;
 					switch (spellColor)
 					{
-						case MagicColor.None: NewSpell = new Spell(spellColor,ResearchDiscovery.Power,powerpts); break; 
+						case MagicColor.None: NewSpell = new Spell(spellColor, ResearchDiscovery.Power, powerpts); break;
 						case MagicColor.Black:
-							if (powerpts.PointsToScore(ResearchDiscovery.LesserUndead)* r.NextDouble() < 3.0)
+							if (powerpts.PointsToScore(ResearchDiscovery.LesserUndead) * r.NextDouble() < 3.0)
 							{
-								NewSpell = new Spell(spellColor,ResearchDiscovery.LesserUndead,powerpts);
+								NewSpell = new Spell(spellColor, ResearchDiscovery.LesserUndead, powerpts);
 							}
+							//to add: necromancy artifact with trapped ghost
 							else
 							{
-								NewSpell = new Spell(spellColor,ResearchDiscovery.GreaterUndead,powerpts);
+								NewSpell = new Spell(spellColor, ResearchDiscovery.GreaterUndead, powerpts);
 							}
-							break; 
+							break;
 						case MagicColor.Red:
 							if (r.Next(powerpts) < 2000000)
 							{
-								NewSpell = new Spell(spellColor,ResearchDiscovery.LesserDemon,powerpts);
+								NewSpell = new Spell(spellColor, ResearchDiscovery.LesserDemon, powerpts);
 							}
+							//to add: curse as separate discovery and put in artifact
 							else
 							{
 								NewSpell = new Spell(spellColor, ResearchDiscovery.GreaterDemon, powerpts);
 							}
-							break; 
+							break;
 						case MagicColor.Blue:
 							if (r.Next(powerpts) < 2000000)
 							{
-								NewSpell = new Spell(spellColor,ResearchDiscovery.SpiritSoldier,powerpts);
+								NewSpell = new Spell(spellColor, ResearchDiscovery.SpiritSoldier, powerpts);
 							}
+							//to add: weather control spell to boost mercenary mission or cover retreat of hurt team
 							else
 							{
-								NewSpell = new Spell(spellColor,ResearchDiscovery.SpiritArtifact,powerpts);
+								NewSpell = new Spell(spellColor, ResearchDiscovery.SpiritArtifact, powerpts);
 							}
-							break; 
+							break;
 						case MagicColor.Green:
 							IList<Spell> powerspells = currentSpells.Where(e => e.Power != null).ToList();
 							IList<Spell> harvestspells = currentSpells.Where(e => e.Beast != null && e.Beast.AvailableForHarvest).ToList();
-							if (powerspells.Count == 0 || powerspells.Count < r.NextDouble()*3 || r.NextDouble() < .03)
+							if (powerspells.Count == 0 || powerspells.Count < r.NextDouble() * 3 || r.NextDouble() < .03)
 							{
 								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts);
 							}
@@ -144,13 +173,18 @@ namespace SorceryClans3.Data.Models
 									}
 								}
 							}
+							//to add: magic domestication
 							else
 							{
-								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.BeastTame,powerpts);
+								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.BeastTame, powerpts);
 							}
-							break; 
-						case MagicColor.White: NewSpell = new Spell(spellColor,ResearchDiscovery.Angel,powerpts); break; 
-						case MagicColor.Purple: NewSpell = new Spell(spellColor,ResearchDiscovery.SummonFaerie,powerpts); break; 
+							break;
+						case MagicColor.White: NewSpell = new Spell(spellColor, ResearchDiscovery.Angel, powerpts);
+							//to add: nephilim
+							break;
+						case MagicColor.Purple: NewSpell = new Spell(spellColor, ResearchDiscovery.SummonFaerie, powerpts);
+							//to add: all the things
+							break;
 						default: break;
 					}
 					if (NewSpell != null)
@@ -159,11 +193,11 @@ namespace SorceryClans3.Data.Models
 						if (NewSpell.Beast?.TamePower != null)
 						{
 							//NewSpell.Power = NewSpell.Beast.TamePower;
-                            Spell spell2 = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts)
-                            {
-                                Power = NewSpell.Beast.TamePower
-                            };
-                            Spells.Add(spell2);
+							Spell spell2 = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts)
+							{
+								Power = NewSpell.Beast.TamePower
+							};
+							Spells.Add(spell2);
 						}
 						msgs.Add("New discovery: " + NewSpell.SpellName);
 					}
@@ -192,7 +226,7 @@ namespace SorceryClans3.Data.Models
 					if (!found)
 						msgs.Add(team.TeamName + " released from research duty.");
 				}
-            }
+			}
 			return msgs;
 		}
 	}

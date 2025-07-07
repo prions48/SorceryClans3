@@ -101,6 +101,20 @@ namespace SorceryClans3.Data.Models
                 return (int)(score * Teamwork * MagTeamSizeFactor);
             }
         }
+        public int MSpellScore
+        {
+            get
+            {
+                int score = 0;
+                IList<Soldier> solds = Soldiers.OrderBy(e => e.Magic).ToList();
+                for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
+                {
+                    if (solds[i].IsCaster)
+                        score += solds[i].Magic * solds[i].PowerLevel;
+                }
+                return (int)(score * Teamwork * MagTeamSizeFactor);
+            }
+        }
         public int SScore
         {
             get
@@ -376,7 +390,7 @@ namespace SorceryClans3.Data.Models
             }
             if (total < 0)
                 return 0;
-            return (int)(MScore * total / Leaders.Count);
+            return (int)(MSpellScore * total / Leaders.Count);
         }
         public int ResearchPowerIncrement(MagicColor color)
         {

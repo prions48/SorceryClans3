@@ -15,6 +15,19 @@ namespace SorceryClans3.Data.Models
         public List<ClientCity> Clients { get; set; } = [];
         public Resources Resources { get; set; } = new(); //home base resources
         public Defenses Defenses { get; set; } = new();
+        public Research Research { get; set; }
+        public GameEngine()
+        {
+            Research = new(CreateSoldiers, AddArtifact);
+        }
+        private void CreateSoldiers(List<Soldier> soldiers)
+        {
+            Soldiers.AddRange(soldiers);
+        }
+        private void AddArtifact(Artifact artifact)
+        {
+            Resources.Artifacts.Add(artifact);
+        }
         public void StartMission(Mission mission, Team team)
         {
             mission.AttemptingTeam = team;
@@ -118,7 +131,9 @@ namespace SorceryClans3.Data.Models
         public List<GameEvent> IncrementTime() //called internally
         {
             if (!Settings.RealTime)
+            {
                 Settings.GameTime = Settings.GameTime.AddHours(6);//4x/day for now
+            }
 
             //add random things
             List<GameEvent> randoms = GenerateRandomEvents();
@@ -266,6 +281,12 @@ namespace SorceryClans3.Data.Models
                 {
                     merc.OpenRescueDialog = true;
                 }
+            }
+            //research missions are separate for now
+            if (Settings.CurrentTime.Hour == 0)
+            {
+                List<string> msgs = Research.IncrementDay();
+                displays.AddRange(msgs.Select(e => new GameEventDisplay(e, Settings.CurrentTime)));
             }
             return displays;
         }

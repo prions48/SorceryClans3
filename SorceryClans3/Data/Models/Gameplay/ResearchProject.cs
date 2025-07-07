@@ -5,6 +5,7 @@ namespace SorceryClans3.Data.Models
 	public class ResearchProject
 	{
 		[Key] public Guid ID { get; set; }
+		public Guid FacilityID { get; set; }
 		private int PowerPoints { get; set; }
 		private int ColorPoints { get; set; }
 		private int LastDiscoveryPts { get; set; }
@@ -12,15 +13,16 @@ namespace SorceryClans3.Data.Models
 		public int CurrentThreshold { get; set; }
 		public int PowerThreshold { get { return 1000000 * CurrentThreshold; } }//low for testing
 		public int ColorThreshold { get { if (Color == MagicColor.None) return 0; return 25 * CurrentThreshold; } }
-		public IList<ResearchMission> Missions { get; set; } = new List<ResearchMission>();
-		public IList<Guid> TeamIDs { get { return GetTeams.Select(e => e.ID).ToList(); } }
-		public IList<Guid> TeamResetIDs { get; set; } = new List<Guid>();
-		public IList<Team> GetTeams { get { return Missions.Where(e => e.Team != null).Select(e => e.Team!).ToList(); } }
+		public List<ResearchMission> Missions { get; set; } = new List<ResearchMission>();
+		public List<Guid> TeamIDs { get { return GetTeams.Select(e => e.ID).ToList(); } }
+		public List<Guid> TeamResetIDs { get; set; } = new List<Guid>();
+		public List<Team> GetTeams { get { return Missions.Where(e => e.Team != null).Select(e => e.Team!).ToList(); } }
 		private MagicColor Color { get; set; }
 		public MagicColor GetColor { get { return Color; } }
-		public ResearchProject(MagicColor color)
+		public ResearchProject(Guid facilityid, MagicColor color)
 		{
 			ID = Guid.NewGuid();
+			FacilityID = facilityid;
 			LastDiscoveryPts = 0;
             LastDiscoveryClr = 0;
 			PowerPoints = 0;
@@ -29,13 +31,13 @@ namespace SorceryClans3.Data.Models
 		public void StartMission(Team team)
 		{
 			Random r = new Random();
-            foreach (Soldier sold in team.Leaders)
-            {
+			foreach (Soldier sold in team.Leaders)
+			{
 				if (!sold.ResearchSkill.ContainsKey(Color))
 					sold.ResearchSkill.Add(Color, 0.2 + r.NextDouble() * 0.2); //(r.NextDouble() * .5) - .75);
-            }
+			}
 			ResearchMission mission = new ResearchMission(team);
-            Missions.Add(mission);
+			Missions.Add(mission);
 			team.MissionID = mission.ID;
 		}
 		public ProjectResult IncrementDay()
@@ -51,7 +53,7 @@ namespace SorceryClans3.Data.Models
 					SpellDiscovery? spell = AddProgress(team);
 					if (spell != null)
 						Result.Discoveries.Add(spell);
-					team.MissionID = null;
+					team.MissionID = FacilityID;
 					if (Missions[i].Cycle)
 					{
 						TeamResetIDs.Add(team.ID);

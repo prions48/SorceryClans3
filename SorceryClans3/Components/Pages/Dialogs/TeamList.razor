@@ -1,0 +1,28 @@
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+<MudTable Striped Bordered Items="Teams">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Teams</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>COM</MudTh>
+        <MudTh>MAG</MudTh>
+        <MudTh>SUB</MudTh>
+        <MudTh>MED</MudTh>
+        <MudTh>TRV</MudTh>
+        <MudTh>LED</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.TeamName</MudTd>
+        <MudTd>@context.CScore</MudTd>
+        <MudTd>@context.MScore</MudTd>
+        <MudTd>@context.SScore</MudTd>
+        <MudTd>@context.KScore</MudTd>
+        <MudTd>@context.DScore</MudTd>
+        <MudTd>@context.LeadText</MudTd>
+    </RowTemplate>
+</MudTable>
+@code {
+    [Parameter, EditorRequired] public List<Team> Teams { get; set; } = [];
+}

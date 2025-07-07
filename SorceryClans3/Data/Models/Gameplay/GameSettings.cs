@@ -126,10 +126,12 @@ namespace SorceryClans3.Data.Models
         #region Probabilities
         public bool BanditAttackOdds()
         {
+            //for now, turn off to make testing easier
+            return false;
             //in the future, use the ElapsedTime to affect odds
-            if (RealTime)
+            /*if (RealTime)
                 return r.NextDouble() < 0.005; //1 per 100 seconds (obv for testing purposes for now) //probably come up with something more clever for this
-            return r.NextDouble() < .01; //1 per month~ (given 4 events per day)
+            return r.NextDouble() < .01;*/ //1 per month~ (given 4 events per day)
         }
         #endregion
 
@@ -142,6 +144,8 @@ namespace SorceryClans3.Data.Models
         {
             return 2 + lvl / 2;
         }
+        public int FacilityLimit => 5; //shrug emoji
+        public int FacilityMaxTeams => 5; //shrug emoji
         #endregion
 
         #region Contracts

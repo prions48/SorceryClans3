@@ -63,8 +63,8 @@ namespace SorceryClans3.Data.Models
             //very simple atm
             if (forcecolor == null)
             {
-                this.Color = (MagicColor)r.Next(7);
-                //this.Color = MagicColor.Purple;
+                //this.Color = (MagicColor)r.Next(7);
+                this.Color = MagicColor.White;
             }
             else
             {
@@ -175,10 +175,10 @@ namespace SorceryClans3.Data.Models
                 return this.Color.Color();
             }
         }
-        public Power? GeneratePower()
+        public Power? GeneratePower(bool force = false)
 		{
 			Random r = new Random();
-            if (Heritability == null || r.NextDouble() < Heritability)
+            if (Heritability == null || r.NextDouble() < Heritability || force)
             {
                 return new Power()
                 {

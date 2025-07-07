@@ -25,13 +25,16 @@ namespace SorceryClans3.Data.Models
         public int MagBase { get; set; }
         public int SubBase { get; set; }
         public int HPBase { get; set; }
-        public double LeadershipXP { get; set; }
+        public double LeadershipXPBase { get; set; }
+        public double LeadershipXP { get { return LeadershipXPBase + ((Artifact?.LeadBoost ?? 0) / 100.0); } }
         public bool LeadAssessed { get; set; } = false;
         public double MaxTeach { get; set; }
-        public double TeachSkill { get; set; }
+        public double TeachBase { get; set; }
+        public double TeachSkill { get { return TeachBase + ((Artifact?.TeachBoost ?? 0) / 100.0); } }
         public int LeadTrainRemains { get; set; }
         public double CounterIntelMax { get; set; }
-        public double CounterIntelSkill { get; set; }
+        public double CounterIntelBase { get; set; }
+        public double CounterIntelSkill { get { return CounterIntelBase + ((Artifact?.CounterBoost ?? 0) / 100.0); } }
         public bool IsLeading { get; set; } = false;
         public int CharismaBase { get; set; }
         public int LogisticsBase { get; set; }
@@ -117,7 +120,7 @@ namespace SorceryClans3.Data.Models
         }
         private void SetSkills()
         {
-            LeadershipXP = r.NextDouble() * 1.5 - 1.0;
+            LeadershipXPBase = r.NextDouble() * 1.5 - 1.0;
             LeadTrainRemains = r.Next(4) + (r.Next(2) == 0 ? r.Next(8) : r.Next(2));
             MaxTeach = r.NextDouble() * 2; //linked to Charisma
             ResearchAffinity = r.NextDouble() + 0.5; //linked to Logistics
@@ -131,8 +134,8 @@ namespace SorceryClans3.Data.Models
                     case 2: CounterIntelMax = 0.5 + r.NextDouble() * 0.5; if (TacticsBase < 6) TacticsBase = 6 + r.Next(5); break;
                 }
             }
-            TeachSkill = MaxTeach * r.NextDouble();
-            CounterIntelSkill = CounterIntelMax * r.NextDouble();
+            TeachBase = MaxTeach * r.NextDouble();
+            CounterIntelBase = CounterIntelMax * r.NextDouble();
         }
         public Soldier(Clan clan)
         {
@@ -295,7 +298,7 @@ namespace SorceryClans3.Data.Models
             {
                 if (TravelBase == null)
                     return null;
-                return (int)(HurtFactor * (TravelBase.Value + (Power?.DBonus ?? 0))); //add artifact here soon
+                return (int)(HurtFactor * (TravelBase.Value + (Power?.DBonus ?? 0) + (Artifact?.TravelBoost ?? 0))); //add artifact here soon
             }
         }
         public int TravNat
@@ -311,11 +314,11 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                if (Power == null)
-                    return 0;
-                return Power.GBonus;
+                return (Power?.GBonus ?? 0) + (Artifact?.TravelBoost ?? 0);
             }
         }
+        public bool IsIndependent { get { return Type.Independent(); } }
+        public bool IsCaster { get { return Type.CanSpellcast(); } }
         public bool IsHealer { get { return Medical != null && Medical.Trained; } }
         public bool IsInjured { get { return HPCurrent < HPMax || Health != HealthLevel.Uninjured; } }
         public bool IsAlive { get { return HPCurrent >= 1 && Health != HealthLevel.Dead; } }
@@ -447,6 +450,8 @@ namespace SorceryClans3.Data.Models
             PowerLevel += pg;
             LevelLead();
             LevelMedic();
+            if (Power != null)
+                Power.IncreaseMastery();
             return (ID, pg, hp);
         }
         public void LevelLead(int additional = 10, double boost = 0.08)
@@ -454,28 +459,28 @@ namespace SorceryClans3.Data.Models
             LevelExtraLeads(additional);
             if (!IsLeading)
                 return;
-            if (LeadershipXP < .5)
-                LeadershipXP += (r.NextDouble() * boost) + 0.02;
-            else if (LeadershipXP < .8)
-                LeadershipXP += (r.NextDouble() * boost / 2) + 0.01;
+            if (LeadershipXPBase < .5)
+                LeadershipXPBase += (r.NextDouble() * boost) + 0.02;
+            else if (LeadershipXPBase < .8)
+                LeadershipXPBase += (r.NextDouble() * boost / 2) + 0.01;
             else
-                LeadershipXP += r.NextDouble() * boost / 4;
-            if (LeadershipXP > 1.0)
-                LeadershipXP = 1.0;
+                LeadershipXPBase += r.NextDouble() * boost / 4;
+            if (LeadershipXPBase > 1.0)
+                LeadershipXPBase = 1.0;
         }
         private void LevelExtraLeads(int additional = 10)
         {
             if (additional > 1 && r.Next(additional) == 0)
             {
-                CounterIntelSkill += r.NextDouble() * 0.05 + 0.02;
-                if (CounterIntelSkill > CounterIntelMax)
-                    CounterIntelSkill = CounterIntelMax;
+                CounterIntelBase += r.NextDouble() * 0.05 + 0.02;
+                if (CounterIntelBase > CounterIntelMax)
+                    CounterIntelBase = CounterIntelMax;
             }
             if (additional > 1 && r.Next(additional) == 0)
             {
-                TeachSkill += r.NextDouble() * 0.05 + 0.02;
-                if (TeachSkill > MaxTeach)
-                    TeachSkill = MaxTeach;
+                TeachBase += r.NextDouble() * 0.05 + 0.02;
+                if (TeachBase > MaxTeach)
+                    TeachBase = MaxTeach;
             }
         }
         public void TrainLead()

@@ -1,0 +1,25 @@
+<MudDialog>
+    <DialogContent>
+        <MudCard Elevation="1" Outlined>
+            <MudSelect @bind-Value="SelectedColor" T="MagicColor?" Clearable>
+                @foreach (MagicColor color in AvailableColors)
+                {
+                    <MudSelectItem T="MagicColor?" Value="@color">@color.ToString()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudCard>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" OnClick="Submit" Color="Color.Info" Disabled="SelectedColor == null">Select</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter, EditorRequired] public List<MagicColor> AvailableColors { get; set; } = [];
+    private MagicColor? SelectedColor { get; set; } = null;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    void Submit() => MudDialog.Close(DialogResult.Ok(SelectedColor));
+
+}
