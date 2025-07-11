@@ -59,14 +59,14 @@ namespace SorceryClans3.Data.Models
                 c++;
             }
             double m = Mastery;
-            if (m > 1.0)
-                m = 1.0;
+            if (m > 0.9)
+                m = 0.9;
             c = (int)(c * ((1.1 + m) / 2));
             for (int i = 0; i < c; i++)
                 colors.Add(this.Color);
             return colors;
         }
-        public void IncreaseMastery(double factor = 0.04)
+        public void IncreaseMastery(double factor = 0.02)
         {
             if (Mastery >= 1.0)
                 return;

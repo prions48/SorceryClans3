@@ -20,18 +20,23 @@ namespace SorceryClans3.Data.Models
     {
         public Guid ID { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
-        public string AngelScope { get; set; }
+        public string Scope { get; set; }
         public int Rank { get; set; }
         public AngelScope FirstScope { get; init; }
         public AngelScope SecondScope { get; init; }
         public List<AngelIcon> Icons { get; set; } = [];
         public Angel(int lvl)
         {
+            if (lvl < 1)
+                lvl = 1;
+            else if (lvl > 9)
+                lvl = 9;
+            Rank = lvl;
             Name = Names.AngelName();
             Random r = new();
             FirstScope = RandomScope(r, 3); //play around later with whether to adjust odds of 
             SecondScope = RandomScope(r, 1);
-            AngelScope = Names.GetScope(FirstScope, SecondScope);
+            Scope = Names.GetScope(FirstScope, SecondScope);
             Icons.Add(new(this));
         }
         private AngelScope RandomScope(Random r, int mainodds)
@@ -55,11 +60,11 @@ namespace SorceryClans3.Data.Models
                     case 1: return "Seraphim";
                     case 2: return "Cherubim";
                     case 3: return "Ophanim";
-                    case 4: return "Watcher";
-                    case 5: return "Dominion";
-                    case 6: return "Virtue";
-                    case 7: return "Power";
-                    case 8: return "Principality";
+                    case 4: return "Grigorim";//watcher
+                    case 5: return "Hashmallim";//dominion
+                    case 6: return "Tarshishim";//virtue
+                    case 7: return "Erelim";//power
+                    case 8: return "Shinanim";//principality
                     case 9: return "Archangel";
                     default: return "";
                 }

@@ -199,7 +199,7 @@ namespace SorceryClans3.Data.Models
 							};
 							Spells.Add(spell2);
 						}
-						msgs.Add("New discovery: " + NewSpell.SpellName);
+						msgs.Add("New discovery: " + NewSpell.SpellName + " resulted from " + powerpts + " pts and " + disco.ColorPoints + " color.");
 					}
 				}
 				foreach (Team team in result.Completed)
@@ -214,7 +214,7 @@ namespace SorceryClans3.Data.Models
 								if (teamid == team.ID)
 								{
 									facility.Project.StartMission(team);
-									msgs.Add(team.TeamName + " cycled to new mission");
+									//msgs.Add(team.TeamName + " cycled to new mission");
 									found = true;
 									break;
 								}
@@ -223,8 +223,8 @@ namespace SorceryClans3.Data.Models
 						if (found)
 							break;
 					}
-					if (!found)
-						msgs.Add(team.TeamName + " released from research duty.");
+					//if (!found)
+						//msgs.Add(team.TeamName + " released from research duty.");
 				}
 			}
 			return msgs;

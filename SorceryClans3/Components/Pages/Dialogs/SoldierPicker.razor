@@ -1,5 +1,5 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
-
+@inject IDialogService dialogService
 <MudDialog>
     <DialogContent>
         <MudTable Items="Soldiers">
@@ -14,6 +14,7 @@
                     <MudTh>S</MudTh>
                     <MudTh>Lead</MudTh>
                 }
+                <MudTh>Power</MudTh>
                 @if (ShowMedic)
                 {
                     <MudTh>Medic</MudTh>
@@ -40,6 +41,12 @@
                         }
                     </MudTd>
                 }
+                <MudTd>
+                    @if (context.Power != null)
+                    {
+                        <MudIconButton Icon="@context.Power.Color.Icon()" Color="context.Power.Color.Color()" OnClick="() => ViewPower(context)" />
+                    }
+                </MudTd>
                 @if (ShowMedic)
                 {
                     <MudTd>@context.HealScore</MudTd>
@@ -111,4 +118,17 @@
         MudDialog.Close(DialogResult.Ok(sold));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private async Task ViewPower(Soldier soldier)
+    {
+        if (soldier.Power == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(PowerInspectorDialog.Power), soldier.Power);
+        parameters.Add(nameof(PowerInspectorDialog.Powerlevel), soldier.PowerLevel);
+        var dialog = dialogService.Show<PowerInspectorDialog>(soldier.Power.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
 }

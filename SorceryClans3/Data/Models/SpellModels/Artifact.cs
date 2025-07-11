@@ -52,6 +52,7 @@ namespace SorceryClans3.Data.Models
             MagBoost = icon.Mag ?? 0;
             SubBoost = icon.Sub ?? 0;
             GroupTravelBoost = icon.Tra ?? 0;
+            HealBoost  = icon.Heal ?? 0;
             ChaBoost = icon.Cha ?? 0;
             LogBoost = icon.Log ?? 0;
             TacBoost = icon.Tac ?? 0;

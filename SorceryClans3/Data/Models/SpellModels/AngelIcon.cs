@@ -23,11 +23,30 @@ namespace SorceryClans3.Data.Models
         {
             Angel = angel;
             Level = 1;
-            HPCost = -3;
-        }
-        public AngelIcon(AngelIcon icon)
-        {
-            
+            Random r = new();
+            HPCost = -2 - (angel.Rank < 3 ? 1 : angel.Rank / 2);
+            switch (angel.FirstScope)
+            {
+                case AngelScope.Combat: Com = angel.Rank; break;
+                case AngelScope.Magic: Mag = angel.Rank; break;
+                case AngelScope.Subtlety: Sub = angel.Rank; break;
+                case AngelScope.Heal: Heal = angel.Rank; break;
+                case AngelScope.Travel: Tra = angel.Rank; break;
+                case AngelScope.Leadership: Lead = angel.Rank; break;
+                case AngelScope.Charisma: Cha = angel.Rank; break;
+                case AngelScope.Logistics: Log = angel.Rank; break;
+                case AngelScope.Tactics: Tac = angel.Rank; break;
+                case AngelScope.Teaching: Teach = angel.Rank; break;
+                case AngelScope.CounterIntel: Counter = angel.Rank; break;
+            }
+            switch (angel.SecondScope)
+            {
+                case AngelScope.Combat: Com = (Com ?? 0) + (angel.Rank / 2); break;
+                case AngelScope.Magic: Mag = (Mag ?? 0) + (angel.Rank / 2); break;
+                case AngelScope.Subtlety: Sub = (Sub ?? 0) + (angel.Rank / 2); break;
+                case AngelScope.Heal: Heal = (Heal ?? 0) + (angel.Rank / 2); break;
+                case AngelScope.Travel: Tra = (Tra ?? 0) + (angel.Rank / 2); break;
+            }
         }
         public string ArtifactName()
         {

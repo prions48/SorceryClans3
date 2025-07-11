@@ -1,5 +1,5 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
-
+@inject IDialogService dialogService
 <MudDialog>
     <DialogContent>
         <MudSimpleTable Striped Bordered Outlined>
@@ -44,7 +44,7 @@
                         {
                             <td>@team.CScore</td>
                         }
-                        @if (MScore || AllScores)
+                        @if (MScore || AllScores || ResearchScores)
                         {
                             <td>@team.MScore</td>
                         }

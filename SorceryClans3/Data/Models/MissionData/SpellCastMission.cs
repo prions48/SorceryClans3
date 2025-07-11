@@ -71,6 +71,10 @@ namespace SorceryClans3.Data.Models
                 {
                     return $"Spell completed: summoned {CastingSpell.LesserDemon.DisplayWithCount(NumConsumables.Value, true)}";
                 }
+                else if (CastingSpell.AngelIcon != null)
+                {
+                    return $"Spell completed: built {NumConsumables} Icon{(NumConsumables == 1 ? "" : "s")} of {CastingSpell.AngelIcon.Angel.Name}";
+                }
                 return $"Spell completed: {NumConsumables.Value} {CastingSpell.ConsumablePrint(NumConsumables.Value)} prepared.";
             }
             if (TargetSoldier != null)

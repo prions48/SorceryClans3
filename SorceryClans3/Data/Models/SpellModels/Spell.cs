@@ -135,7 +135,7 @@ namespace SorceryClans3.Data.Models
 				if (GreaterDemon != null)
 					return "Invest " + GreaterDemon.DemonName;
 				if (AngelIcon != null)
-					return "Create " + AngelIcon.ArtifactName();
+					return "Create " + AngelIcon.ArtifactName() + " with the scope of " + AngelIcon.Angel.Scope;
 				return "Unknown";
 			}
 		}

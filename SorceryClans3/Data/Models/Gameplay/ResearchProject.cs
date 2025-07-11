@@ -11,8 +11,8 @@ namespace SorceryClans3.Data.Models
 		private int LastDiscoveryPts { get; set; }
 		private int LastDiscoveryClr { get; set; }
 		public int CurrentThreshold { get; set; }
-		public int PowerThreshold { get { return 1000000 * CurrentThreshold; } }//low for testing
-		public int ColorThreshold { get { if (Color == MagicColor.None) return 0; return 25 * CurrentThreshold; } }
+		public int PowerThreshold { get { return 1000000 * CurrentThreshold; } }
+		public int ColorThreshold { get { if (Color == MagicColor.None) return 0; return 20 * CurrentThreshold * CurrentThreshold; } }
 		public List<ResearchMission> Missions { get; set; } = new List<ResearchMission>();
 		public List<Guid> TeamIDs { get { return GetTeams.Select(e => e.ID).ToList(); } }
 		public List<Guid> TeamResetIDs { get; set; } = new List<Guid>();
@@ -74,7 +74,7 @@ namespace SorceryClans3.Data.Models
 			IList<MagicColor> tcolors = team.GetColors;
 			ColorPoints += tcolors.Count(e => e == this.Color);
 			Random r = new Random();
-			if (PowerPoints - LastDiscoveryPts >= PowerThreshold + r.Next(PowerThreshold) && ColorPoints - LastDiscoveryClr >= ColorThreshold + r.Next(ColorThreshold))
+			if (PowerPoints - LastDiscoveryPts >= PowerThreshold + r.Next(10 * PowerThreshold) && ColorPoints - LastDiscoveryClr >= ColorThreshold + r.Next(10 * ColorThreshold))
 			{
 				//discover!
 				//reset stats
@@ -96,7 +96,9 @@ namespace SorceryClans3.Data.Models
 			get
 			{
 				double pctprogress = (PowerPoints - LastDiscoveryPts) * 1.0 / PowerThreshold;
-				double clrprogress = (ColorPoints - LastDiscoveryClr) * 1.0 / ColorThreshold;
+				double clrprogress = 1;
+				if (ColorThreshold > 0)
+					clrprogress = (ColorPoints - LastDiscoveryClr) * 1.0 / ColorThreshold;
 				double progress = pctprogress;
 				if (clrprogress < pctprogress)
 					progress = clrprogress;

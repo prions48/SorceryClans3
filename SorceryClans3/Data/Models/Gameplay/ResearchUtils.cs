@@ -43,8 +43,9 @@ namespace SorceryClans3.Data.Models
                     return (i - 100000) / 450000;
                 case ResearchDiscovery.LesserDemon:
                 case ResearchDiscovery.GreaterDemon:
-                case ResearchDiscovery.Angel:
                     return (i - 100000) / 200000;
+                case ResearchDiscovery.Angel:
+                    return (i - 100000) / 600000;
                 case ResearchDiscovery.Power:
                 default:
                     return 1 + (i - 100000) / 300000;

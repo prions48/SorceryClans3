@@ -22,6 +22,7 @@
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
                 }
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cheat">Cheat</MudButton>
             }
             <MudSimpleTable Striped Bordered>
                 <thead>
@@ -83,7 +84,12 @@
                 <MudTd>@context.ClanName</MudTd>
                 <MudTd>@context.EliteLevel</MudTd>
                 <MudTd>@context.DisplayStats</MudTd>
-                <MudTd>@context.Power?.PowerName</MudTd>
+                <MudTd>
+                    @if (context.Power != null)
+                    {
+                        <MudIconButton Icon="@context.Power.Color.Icon()" Color="@context.Power.Color.Color()" OnClick="() => ViewPower(context.Power)" />
+                    }
+                </MudTd>
                 <MudTd>@Soldiers.Count(e => e.ClanID == context.ID)</MudTd>
             </RowTemplate>
         </MudTable>
@@ -114,7 +120,12 @@
                             <MudIconButton Icon="@Icons.Material.TwoTone.Group" Color="Color.Info" OnClick="() => ViewLeader(context)" />
                         }
                     </MudTd>
-                    <MudTd>@context.Power?.PowerName</MudTd>
+                    <MudTd>
+                        @if (context.Power != null)
+                        {
+                            <MudIconButton Icon="@context.Power.Color.Icon()" Color="@context.Power.Color.Color()" OnClick="() => ViewPower(context)" />
+                        }
+                    </MudTd>
                     <MudTd>@context.Artifact?.ArtifactName</MudTd>
                     <MudTd>@context.Team?.TeamName</MudTd>
                 </RowTemplate>
@@ -329,6 +340,7 @@
                         <HeaderContent>
                             <MudTh>Info</MudTh>
                             <MudTh>Project</MudTh>
+                            <MudTh>Progress</MudTh>
                             <MudTh>Upgrade</MudTh>
                             <MudTh>Teams</MudTh>
                             <MudTh>Research</MudTh>
@@ -343,6 +355,12 @@
                                 else
                                 {
                                     <MagicIcons Colors="new List<MagicColor>() { context.Project.GetColor }" />
+                                }
+                            </MudTd>
+                            <MudTd>
+                                @if (context.Project != null)
+                                {
+                                    @context.Project.Progress
                                 }
                             </MudTd>
                             <MudTd>
@@ -368,7 +386,9 @@
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd>@context.SpellName</MudTd>
-                            <MudTd>@context.Color.ToString()</MudTd>
+                            <MudTd>
+                                <MudIcon Icon="@context.Color.Icon()" Color="@context.Color.Color()" />
+                            </MudTd>
                             <MudTd>@context.CastDisplay</MudTd>
                             <MudTd>@context.MoneyToCast.ToString("C")</MudTd>
                             <MudTd>@context.ConsumableCountDisplay</MudTd>
@@ -526,6 +546,13 @@
     {
         SelectedLeader = null;
         ViewLeadDialog = false;
+    }
+    private void Cheat()
+    {
+        foreach (Soldier soldier in Engine.Soldiers)
+        {
+            soldier.GainPower(100);
+        }
     }
     protected override void OnInitialized()
     {
@@ -1260,4 +1287,31 @@
 
     }
     #endregion
+
+    private async Task ViewPower(Soldier soldier)
+    {
+        if (soldier.Power == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(PowerInspectorDialog.Power), soldier.Power);
+        parameters.Add(nameof(PowerInspectorDialog.Powerlevel), soldier.PowerLevel);
+        var dialog = dialogService.Show<PowerInspectorDialog>(soldier.Power.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewPower(IPower power)
+    {
+        if (power == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(PowerInspectorDialog.Power), power);
+        parameters.Add(nameof(PowerInspectorDialog.Powerlevel), null);
+        var dialog = dialogService.Show<PowerInspectorDialog>(power.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
 }
