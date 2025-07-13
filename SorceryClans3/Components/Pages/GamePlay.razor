@@ -501,6 +501,10 @@
                             {
                                 <MudIconButton Icon="@Icons.Material.TwoTone.ShieldMoon" Color="Color.Primary" OnClick="() => OpenRescueDialog(display)" />
                             }
+                            @if (display.NewSoldier != null)
+                            {
+                                <MudIconButton Icon="@Icons.Material.TwoTone.PersonAdd" Color="Color.Success" OnClick="() => ViewSoldier(display.NewSoldier)" />
+                            }
                         </td>
                     </tr>
                 }
@@ -555,6 +559,16 @@
         SelectedLeader = soldier;
         ViewLeadDialog = true;
     }
+    private async Task ViewSoldier(Soldier soldier)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Medium;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(SoldierInspectorDialog.Soldier), soldier);
+        var dialog = dialogService.Show<SoldierInspectorDialog>(soldier.SoldierName, parameters, options);
+        var result = await dialog.Result;
+    }
     private void CloseLead()
     {
         SelectedLeader = null;
@@ -604,11 +618,11 @@
         //START: team for testing only
         List<Soldier> TopSoldiers = Soldiers.OrderByDescending(e => e.PowerLevel * (e.Combat + e.Subtlety + e.Magic + e.Heal)).ToList();
         Engine.Teams.Add(new Team() {
-            TeamName = "Dragon",
-            Soldiers = TopSoldiers.Take(4).ToList()
+            TeamName = "Dragon"
         });
-        foreach (Soldier s in Engine.Teams.First().Soldiers)
-            s.Team = Engine.Teams.First();
+        TopSoldiers = TopSoldiers.Take(4).ToList();
+        foreach (Soldier s in TopSoldiers)
+            Engine.Teams.First().AddSoldier(s);
         //END: team for testing only
         for (int i = 0; i <= 5; i++)
         {
@@ -634,10 +648,6 @@
             Team? newteam = result.Data as Team;
             if (newteam != null)
             {
-                foreach (Soldier soldier in newteam.Soldiers)
-                {
-                    soldier.Team = newteam;
-                }
                 Engine.Teams.Add(newteam);
             }
         }
@@ -1333,12 +1343,12 @@
         options.CloseOnEscapeKey = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null /*add eligibility*/).ToList() );
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.EligibleToHunt()).ToList() );
         parameters.Add(nameof(TeamPicker.CScore), true);
         parameters.Add(nameof(TeamPicker.MScore), true);
         parameters.Add(nameof(TeamPicker.SScore), true);
         parameters.Add(nameof(TeamPicker.KScore), true);
-        var dialog = dialogService.Show<TeamPicker>("Attempt to tame the " + spell.BeastPet.BeastName, parameters, options);
+        var dialog = dialogService.Show<TeamPicker>("Attempt to tame the " + spell.BeastName, parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
         {

@@ -37,7 +37,7 @@
                         <td colspan="12"><hr /></td>
                     </tr>
                 }
-                <TeamSoldierInspector Soldiers="Team.Soldiers" ToggleLeader="MakeLeader" RemoveSoldier="RemoveSoldier" ActionsAvailable="Team.MissionID == null && Team.IsAtHome" />
+                <TeamSoldierInspector Soldiers="Team.GetSoldiers" ToggleLeader="MakeLeader" RemoveSoldier="RemoveSoldier" ActionsAvailable="Team.MissionID == null && Team.IsAtHome" />
                 @if (Team.GetColors.Count > 0)
                 {
                     <tr>
@@ -68,14 +68,12 @@
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private void MakeLeader(Soldier s)
     {
-        Team.Leaders.Add(s);
-        Team.Soldiers.Remove(s);
+        Team.PromoteToLeader(s);
         StateHasChanged();
     }
     private void UnmakeLeader(Soldier s)
     {
-        Team.Soldiers.Add(s);
-        Team.Leaders.Remove(s);
+        Team.DemoteFromLeader(s);
         StateHasChanged();
     }
     private async void RemoveSoldier(Soldier s)
@@ -91,9 +89,7 @@
         var result = await dialog.Result;
         if (result?.Canceled == false)
         {
-            Team.Soldiers.Remove(s);
-            Team.Leaders.Remove(s);
-            s.Team = null;
+            Team.RemoveSoldier(s);
             StateHasChanged();
         }
     }
@@ -112,8 +108,7 @@
         {
             if (result.Data is Soldier sold)
             {
-                Team.Soldiers.Add(sold);
-                sold.Team = Team;
+                Team.AddSoldier(sold);
                 AvailableSoldiers.Remove(sold);//whoops haha
             }
         }

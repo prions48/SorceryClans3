@@ -103,9 +103,12 @@
     void Submit()
     {
         Team newteam = new Team() {
-            TeamName = TeamName,
-            Soldiers = SelectedSoldiers
+            TeamName = TeamName
         };
+        foreach (Soldier soldier in SelectedSoldiers)
+        {
+            newteam.AddSoldier(soldier);
+        }
         MudDialog.Close(DialogResult.Ok(newteam));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

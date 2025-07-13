@@ -14,11 +14,11 @@ namespace SorceryClans3.Data.Models
         public bool IsAtHome { get { return Location == null || (Location.X == 0 && Location.Y == 0); } }
         public List<Soldier> Soldiers { get; set; }
         public List<Soldier> Leaders { get; set; }
-        public int SoldierCount { get { return Soldiers.Count + Leaders.Count; } }
+        public int SoldierCount { get { return GetAllSoldiers.Count; } }
         [NotMapped] public bool View { get; set; }
         public void AddSoldier(Soldier s)
         {
-            foreach (Soldier sold in Soldiers)
+            foreach (Soldier sold in GetAllSoldiers)
             {
                 if (!s.Teamwork.ContainsKey(sold.ID))
                     s.Teamwork.Add(sold.ID, 0);
@@ -26,34 +26,48 @@ namespace SorceryClans3.Data.Models
                     sold.Teamwork.Add(s.ID, 0);
             }
             Soldiers.Add(s);
+            s.Team = this;
         }
         public void RemoveSoldier(Soldier s)
         {
-            Soldier? sold = Leaders.FirstOrDefault(e => e.ID == s.ID);
-            if (sold != null)
+            if (Leaders.Contains(s))
             {
-                Leaders.Remove(sold);
-                foreach (Soldier s2 in sold.SubSoldiers)
-                {
-                    RemoveSoldier(s2);
-                }
+                Leaders.Remove(s);
+                s.Team = null;
                 return;
             }
-            sold = Soldiers.FirstOrDefault(e => e.ID == s.ID);
-            if (sold != null)
+            if (Soldiers.Contains(s))
             {
-                Soldiers.Remove(sold);
-                foreach (Soldier s2 in sold.SubSoldiers)
+                Soldiers.Remove(s);
+                s.Team = null;
+            }
+        }
+        public bool EligibleToHunt(Beast? beast = null)
+        {
+            if (beast == null)
+                return GetAllSoldiers.Any(e => e.GetColors.Contains(MagicColor.Green));
+            return GetAllSoldiers.Any(e => beast.IsEligible(e));
+        }
+        public List<Soldier> GetSoldiers
+        {
+            get
+            {
+                List<Soldier> allsoldiers = [];
+                foreach (Soldier s in Leaders)
+                    allsoldiers.AddRange(s.SubSoldiers);
+                foreach (Soldier sold in Soldiers)
                 {
-                    RemoveSoldier(s2);
+                    allsoldiers.Add(sold);
+                    allsoldiers.AddRange(sold.SubSoldiers);
                 }
+                return allsoldiers;
             }
         }
         public List<Soldier> GetAllSoldiers
         {
             get
             {
-                return [.. Leaders, .. Soldiers];
+                return [..Leaders,..GetSoldiers];
             }
         }
         public List<MagicColor> GetColors
@@ -80,7 +94,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Combat).ToList();
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.Combat).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].Combat * solds[i].PowerLevel;
@@ -93,7 +107,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Magic).ToList();
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.Magic).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].Magic * solds[i].PowerLevel;
@@ -106,7 +120,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Magic).ToList();
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.Magic).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     if (solds[i].IsCaster)
@@ -120,7 +134,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.Subtlety).ToList();
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.Subtlety).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].Subtlety * solds[i].PowerLevel;
@@ -136,7 +150,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 int score = 0;
-                IList<Soldier> solds = Soldiers.OrderBy(e => e.HealScore).ToList();
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.HealScore).ToList();
                 for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
                 {
                     score += solds[i].HealScore ?? 0;
@@ -170,7 +184,7 @@ namespace SorceryClans3.Data.Models
                 int weight = 0, leadership = 0;
                 foreach (Soldier s in Leaders)
                     leadership += s.ComLeadership;
-                foreach (Soldier sold in Soldiers)
+                foreach (Soldier sold in GetSoldiers)
                 {
                     weight += sold.TeamWeight;
                     leadership += sold.ComLeadership / 2;
@@ -194,7 +208,7 @@ namespace SorceryClans3.Data.Models
                 int weight = 0, leadership = 0;
                 foreach (Soldier s in Leaders)
                     leadership += s.MagLeadership;
-                foreach (Soldier sold in Soldiers)
+                foreach (Soldier sold in GetSoldiers)
                 {
                     weight += sold.TeamWeight;
                     leadership += sold.MagLeadership / 2;
@@ -217,7 +231,7 @@ namespace SorceryClans3.Data.Models
                 int weight = 0, leadership = 0;
                 foreach (Soldier s in Leaders)
                     leadership += s.SubLeadership;
-                foreach (Soldier sold in Soldiers)
+                foreach (Soldier sold in GetSoldiers)
                 {
                     weight += sold.TeamWeight;
                     leadership += sold.SubLeadership / 2;
@@ -244,7 +258,7 @@ namespace SorceryClans3.Data.Models
                 {
                     leadership += (s.ComLeadership + s.MagLeadership + s.SubLeadership) / 3;
                 }
-                foreach (Soldier s in Soldiers)
+                foreach (Soldier s in GetSoldiers)
                 {
                     weight += s.TeamWeight;
                     leadership += (s.ComLeadership + s.MagLeadership + s.SubLeadership) / 6;
@@ -272,9 +286,9 @@ namespace SorceryClans3.Data.Models
                 double ret = 0;
                 if (Soldiers.Count <= 1)
                     return 1;
-                foreach (Soldier s in Soldiers)
+                foreach (Soldier s in GetAllSoldiers)
                 {
-                    foreach (Soldier s2 in Soldiers)
+                    foreach (Soldier s2 in GetAllSoldiers)
                     {
                         if (s.ID != s2.ID)
                         {
@@ -284,7 +298,7 @@ namespace SorceryClans3.Data.Models
                         }
                     }
                 }
-                return ret / (Soldiers.Count * (Soldiers.Count - 1));
+                return ret / (SoldierCount * (SoldierCount - 1));
             }
         }
         public string TeamworkText
@@ -482,13 +496,39 @@ namespace SorceryClans3.Data.Models
             }
             return true;
         }
+        public void PromoteToLeader(Soldier soldier)
+        {
+            if (Soldiers.Contains(soldier))
+            {
+                Soldiers.Remove(soldier);
+                Leaders.Add(soldier);
+            }
+        }
+        public void DemoteFromLeader(Soldier soldier)
+        {
+            if (Leaders.Contains(soldier))
+            {
+                Leaders.Remove(soldier);
+                Soldiers.Add(soldier);
+            }
+        }
         public void Cleanup()
         {
             int i = 0;
             while (i < Leaders.Count)
             {
                 if (Leaders[i].IsAlive)
+                {
+                    int j = 0;
+                    while (j < Leaders[i].SubSoldiers.Count)
+                    {
+                        if (Leaders[i].SubSoldiers[j].IsAlive)
+                            j++;
+                        else
+                            Leaders[i].SubSoldiers.RemoveAt(j);
+                    }
                     i++;
+                }
                 else
                     Leaders.RemoveAt(i);
             }
@@ -496,7 +536,17 @@ namespace SorceryClans3.Data.Models
             while (i < Soldiers.Count)
             {
                 if (Soldiers[i].IsAlive)
+                {
+                    int j = 0;
+                    while (j < Soldiers[i].SubSoldiers.Count)
+                    {
+                        if (Soldiers[i].SubSoldiers[j].IsAlive)
+                            j++;
+                        else
+                            Soldiers[i].SubSoldiers.RemoveAt(j);
+                    }
                     i++;
+                }
                 else
                     Soldiers.RemoveAt(i);
             }

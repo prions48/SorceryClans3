@@ -2,7 +2,7 @@
 @using SorceryClans3.Data.Abstractions
 @inject IDialogService dialogService
 
-@foreach (Soldier s in Soldiers.Where(e => !e.IsSub || ShowSubs))
+@foreach (Soldier s in Soldiers)
 {
     <tr>
         <td>@s.SoldierName</td>
@@ -37,7 +37,7 @@
         <td>
             @if (ActionsAvailable)
             {
-                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => Remove(s)" />
+                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.TwoTone.RemoveCircle" OnClick="() => Remove(s)" Disabled="s.IsSub" />
             }
         </td>
     </tr>
@@ -61,7 +61,6 @@
 
 @code {
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
-    [Parameter] public bool ShowSubs { get; set; } = false;
     [Parameter, EditorRequired] public Action<Soldier> ToggleLeader { get; set; }
     [Parameter, EditorRequired] public Action<Soldier> RemoveSoldier { get; set; }
     [Parameter] public bool ActionsAvailable { get; set; } = false;

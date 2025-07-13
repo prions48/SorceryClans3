@@ -230,7 +230,8 @@ namespace SorceryClans3.Data.Models
                     TeamInTransit.AddSoldier(newsoldier);
                     return new("Team " + TeamInTransit.TeamName + " has tamed " + newsoldier.SoldierName, EventCompleted)
                     {
-                        DisplayResult = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), true, 1000)
+                        DisplayResult = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), true, 1000),
+                        NewSoldier = newsoldier
                     };
                 }
                 else

@@ -45,7 +45,7 @@
     private bool Completed { get; set; } = false;
     protected override void OnInitialized()
     {
-        foreach (Soldier medic in MedicTeam.Soldiers)
+        foreach (Soldier medic in MedicTeam.GetAllSoldiers)
         {
             if (medic.IsHealer)
                 Medics.Add(new MedicPatients { MedicID = medic.ID.ToString(), MedicName = medic.SoldierName, MPBase = medic.HealScore ?? 0, Fatigue = medic.Medical!.MedicFatigue } );

@@ -275,7 +275,11 @@ namespace SorceryClans3.Data.Models
                         Events.Add(new GameEvent(ev.TeamInTransit!, Settings.TravelCompletion(ev.Destination!, ev.TeamInTransit!.Location ?? MapLocation.HomeBase, ev.TeamInTransit.DScore), MissionType.TravelToLocation, ev.TeamInTransit!.Location ?? MapLocation.HomeBase));
                         break;
                     case MissionType.TameBeast:
-                        displays.Add(ev.ResolveHunt());
+                        disp = ev.ResolveHunt();
+                        if (disp.NewSoldier != null)
+                            Soldiers.Add(disp.NewSoldier);
+                        displays.Add(disp);
+
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));
@@ -295,6 +299,14 @@ namespace SorceryClans3.Data.Models
             {
                 List<string> msgs = Research.IncrementDay();
                 displays.AddRange(msgs.Select(e => new GameEventDisplay(e, Settings.CurrentTime)));
+            }
+            //healing soldiers who are on their own team
+            foreach (Team team in Teams)
+            {
+                if (!displays.Any(e => e.DisplayTeam?.ID == team.ID) && team.GetAllSoldiers.Any(e => e.IsInjured) && team.GetAllSoldiers.Any(e => e.HealScore > 0))
+                {
+                    displays.Add(new($"Team {team.TeamName} must render medical assistance to itself.", Settings.CurrentTime) { OpenHealDialog = true, DisplayTeam = team, DisplayTeam2 = team });
+                }
             }
             return displays;
         }

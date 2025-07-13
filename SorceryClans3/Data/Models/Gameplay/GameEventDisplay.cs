@@ -12,6 +12,7 @@ namespace SorceryClans3.Data.Models
         public Team? DisplayTeam { get; set; }
         public Team? DisplayTeam2 { get; set; }
         public TeamResult? DisplayResult { get; set; }
+        public Soldier? NewSoldier { get; set; }
         public bool OpenHealDialog { get; set; } = false;
         public bool OpenRescueDialog { get; set; } = false;
         //add more things

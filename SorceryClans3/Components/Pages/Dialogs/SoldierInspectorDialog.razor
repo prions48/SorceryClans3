@@ -1,0 +1,21 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Models
+<MudDialog>
+    <DialogContent>
+        <SoldierInspector Soldier="Soldier" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code{
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Soldier Soldier { get; set; }
+    private void Cancel() => MudDialog.Cancel();
+    protected override void OnInitialized()
+    {
+
+    }
+}
