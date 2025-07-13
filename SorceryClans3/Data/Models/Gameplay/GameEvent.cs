@@ -16,6 +16,7 @@ namespace SorceryClans3.Data.Models
         public DefenseType? DefenseType { get; set; }
         public ClientCity? City { get; set; }
         public DefenseStructure? DefenseStructure { get; set; }
+        public Spell? HuntSpell { get; set; }
         public bool? RoundTrip { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
@@ -103,6 +104,16 @@ namespace SorceryClans3.Data.Models
             Visible = true;
             FixedDate = true;
             Destination = location;
+        }
+        public GameEvent(Team team, Spell spell, Soldier? target, DateTime duedate)
+        {
+            TeamInTransit = team;
+            HuntSpell = spell;
+            FocusSoldier = target;
+            Type = MissionType.TameBeast;
+            Visible = true;
+            FixedDate = false;
+            EventCompleted = duedate;
         }
         public GameEventDisplay ResolveMercenary()
         {
@@ -195,6 +206,41 @@ namespace SorceryClans3.Data.Models
                 OpenHealDialog = true,
                 DisplayTeam = TeamInTransit,
                 DisplayTeam2 = TargetTeam
+            };
+        }
+        public GameEventDisplay ResolveHunt()
+        {
+            Soldier? newsoldier = null;
+            TeamResult? result = null;
+            if (HuntSpell?.Beast != null && FocusSoldier != null)
+            {
+                //do odds here
+                newsoldier = HuntSpell.Beast.GenerateBeast(FocusSoldier.GivenName);
+            }
+            else if (HuntSpell?.BeastPet != null)
+            {
+                //do odds here
+                newsoldier = HuntSpell.BeastPet.GenerateSoldier();
+            }
+            if (TeamInTransit != null)
+            {
+                TeamInTransit.MissionID = null;
+                if (newsoldier != null)
+                {
+                    TeamInTransit.AddSoldier(newsoldier);
+                    return new("Team " + TeamInTransit.TeamName + " has tamed " + newsoldier.SoldierName, EventCompleted)
+                    {
+                        DisplayResult = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), true, 1000)
+                    };
+                }
+                else
+                {
+                    result = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), false, 1000);//tmp on diff //also don't forget this part does the damage
+                }
+            }
+            return new("Team " + (TeamInTransit?.TeamName ?? "Unknown") + " has failed to tame a " + (HuntSpell?.BeastName ?? "beast") + "!", EventCompleted)
+            {
+                DisplayResult = result
             };
         }
     }

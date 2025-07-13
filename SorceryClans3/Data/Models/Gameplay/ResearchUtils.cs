@@ -11,6 +11,7 @@ namespace SorceryClans3.Data.Models
         DemonicCurse,
         SpiritSoldier,
         SpiritArtifact,
+        BeastPet,
         BeastTame,
         BeastHarvest,
         Angel,

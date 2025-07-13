@@ -148,6 +148,10 @@ namespace SorceryClans3.Data.Models
 							{
 								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts);
 							}
+							else if (!currentSpells.Any(e => e.BeastPet != null)) //tmp
+							{
+								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.BeastPet, powerpts);
+							}
 							else if (harvestspells.Count > 0 && r.NextDouble() < .3)
 							{
 								IList<Guid> weightedaverage = new List<Guid>();
@@ -162,7 +166,7 @@ namespace SorceryClans3.Data.Models
 									BeastHarvest? harvest = beast.CreateHarvest(disco.PowerPoints.PointsToScore(ResearchDiscovery.BeastHarvest));
 									if (harvest == null)
 									{
-										NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts);
+										NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts); //fallback
 									}
 									else
 									{

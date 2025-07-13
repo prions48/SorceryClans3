@@ -20,6 +20,7 @@ namespace SorceryClans3.Data.Models
         public int sseed;
         public int hseed;
         public int? dseed;
+        public int ride = 0;
         public int kseed; //healing beasts?? exciting...
         Random r = new Random();
         private HunterMission? TameMission { get; set; }
@@ -29,7 +30,7 @@ namespace SorceryClans3.Data.Models
         }
         public Beast(int seed)
         {
-            int brute = 0, mystic = 0, mag = 0, stealth = 0, tough = 0, fight = 0, legend = 0, ride = 0, eco = 0, heal = 0;
+            int brute = 0, mystic = 0, mag = 0, stealth = 0, tough = 0, fight = 0, legend = 0, eco = 0, heal = 0;
             int? travel = null;
             bool hoofed = false;
             string bname = "", aname = "", lname = "";
@@ -56,7 +57,7 @@ namespace SorceryClans3.Data.Models
                     case 3: if (coinFlip()) aname = "Goat"; else aname = "Ibex"; fight+=2; tough++; hoofed = true; ride++; eco=0; travel=2; break;
                     case 4: if (coinFlip()) aname = "Raccoon"; else aname = "Skunk"; fight++; mag+=2; eco=1; break;
                     case 5: if (coinFlip()) { aname = "Iguana"; eco=7; } else { aname = "Bat"; eco=5; } stealth+=2; mag++; break;
-                    case 6: if (coinFlip()) aname = "Horse"; else aname = "Tapir"; brute++; fight+=2; tough++; hoofed = true; ride+=3; eco=0; travel=4; break;
+                    case 6: if (coinFlip()) aname = "Horse"; else aname = "Tapir"; brute++; fight+=2; tough++; hoofed = true; ride++; eco=0; travel=4; break;
                     case 7: aname = "Fox"; fight++; mag++; stealth++; eco=2; break;
                     case 8: if (coinFlip()) aname = "Falcon"; else aname = "Hawk"; mystic++; stealth++; fight++; mag++; eco=6; break;
                     case 9: if (coinFlip()) aname = "Monkey"; else aname = "Lemur"; stealth+=2; fight++; eco=7; break;
@@ -71,14 +72,14 @@ namespace SorceryClans3.Data.Models
                     case 18: aname = "Cheetah"; fight++; stealth+=2; eco=3; travel=2; break;
                     case 19: if (coinFlip()) aname = "Viper"; else aname = "Cobra"; mag+=2; stealth++; mystic++; eco=2; break;
                     case 20: aname = "Bear"; brute+=2; fight+=2; tough++; if (r.NextDouble() < .8) eco=4; else eco=9; travel=1; break;
-                    case 21: aname = "Jaguar"; fight++; stealth+=2; mystic++; ride++; if (coinFlip()) eco=3; else eco=9; travel=1; break;
-                    case 22: aname = "Lion"; fight+=2; stealth++; eco=3; travel=2; break;
+                    case 21: aname = "Jaguar"; fight++; stealth+=2; mystic++; if (coinFlip()) eco=3; else eco=9; travel=1; break;
+                    case 22: aname = "Lion"; fight+=2; stealth++; eco=3; travel=2; ride++; break;
                     case 23: aname = "Owl"; fight++; mag++; stealth++; eco=2; mystic+=2; break;
                     case 24: if (coinFlip()) aname = "Rhino"; else aname = "Bison"; brute+=2; fight++; tough+=2; hoofed = true; ride+=2; eco=0; travel=2; break;
-                    case 25: aname = "Tiger"; fight+=2; stealth++; tough++; eco=3; travel=2; break;
+                    case 25: aname = "Tiger"; fight+=2; stealth++; tough++; eco=3; travel=2; ride++; break;
                     case 26: aname = "Elephant"; fight++; tough+=3; mag++; hoofed = true; ride+=2; eco=0; travel=3; break;
                     case 27: aname = "Mammoth"; fight++; mag++; tough+=3; hoofed = true; ride+=2; eco=0; travel=3; break;
-                    default: aname = "Dire-wolf"; fight++; mag++; stealth++; eco=3; travel=2; break;
+                    default: aname = "Dire-wolf"; fight++; mag++; stealth++; eco=3; travel=2; ride++; break;
                 }
             }
             else if (seed < 24)
@@ -106,9 +107,9 @@ namespace SorceryClans3.Data.Models
                 {
                     case 0: aname = "Basilisk"; fight++; stealth+=2; eco=6; travel=1; break;
                     case 1: aname = "Kitsune"; stealth+=2; mag++; eco=2; travel=1; break;
-                    case 2: aname = "Unicorn"; mag+=2; fight++; hoofed = true; ride+=2; eco=0; travel=4; break; 
+                    case 2: aname = "Unicorn"; mag+=2; fight++; hoofed = true; ride++; eco=0; travel=4; break; 
                     case 3: aname = "Thunderbird"; fight+=2; mag++; tough++; legend++; ride++; eco=3; travel=4; break;
-                    case 4: aname = "Saber-tooth"; fight+=2; stealth++; tough+=2; eco=3; travel=2; break;
+                    case 4: aname = "Saber-tooth"; fight+=2; stealth++; tough+=2; eco=3; travel=2; ride++; break;
                     default: aname = "Phoenix"; mag+=2; tough++; stealth++; legend++; eco=6; travel=4; break;
                 }
             }
@@ -345,6 +346,7 @@ namespace SorceryClans3.Data.Models
                 Power = GenPower(mseed),
                 TravelBase = dseed,
                 Type = SoldierType.Beast,
+                MountCountBase = ride,
                 TypeID = this.ID
             };
             ret.HPCurrent = ret.HPMax;

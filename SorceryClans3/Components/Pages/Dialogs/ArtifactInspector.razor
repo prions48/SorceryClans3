@@ -28,6 +28,10 @@
                         {
                             <th>Heal</th>
                         }
+                        @if (Artifact.LeadBoost > 0)
+                        {
+                            <th>Lead</th>
+                        }
                         @if (Artifact.ChaBoost > 0)
                         {
                             <th>Cha</th>
@@ -39,6 +43,18 @@
                         @if (Artifact.TacBoost > 0)
                         {
                             <th>Tac</th>
+                        }
+                        @if (Artifact.TeachBoost > 0)
+                        {
+                            <th>Teach</th>
+                        }
+                        @if (Artifact.ResearchBoost > 0)
+                        {
+                            <th>Research</th>
+                        }
+                        @if (Artifact.CounterBoost > 0)
+                        {
+                            <th>Counter</th>
                         }
                     </tr>
                 </thead>
@@ -66,6 +82,10 @@
                         {
                             <td>@Artifact.HealBoost</td>
                         }
+                        @if (Artifact.LeadBoost > 0)
+                        {
+                            <td>@Artifact.LeadBoost%</td>
+                        }
                         @if (Artifact.ChaBoost > 0)
                         {
                             <td>@Artifact.ChaBoost</td>
@@ -77,6 +97,18 @@
                         @if (Artifact.TacBoost > 0)
                         {
                             <td>@Artifact.TacBoost</td>
+                        }
+                        @if (Artifact.TeachBoost > 0)
+                        {
+                            <th>@Artifact.TeachBoost%</th>
+                        }
+                        @if (Artifact.ResearchBoost > 0)
+                        {
+                            <th>@Artifact.ResearchBoost%</th>
+                        }
+                        @if (Artifact.CounterBoost > 0)
+                        {
+                            <th>@Artifact.CounterBoost%</th>
                         }
                     </tr>
                 </tbody>

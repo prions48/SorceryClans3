@@ -112,6 +112,12 @@ namespace SorceryClans3.Data.Models
                 return CurrentTime.AddHours(15 + r.Next(6));
             return CurrentTime.AddDays(15 + r.Next(10)); //I'm just making these up at random right now
         }
+        public DateTime HuntDate(Spell spell)
+        {
+            if (RealTime)
+                return CurrentTime.AddHours(8);
+            return CurrentTime.AddDays(15);//add randomness directly from spell?
+        }
         #region Healing
         public void SetNextHeal()
         {

@@ -7,16 +7,21 @@ namespace SorceryClans3.Data.Tools
         {
             switch (type)
             {
+                case PetType.Mount: return "Horse";//all this 
                 case PetType.Spy: return PetSpy(lvl);
                 case PetType.Scout: return PetScout(lvl);
                 case PetType.Sentinel: return PetSentinel(lvl);
+                case PetType.Brute: return PetBrute(lvl);
+                case PetType.Breaker: return PetBreaker(lvl);
+                case PetType.Magic: return PetSentinel(lvl);
+                case PetType.Hunter: return PetSentinel(lvl);
                 //to do more here
                 default: return "Jackalope";
             }
         }
         private static string PetSpy(int lvl)
         {
-            switch (r.Next(lvl/4 + 3))
+            switch (r.Next(lvl / 4 + 3))
             {
                 case 0: return "Rat";
                 case 1: return "Ferret";
@@ -29,7 +34,7 @@ namespace SorceryClans3.Data.Tools
         }
         private static string PetScout(int lvl)
         {
-            switch (r.Next(lvl/4 + 3))
+            switch (r.Next(lvl / 4 + 3))
             {
                 case 0: return "Wildcat";
                 case 1: return "Coyote";
@@ -43,15 +48,32 @@ namespace SorceryClans3.Data.Tools
         }
         private static string PetSentinel(int lvl)
         {
-            switch (r.Next(lvl/4 + 3))
+            switch (r.Next(lvl / 5 + 3))
             {
-                case 0: return "Owl";
+                case 0: return "Raccoon";
                 case 1: return "Crow";
                 case 2: return "Bat";
-                case 3: return "";
-                case 4: return "";
-                case 5: return "";
-                default: return "";
+                default: return "Owl";
+            }
+        }
+        private static string PetBrute(int lvl)
+        {
+            switch (r.Next(lvl / 5 + 3))
+            {
+                case 0: return "Bear";
+                case 1: return "Rhinoceras";
+                case 2: return "Bat";
+                default: return "Owl";
+            }
+        }
+        private static string PetBreaker(int lvl)
+        {
+            switch (r.Next(lvl / 5 + 3))
+            {
+                case 0: return "Raccoon";
+                case 1: return "Crow";
+                case 2: return "Bat";
+                default: return "Owl";
             }
         }
     }

@@ -48,6 +48,11 @@ namespace SorceryClans3.Data.Models
             team.MissionID = structure.ID;
             Events.Add(new(team, MissionType.Defending, Settings.DefenseDate(structure.Type), structure));
         }
+        public void StartHunt(Team team, Spell spell, Soldier? target = null)
+        {
+            team.MissionID = spell.ID;
+            Events.Add(new(team, spell, target, Settings.HuntDate(spell)));
+        }
         public void UnassignDefense(DefenseStructure structure)
         {
             if (structure.Team != null)
@@ -268,6 +273,9 @@ namespace SorceryClans3.Data.Models
                     case MissionType.MedicalRescue:
                         displays.Add(ev.ResolveRescue());
                         Events.Add(new GameEvent(ev.TeamInTransit!, Settings.TravelCompletion(ev.Destination!, ev.TeamInTransit!.Location ?? MapLocation.HomeBase, ev.TeamInTransit.DScore), MissionType.TravelToLocation, ev.TeamInTransit!.Location ?? MapLocation.HomeBase));
+                        break;
+                    case MissionType.TameBeast:
+                        displays.Add(ev.ResolveHunt());
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));

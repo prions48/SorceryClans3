@@ -14,7 +14,8 @@ namespace SorceryClans3.Data.Models
         Tactics = 7,
         Logistics = 8,
         Teaching = 9,
-        CounterIntel = 10
+        CounterIntel = 10,
+        Research = 11
     }
     public class Angel
     {
@@ -43,7 +44,7 @@ namespace SorceryClans3.Data.Models
         {
             if (mainodds > 1 && r.Next(mainodds) == 0)
             {
-                return (AngelScope)r.Next(11);
+                return (AngelScope)r.Next(12);
             }
             else
             {

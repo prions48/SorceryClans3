@@ -155,14 +155,9 @@ namespace SorceryClans3.Data.Models
             {
                 if (GetAllSoldiers.Count == 0)
                     return 0;
-                int min = 999;
-                int boost = 0;
-                foreach (Soldier sold in GetAllSoldiers)
-                {
-                    if (sold.Travel != null && sold.Travel.Value < min)
-                        min = sold.Travel.Value;
-                    boost += sold.TravelGroupBoost;
-                }
+                List<MountCalc> solds = MountCalc.GenerateMountCalcs(GetAllSoldiers);
+                int min = solds.Select(e => e.TravelScore).Min();
+                int boost = solds.Sum(e => e.TravelBoost);
                 if (min < 1)
                     min = 1;
                 return min + boost;
@@ -316,9 +311,9 @@ namespace SorceryClans3.Data.Models
         }
         public void BoostTeamwork(double twadd)
         {
-            foreach (Soldier s in Soldiers)
+            foreach (Soldier s in GetAllSoldiers)
             {
-                foreach (Soldier s2 in Soldiers)
+                foreach (Soldier s2 in GetAllSoldiers)
                 {
                     if (s.ID != s2.ID)
                     {
@@ -375,6 +370,12 @@ namespace SorceryClans3.Data.Models
                     break;
                 }
             }
+        }
+        public List<(Guid, int, bool)> BoostSoldiers(int factor)
+        {
+            Random r = new();
+            BoostTeamwork(0.05);
+            return GetAllSoldiers.Select(e => e.GainPower(r.Next(factor, factor * 2))).ToList();
         }
         public int ResearchPower(MagicColor color)
         {

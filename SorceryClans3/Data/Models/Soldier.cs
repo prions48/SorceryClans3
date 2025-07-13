@@ -81,7 +81,8 @@ namespace SorceryClans3.Data.Models
         public List<Style> Styles { get; set; } = new List<Style>();
         public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();
         public IDictionary<MagicColor, double> ResearchSkill { get; set; } = new Dictionary<MagicColor, double>();
-        public double ResearchAffinity { get; set; }
+        public double ResearchAffinityBase { get; set; }
+        public double ResearchAffinity { get { return ResearchAffinityBase + ((Artifact?.ResearchBoost ?? 0) / 100.0); } }
         public int TeamWeight
         {
             get //how much work to lead
@@ -123,14 +124,14 @@ namespace SorceryClans3.Data.Models
             LeadershipXPBase = r.NextDouble() * 1.5 - 1.0;
             LeadTrainRemains = r.Next(4) + (r.Next(2) == 0 ? r.Next(8) : r.Next(2));
             MaxTeach = r.NextDouble() * 2; //linked to Charisma
-            ResearchAffinity = r.NextDouble() + 0.5; //linked to Logistics
+            ResearchAffinityBase = r.NextDouble() + 0.5; //linked to Logistics
             CounterIntelMax = r.NextDouble();
             if (MaxTeach < .7 && ResearchAffinity < 0.8 && CounterIntelMax < .5)
             {
                 switch (r.Next(3))
                 {
                     case 0: MaxTeach = .7 + r.NextDouble() * 1.3; if (CharismaBase < 6) CharismaBase = 6 + r.Next(5); break;
-                    case 1: ResearchAffinity = .8 + r.NextDouble() * 0.7; if (LogisticsBase < 6) LogisticsBase = 6 + r.Next(5); break;
+                    case 1: ResearchAffinityBase = .8 + r.NextDouble() * 0.7; if (LogisticsBase < 6) LogisticsBase = 6 + r.Next(5); break;
                     case 2: CounterIntelMax = 0.5 + r.NextDouble() * 0.5; if (TacticsBase < 6) TacticsBase = 6 + r.Next(5); break;
                 }
             }
@@ -292,6 +293,8 @@ namespace SorceryClans3.Data.Models
                 return IntegrityBase; //add artifact boost at some point?
             }
         }
+        public int MountCount { get { if (Health <= HealthLevel.Hurt) return MountCountBase; return 0; } }
+        public int MountCountBase { get; set; } = 0;
         public int? Travel
         {
             get

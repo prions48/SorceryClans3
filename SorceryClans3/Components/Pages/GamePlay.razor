@@ -404,7 +404,20 @@
     <MudTabPanel Text="Missions">
         <MudTabs Position="Position.Top">
             <MudTabPanel Text="Rescue"></MudTabPanel>
-            <MudTabPanel Text="Retrieval"></MudTabPanel>
+            <MudTabPanel Text="Resources">
+                <MudTable Striped Bordered Items="Engine.Research.Spells.Where(e => e.BeastPet != null)">
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Send Team</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.SpellName</MudTd>
+                        <MudTd>
+                            <MudIconButton OnClick="() => StartHuntMission(context)" Icon="@Icons.Material.TwoTone.TrackChanges" Color="Color.Info" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudTabPanel>
             <MudTabPanel Text="Exploration"></MudTabPanel>
             <MudTabPanel Text="Training">
                 <MudSimpleTable Striped Bordered>
@@ -1313,5 +1326,30 @@
         parameters.Add(nameof(PowerInspectorDialog.Powerlevel), null);
         var dialog = dialogService.Show<PowerInspectorDialog>(power.PowerName, parameters, options);
         var result = await dialog.Result;
+    }
+    private async Task StartHuntMission(Spell spell)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null /*add eligibility*/).ToList() );
+        parameters.Add(nameof(TeamPicker.CScore), true);
+        parameters.Add(nameof(TeamPicker.MScore), true);
+        parameters.Add(nameof(TeamPicker.SScore), true);
+        parameters.Add(nameof(TeamPicker.KScore), true);
+        var dialog = dialogService.Show<TeamPicker>("Attempt to tame the " + spell.BeastPet.BeastName, parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+            {
+                //if spell.Beast, also select eligible soldier here
+
+
+                Engine.StartHunt(team, spell);
+            }
+        }
     }
 }

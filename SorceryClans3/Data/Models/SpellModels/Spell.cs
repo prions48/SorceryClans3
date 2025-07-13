@@ -46,6 +46,7 @@ namespace SorceryClans3.Data.Models
 		public bool ArtifactCreated { get; set; }
 		//spell models
 		public Beast? Beast { get; set; }
+		public BeastPet? BeastPet { get; set; }
 		public BeastHarvest? Harvest { get; set; }
 		public PowerTemplate? Power { get; set; }
 		public LesserSpirit? Spirit { get; set; }
@@ -62,6 +63,8 @@ namespace SorceryClans3.Data.Models
 				if (Power != null)
 					return true;
 				if (Beast != null)
+					return true;
+				if (BeastPet != null)
 					return true;
 				if (Harvest != null)
 					return Consumables > 0;
@@ -82,9 +85,9 @@ namespace SorceryClans3.Data.Models
 				return true;
 			}
 		}
-		public bool CastQuantity => Harvest != null || LesserUndead != null || LesserDemon != null || Beast != null || AngelIcon != null;
+		public bool CastQuantity => Harvest != null || LesserUndead != null || LesserDemon != null || Beast != null || BeastPet != null || AngelIcon != null;
 		public bool ProcessesConsumables => Harvest != null;
-		public bool UsesConsumables => Harvest != null || LesserUndead != null || Beast != null;
+		public bool UsesConsumables => Harvest != null || LesserUndead != null || Beast != null || BeastPet != null;
 		public bool GeneratesSoldier => LesserUndead != null || Spirit != null;
 		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null;//soon to add more!
 		
@@ -112,12 +115,15 @@ namespace SorceryClans3.Data.Models
 				return AngelIcon.GenerateIcon();
 			return null;
 		}
+		public string BeastName { get { if (Beast != null) return Beast.BeastName; if (BeastPet != null) return BeastPet.BeastName; return ""; } } 
 		public string SpellName
 		{
 			get
 			{
 				if (Beast != null)
 					return "Tame the " + Beast.FullName;
+				if (BeastPet != null)
+					return "Tame the " + BeastPet.BeastName;
 				if (Harvest != null)
 					return "Harvest the " + Harvest.HarvestName;
 				if (Power != null)
@@ -145,6 +151,8 @@ namespace SorceryClans3.Data.Models
 			{
 				if (Beast != null)
 					return Beast.ToolName;
+				if (BeastPet != null)
+					return BeastPet.ToolName;
 				if (Harvest != null)
 					return Harvest.item;
 				if (LesserUndead != null)
@@ -215,9 +223,10 @@ namespace SorceryClans3.Data.Models
 			{
 				case ResearchDiscovery.Power: Power = Power = new PowerTemplate(Guid.Empty, pts, color) { Heritability = null }; break;
 				case ResearchDiscovery.BeastTame:
-					Beast = new Beast(powerpts.PointsToScore(disco));
+					Beast = new Beast(pts);
 					Consumables = r.Next(3) + 3; //testing
 					break;
+				case ResearchDiscovery.BeastPet: BeastPet = new(pts); Consumables = 3; break;
 				case ResearchDiscovery.BeastHarvest: Consumables = 3; UnprocessedConsumables = 3; break;//set in Research.cs
 				case ResearchDiscovery.SpiritSoldier: Spirit = new LesserSpirit(pts, r.NextDouble() < .15); break;
 				case ResearchDiscovery.SpiritArtifact: SpiritArtifact = new GreaterSpirit(pts); Built = false; break;

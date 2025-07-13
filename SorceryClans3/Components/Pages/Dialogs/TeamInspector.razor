@@ -22,6 +22,7 @@
                     <th>Subtlety</th>
                     <th>HP</th>
                     <th>Heal</th>
+                    <th>Travel</th>
                     <th>Power</th>
                     <th>Artifact</th>
                     <th>Leadership</th>
@@ -33,14 +34,14 @@
                 @if (Team.Leaders.Count > 0)
                 {
                     <tr>
-                        <td colspan="11"><hr /></td>
+                        <td colspan="12"><hr /></td>
                     </tr>
                 }
                 <TeamSoldierInspector Soldiers="Team.Soldiers" ToggleLeader="MakeLeader" RemoveSoldier="RemoveSoldier" ActionsAvailable="Team.MissionID == null && Team.IsAtHome" />
                 @if (Team.GetColors.Count > 0)
                 {
                     <tr>
-                        <td colspan="11">
+                        <td colspan="12">
                             <MudStack Row=true>
                                 Team Magic:
                                 <MagicIcons Colors="Team.GetColors" />

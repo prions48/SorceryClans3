@@ -252,6 +252,16 @@ namespace SorceryClans3.Data.Tools
                         case AngelScope.Travel: return "Pursuit";
                         default: return "";
                     }
+                case AngelScope.Research:
+                    switch (second)
+                    {
+                        case AngelScope.Combat: return "Technique";
+                        case AngelScope.Magic: return "Study";
+                        case AngelScope.Subtlety: return "Secrets";
+                        case AngelScope.Heal: return "Surgery";
+                        case AngelScope.Travel: return "Measurement";
+                        default: return "";
+                    }
                 default: return "";
             }
         }

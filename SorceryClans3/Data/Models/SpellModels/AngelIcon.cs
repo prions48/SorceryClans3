@@ -32,12 +32,12 @@ namespace SorceryClans3.Data.Models
                 case AngelScope.Subtlety: Sub = angel.Rank; break;
                 case AngelScope.Heal: Heal = angel.Rank; break;
                 case AngelScope.Travel: Tra = angel.Rank; break;
-                case AngelScope.Leadership: Lead = angel.Rank; break;
+                case AngelScope.Leadership: Lead = 2 * angel.Rank + r.Next(4); break;
                 case AngelScope.Charisma: Cha = angel.Rank; break;
                 case AngelScope.Logistics: Log = angel.Rank; break;
                 case AngelScope.Tactics: Tac = angel.Rank; break;
-                case AngelScope.Teaching: Teach = angel.Rank; break;
-                case AngelScope.CounterIntel: Counter = angel.Rank; break;
+                case AngelScope.Teaching: Teach = 2 * angel.Rank + r.Next(4); break;
+                case AngelScope.CounterIntel: Counter = 2 * angel.Rank + r.Next(4); break;
             }
             switch (angel.SecondScope)
             {
