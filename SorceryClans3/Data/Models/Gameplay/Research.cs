@@ -44,10 +44,7 @@ namespace SorceryClans3.Data.Models
 			{
 				Body.Add(Color, new BodyOfKnowledge());
 			}
-			ResearchProject project = new ResearchProject(facility.ID, Color)
-			{
-				CurrentThreshold = 1
-			};
+			ResearchProject project = new ResearchProject(facility.ID, Color);
 			facility.Project = project;
 		}
 		public void AddTeamToProject(ResearchProject project, Team team)
@@ -142,13 +139,14 @@ namespace SorceryClans3.Data.Models
 							}
 							break;
 						case MagicColor.Green:
-							IList<Spell> powerspells = currentSpells.Where(e => e.Power != null).ToList();
-							IList<Spell> harvestspells = currentSpells.Where(e => e.Beast != null && e.Beast.AvailableForHarvest).ToList();
+							List<Spell> powerspells = currentSpells.Where(e => e.Power != null).ToList();
+							List<Spell> petspells = currentSpells.Where(e => e.BeastPet != null).ToList();
+							List<Spell> harvestspells = currentSpells.Where(e => e.Beast != null && e.Beast.AvailableForHarvest).ToList();
 							if (powerspells.Count == 0 || powerspells.Count < r.NextDouble() * 3 || r.NextDouble() < .03)
 							{
 								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.Power, powerpts);
 							}
-							else if (!currentSpells.Any(e => e.BeastPet != null)) //tmp
+							else if (!currentSpells.Any(e => e.BeastPet != null) || r.Next(3 + petspells.Count) == 0) //tmp
 							{
 								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.BeastPet, powerpts);
 							}
@@ -177,7 +175,6 @@ namespace SorceryClans3.Data.Models
 									}
 								}
 							}
-							//to add: magic domestication
 							else
 							{
 								NewSpell = new Spell(MagicColor.Green, ResearchDiscovery.BeastTame, powerpts);

@@ -211,38 +211,37 @@ namespace SorceryClans3.Data.Models
         public GameEventDisplay ResolveHunt()
         {
             Soldier? newsoldier = null;
-            TeamResult? result = null;
+            if (TeamInTransit == null)
+                throw new Exception("Team missing from hunting effort!");
             if (HuntSpell?.Beast != null && FocusSoldier != null)
             {
                 //do odds here
                 newsoldier = HuntSpell.Beast.GenerateBeast(FocusSoldier.GivenName);
+                newsoldier.Team = TeamInTransit;
+                FocusSoldier.AddSubSoldier(newsoldier);
             }
             else if (HuntSpell?.BeastPet != null)
             {
                 //do odds here
                 newsoldier = HuntSpell.BeastPet.GenerateSoldier();
+                TeamInTransit.AddSoldier(newsoldier);
             }
-            if (TeamInTransit != null)
+            TeamInTransit.MissionID = null;
+            if (newsoldier != null)
             {
-                TeamInTransit.MissionID = null;
-                if (newsoldier != null)
+                return new("Team " + TeamInTransit.TeamName + " has tamed " + newsoldier.SoldierName, EventCompleted)
                 {
-                    TeamInTransit.AddSoldier(newsoldier);
-                    return new("Team " + TeamInTransit.TeamName + " has tamed " + newsoldier.SoldierName, EventCompleted)
-                    {
-                        DisplayResult = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), true, 1000),
-                        NewSoldier = newsoldier
-                    };
-                }
-                else
-                {
-                    result = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), false, 1000);//tmp on diff //also don't forget this part does the damage
-                }
+                    DisplayResult = new TeamResult(TeamInTransit, TeamInTransit.BoostSoldiers(100), true, 1000),
+                    NewSoldier = newsoldier
+                };
             }
-            return new("Team " + (TeamInTransit?.TeamName ?? "Unknown") + " has failed to tame a " + (HuntSpell?.BeastName ?? "beast") + "!", EventCompleted)
+            else
             {
-                DisplayResult = result
-            };
+                return new("Team " + (TeamInTransit?.TeamName ?? "Unknown") + " has failed to tame a " + (HuntSpell?.BeastName ?? "beast") + "!", EventCompleted)
+                {
+                    DisplayResult = new TeamResult(TeamInTransit!, TeamInTransit!.BoostSoldiers(100), false, 1000)//tmp on diff //also don't forget this part does the damage
+                };
+            }
         }
     }
 }

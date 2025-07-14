@@ -73,7 +73,7 @@
 </MudDialog>
 
 @code {
-    [Parameter, EditorRequired] public ClientCity City { get; set; }
+    [Parameter, EditorRequired] public ClientCity City { get; set; } = default!;
     [Parameter] public bool IncludeTeam { get; set; } = false;
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     private Team? SelectedTeam { get; set; } = null;

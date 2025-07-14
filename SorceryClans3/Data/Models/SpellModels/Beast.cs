@@ -305,6 +305,8 @@ namespace SorceryClans3.Data.Models
         }
         public bool IsEligible(Soldier soldier)
         {
+            if (soldier.Type != SoldierType.Standard)
+                return false;
             if (!MinReqs.IsAbove(soldier))
                 return false;
             if (soldier.SubSoldiers.Any(e => e.Type == SoldierType.Beast))

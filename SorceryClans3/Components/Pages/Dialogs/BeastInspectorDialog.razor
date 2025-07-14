@@ -1,0 +1,21 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Data.Models
+<MudDialog>
+    <DialogContent>
+        <BeastInspector Beast="Beast" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code{
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Beast Beast { get; set; } = default!;
+    private void Cancel() => MudDialog.Cancel();
+    protected override void OnInitialized()
+    {
+
+    }
+}

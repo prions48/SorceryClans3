@@ -1,11 +1,15 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
 @inject IDialogService dialogService
 
-<MudStack Row>
-    <MudNumericField T="int?" Min="1" @bind-Value="Number" Label="@Label" Max="@Max" />
-    <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
-    <MudButton OnClick="Submit" Variant="Variant.Filled" Disabled="Number == null" Color="Color.Success">Submit</MudButton>
-</MudStack>
+<MudDialog>
+    <DialogContent>
+        <MudStack Row>
+            <MudNumericField T="int?" Min="1" @bind-Value="Number" Label="@Label" Max="@Max" />
+            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+            <MudButton OnClick="Submit" Variant="Variant.Filled" Disabled="Number == null" Color="Color.Success">Submit</MudButton>
+        </MudStack>
+    </DialogContent>
+</MudDialog>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;

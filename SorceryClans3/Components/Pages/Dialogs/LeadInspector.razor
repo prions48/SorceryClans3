@@ -1,35 +1,64 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
 
-<MudSimpleTable Bordered Outlined Striped>
-    <thead>
-        <tr>
-            <th>Stat</th>
-            <th>Base</th>
-            <th>Current</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Charisma</td>
-            <td>@Soldier?.CharismaBase</td>
-            <td>@Soldier?.Charisma</td>
-        </tr>
-        <tr>
-            <td>Logistics</td>
-            <td>@Soldier?.LogisticsBase</td>
-            <td>@Soldier?.Logistics</td>
-        </tr>
-        <tr>
-            <td>Tactics</td>
-            <td>@Soldier?.TacticsBase</td>
-            <td>@Soldier?.Tactics</td>
-        </tr>
-        <tr>
-            <td>Experience</td>
-            <td colspan="2">@Soldier?.LeadershipXP.ToString("P1")</td>
-        </tr>
-    </tbody>
-</MudSimpleTable>
+<MudStack Row>
+    
+    <MudSimpleTable Bordered Outlined Striped>
+        <thead>
+            <tr>
+                <th>Stat</th>
+                <th>Base</th>
+                <th>Current</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Charisma</td>
+                <td>@Soldier?.CharismaBase</td>
+                <td>@Soldier?.Charisma</td>
+            </tr>
+            <tr>
+                <td>Logistics</td>
+                <td>@Soldier?.LogisticsBase</td>
+                <td>@Soldier?.Logistics</td>
+            </tr>
+            <tr>
+                <td>Tactics</td>
+                <td>@Soldier?.TacticsBase</td>
+                <td>@Soldier?.Tactics</td>
+            </tr>
+            <tr>
+                <td>Experience</td>
+                <td colspan="2">@Soldier?.LeadershipXP.ToString("P1")</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+    <MudSimpleTable Striped Bordered Outlined>
+        <thead>
+            <tr>
+                <th>Stat</th>
+                <th>Est</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Research</td>
+                <td>@Soldier.ResearchDisplay</td>
+            </tr>
+            <tr>
+                <td>Teach</td>
+                <td>@Soldier.TeachDisplay</td>
+            </tr>
+            <tr>
+                <td>CounterIntel</td>
+                <td>@Soldier.DisplayCounterIntel</td>
+            </tr>
+            <tr>
+                <td>Lead Boost</td>
+                <td>@((Soldier?.LeadershipXP - Soldier?.LeadershipXPBase)?.ToString("P0"))</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudStack>
 
 @code {
     [Parameter, EditorRequired] public Soldier Soldier { get; set; }

@@ -597,7 +597,7 @@ namespace SorceryClans3.Data.Models
                 return true;
             return false;
         }
-        public void AddSub(Soldier soldier)
+        public void AddSubSoldier(Soldier soldier)
         {
             SubSoldiers.Add(soldier);
             soldier.SubTo = this;

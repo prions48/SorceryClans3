@@ -340,6 +340,7 @@
                         <HeaderContent>
                             <MudTh>Info</MudTh>
                             <MudTh>Project</MudTh>
+                            <MudTh>Target</MudTh>
                             <MudTh>Progress</MudTh>
                             <MudTh>Upgrade</MudTh>
                             <MudTh>Teams</MudTh>
@@ -355,6 +356,12 @@
                                 else
                                 {
                                     <MagicIcons Colors="new List<MagicColor>() { context.Project.GetColor }" />
+                                }
+                            </MudTd>
+                            <MudTd>
+                                @if (context.Project != null)
+                                {
+                                    <MudButton Variant="Variant.Outlined" Color="context.Project.GetColor.Color()" OnClick="() => SetThreshold(context)">@context.Project.ThresholdDisplay</MudButton>
                                 }
                             </MudTd>
                             <MudTd>
@@ -405,13 +412,24 @@
         <MudTabs Position="Position.Top">
             <MudTabPanel Text="Rescue"></MudTabPanel>
             <MudTabPanel Text="Resources">
-                <MudTable Striped Bordered Items="Engine.Research.Spells.Where(e => e.BeastPet != null)">
+                <MudTable Striped Bordered Items="Engine.Research.Spells.Where(e => e.Consumables > 0 && (e.BeastPet != null || e.Beast != null))">
                     <HeaderContent>
                         <MudTh>Name</MudTh>
+                        <MudTh>View</MudTh>
                         <MudTh>Send Team</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.SpellName</MudTd>
+                        <MudTd>
+                            @if (context.Beast != null)
+                            {
+                                <MudIconButton OnClick="() => ViewBeast(context.Beast)" Icon="@Icons.Material.TwoTone.Pets" Color="Color.Success" />
+                            }
+                            else if (context.BeastPet != null)
+                            {
+                                <MudIconButton OnClick="() => ViewPet(context.BeastPet)" Icon="@Icons.Material.TwoTone.Pets" Color="Color.Success" />
+                            }
+                        </MudTd>
                         <MudTd>
                             <MudIconButton OnClick="() => StartHuntMission(context)" Icon="@Icons.Material.TwoTone.TrackChanges" Color="Color.Info" />
                         </MudTd>
@@ -1307,7 +1325,49 @@
                 }
             }
         }
-
+    }
+    private async Task SetThreshold(ResearchFacility facility)
+    {
+        if (facility.Project == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Small;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(DropDownNumbersDialog.AvailableNumbers), ResearchProject.Thresholds.Where(e => facility.Project.AvailableThresholds.Contains(e.Item2)).ToList());
+        parameters.Add(nameof(DropDownNumbersDialog.Text), "Select a target scope for the research project.");
+        parameters.Add(nameof(DropDownNumbersDialog.Color), facility.Project.GetColor.Color());
+        var dialog = dialogService.Show<DropDownNumbersDialog>("Select a new target", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            int? newthresh = result.Data as int?;
+            if (newthresh != null)
+            {
+                if (newthresh.Value != facility.Project.CurrentThreshold)
+                {
+                    bool proceed = true;
+                    if (facility.Project.WarnBeforeChange)
+                    {
+                        options = new DialogOptions();
+                        options.CloseOnEscapeKey = true;
+                        options.MaxWidth = MaxWidth.Small;
+                        parameters = new DialogParameters();
+                        parameters.Add(nameof(ConfirmDialog.Color), Color.Error);
+                        parameters.Add(nameof(ConfirmDialog.Text), "Changing the research target will erase current progress.  Continue?");
+                        parameters.Add(nameof(ConfirmDialog.ButtonColor), Color.Error);
+                        parameters.Add(nameof(ConfirmDialog.Button), "Yes, Continue");
+                        dialog = dialogService.Show<DropDownNumbersDialog>("Warning", parameters, options);
+                        result = await dialog.Result;
+                        proceed = result?.Canceled == false;
+                    }
+                    if (proceed)
+                    {
+                        facility.Project.SetThreshold(newthresh.Value);
+                    }
+                }
+            }
+        }
     }
     #endregion
 
@@ -1343,11 +1403,13 @@
         options.CloseOnEscapeKey = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.EligibleToHunt()).ToList() );
+        if (spell.BeastPet != null)
+            parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.EligibleToHunt()).ToList());
+        else if (spell.Beast != null)
+            parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.EligibleToHunt(spell.Beast)).ToList());
         parameters.Add(nameof(TeamPicker.CScore), true);
         parameters.Add(nameof(TeamPicker.MScore), true);
         parameters.Add(nameof(TeamPicker.SScore), true);
-        parameters.Add(nameof(TeamPicker.KScore), true);
         var dialog = dialogService.Show<TeamPicker>("Attempt to tame the " + spell.BeastName, parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -1355,11 +1417,49 @@
             Team? team = result.Data as Team;
             if (team != null)
             {
-                //if spell.Beast, also select eligible soldier here
-
-
-                Engine.StartHunt(team, spell);
+                Soldier? target = null;
+                bool proceed = true;
+                if (spell.Beast != null)
+                {
+                    options = new DialogOptions();
+                    options.CloseOnEscapeKey = true;
+                    options.MaxWidth = MaxWidth.Large;
+                    parameters = new DialogParameters();
+                    parameters.Add(nameof(SoldierPicker.Soldiers), team.GetAllSoldiers.Where(e => spell.Beast.IsEligible(e)).ToList());
+                    parameters.Add(nameof(SoldierPicker.ShowStats), true);
+                    dialog = dialogService.Show<SoldierPicker>("Attempt to tame the " + spell.BeastName, parameters, options);
+                    result = await dialog.Result;
+                    if (result?.Canceled == false)
+                        target = result.Data as Soldier;
+                    else
+                        proceed = false;
+                }
+                if (proceed)
+                {
+                    Engine.StartHunt(team, spell, target);
+                }
             }
         }
+    }
+    private async Task ViewBeast(Beast beast)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(BeastInspectorDialog.Beast), beast);
+        var dialog = dialogService.Show<BeastInspectorDialog>(beast.BeastName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewPet(BeastPet pet)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        Soldier soldier = pet.GenerateSoldier();
+        parameters.Add(nameof(SoldierInspectorDialog.Soldier), soldier);
+        var dialog = dialogService.Show<SoldierInspectorDialog>(pet.BeastName, parameters, options);
+        var result = await dialog.Result;
     }
 }

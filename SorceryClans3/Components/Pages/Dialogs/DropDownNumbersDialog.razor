@@ -1,0 +1,28 @@
+<MudDialog>
+    <DialogContent>
+        <MudStack>
+        <MudText>@Text</MudText>
+        <MudSelect @bind-Value="SelectedNumber" T="int">
+            @foreach ((string,int) number in AvailableNumbers)
+            {
+                <MudSelectItem Value="number.Item2" T="int">@number.Item1</MudSelectItem>
+            }
+        </MudSelect>
+        </MudStack>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" OnClick="Submit" Color="@Color">Select</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public MudBlazor.Color Color { get; set; }
+    [Parameter] public string Text { get; set; } = "Are you sure you want to do that?";
+    [Parameter] public List<(string, int)> AvailableNumbers { get; set; } = [];
+    private int SelectedNumber { get; set; } = 1;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    void Submit() => MudDialog.Close(DialogResult.Ok(SelectedNumber));
+}

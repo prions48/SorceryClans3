@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 namespace SorceryClans3.Data.Models
 {
 	public class ResearchProject
@@ -11,6 +12,7 @@ namespace SorceryClans3.Data.Models
 		private int LastDiscoveryPts { get; set; }
 		private int LastDiscoveryClr { get; set; }
 		public int CurrentThreshold { get; set; }
+		private int PointsToDiscover { get; set; }
 		public int PowerThreshold { get { return 1000000 * CurrentThreshold; } }
 		public int ColorThreshold { get { if (Color == MagicColor.None) return 0; return 20 * CurrentThreshold * CurrentThreshold; } }
 		public List<ResearchMission> Missions { get; set; } = new List<ResearchMission>();
@@ -24,9 +26,16 @@ namespace SorceryClans3.Data.Models
 			ID = Guid.NewGuid();
 			FacilityID = facilityid;
 			LastDiscoveryPts = 0;
-            LastDiscoveryClr = 0;
+			LastDiscoveryClr = 0;
 			PowerPoints = 0;
 			Color = color;
+			SetThreshold(1);
+		}
+		public void SetThreshold(int threshold)
+		{
+			Random r = new();
+			CurrentThreshold = threshold;
+			PointsToDiscover = PowerThreshold + r.Next(PowerThreshold);
 		}
 		public void StartMission(Team team)
 		{
@@ -68,20 +77,19 @@ namespace SorceryClans3.Data.Models
 		}
 		public SpellDiscovery? AddProgress(Team team)
 		{
-			if (PowerThreshold == 0)
-				return null;
 			PowerPoints += team.ResearchPowerIncrement(Color);
 			IList<MagicColor> tcolors = team.GetColors;
 			ColorPoints += tcolors.Count(e => e == this.Color);
 			Random r = new Random();
-			if (PowerPoints - LastDiscoveryPts >= PowerThreshold + r.Next(10 * PowerThreshold) && ColorPoints - LastDiscoveryClr >= ColorThreshold + r.Next(10 * ColorThreshold))
+			if (PowerPoints - LastDiscoveryPts >= PointsToDiscover && ColorPoints - LastDiscoveryClr >= ColorThreshold + r.Next(ColorThreshold))
 			{
 				//discover!
 				//reset stats
 				int discppts = PowerPoints - LastDiscoveryPts;
 				int disccpts = ColorPoints - LastDiscoveryClr;
-                LastDiscoveryPts = PowerPoints;
-                LastDiscoveryClr = ColorPoints;
+				LastDiscoveryPts = PowerPoints;
+				LastDiscoveryClr = ColorPoints;
+				SetThreshold(CurrentThreshold);
 				return new SpellDiscovery()
 				{
 					Color = this.Color,
@@ -106,27 +114,27 @@ namespace SorceryClans3.Data.Models
 					return "Initial work";
 				if (progress < 0.25)
 					return "Hypothesis extension";
-                if (progress < 0.5)
-                    return "Exploratory phase";
-                if (progress < 0.8)
-                    return "Development phase";
-                if (progress < 0.95)
-                    return "Critical revisions";
+				if (progress < 0.5)
+					return "Exploratory phase";
+				if (progress < 0.8)
+					return "Development phase";
+				if (progress < 0.95)
+					return "Critical revisions";
 				return "Finalization phase";
-            }
+			}
 		}
 		public IList<int> AvailableThresholds
 		{
 			get
 			{
-				IList<int> thresholds = new List<int>(){ 1 };
-				if (PowerPoints > 1000000 && (ColorPoints > 100 || Color == MagicColor.None))
+				IList<int> thresholds = new List<int>() { 1 };
+				if (PowerPoints > 5000000 && (ColorPoints > 100 || Color == MagicColor.None))
 					thresholds.Add(2);
-				if (PowerPoints > 2000000 && (ColorPoints > 200 || Color == MagicColor.None))
+				if (PowerPoints > 10000000 && (ColorPoints > 300 || Color == MagicColor.None))
 					thresholds.Add(3);
-				if (PowerPoints > 3000000 && (ColorPoints > 300 || Color == MagicColor.None))
+				if (PowerPoints > 15000000 && (ColorPoints > 800 || Color == MagicColor.None))
 					thresholds.Add(4);
-				if (PowerPoints > 5000000 && (ColorPoints > 500 || Color == MagicColor.None))
+				if (PowerPoints > 35000000 && (ColorPoints > 1500 || Color == MagicColor.None))
 					thresholds.Add(5);
 				return thresholds;
 			}
@@ -134,6 +142,29 @@ namespace SorceryClans3.Data.Models
 		public void ResetResets()
 		{
 			TeamResetIDs = new List<Guid>();
+		}
+		public string ThresholdDisplay
+		{
+			get
+			{
+				switch (CurrentThreshold)
+				{
+					case 1: return "Humble";
+					case 2: return "Small";
+					case 3: return "Medium";
+					case 4: return "Large";
+					case 5: return "Extravagant";
+					default: return "Unknown";
+				}
+			}
+		}
+		public bool WarnBeforeChange { get { return (PowerPoints - LastDiscoveryPts) * 1.0 / PowerThreshold >= 0.05; } }
+		public static List<(string, int)> Thresholds
+		{
+			get
+			{
+				return new List<(string, int)>() { ("Humble", 1), ("Small", 2), ("Medium", 3), ("Large", 4), ("Extravagant", 5) };
+			}
 		}
 	}
 	public class ProjectResult
