@@ -131,7 +131,7 @@ namespace SorceryClans3.Data.Models
         }
         public bool IsEligible(Soldier s)
         {
-            return s.Type == SoldierType.Standard && s.Power == null && MinReqs.IsAbove(s);
+            return s.IsAlive && s.Type == SoldierType.Standard && s.Power == null && MinReqs.IsAbove(s);
         }
         public void Apply(Soldier s)
         {

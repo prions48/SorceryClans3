@@ -37,33 +37,32 @@ namespace SorceryClans3.Data.Models
             if (Teams.Remove(team))
                 team.MissionID = null;
         }
-        public void StartCastSpell(Team team, Spell spell, int? quantity = null)
+        public void StartCastSpell(Team team, Spell spell, Soldier? caster = null, Soldier? target = null, int? quantity = null)
         {
             if (Teams.Contains(team))
             {
-                SpellCastMission mission = new(spell, team, quantity:quantity);
+                SpellCastMission mission = new(spell, team, caster, target, quantity);
                 SpellCastMissions.Add(mission);
                 team.MissionID = mission.ID;
-
             }
         }
         public List<SpellCastMission> IncrementDay()
         {
-            List<SpellCastMission> spells = [];
+            List<SpellCastMission> spellmissions = [];
             int ctr = 0;
             while (ctr < SpellCastMissions.Count)
             {
                 SpellCastMission? result = SpellCastMissions[ctr].IncrementDay();
                 if (result != null)
                 {
-                    spells.Add(result);
+                    spellmissions.Add(result);
                     SpellCastMissions[ctr].CastingTeam.MissionID = ID;
                     SpellCastMissions.RemoveAt(ctr);
                 }
                 else
                     ctr++;
             }
-            return spells;
+            return spellmissions;
         }
     }
 }

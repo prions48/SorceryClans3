@@ -42,8 +42,6 @@ namespace SorceryClans3.Data.Models
 				return false;
 			}
 		}
-		public bool PowerGranted { get; set; }
-		public bool ArtifactCreated { get; set; }
 		//spell models
 		public Beast? Beast { get; set; }
 		public BeastPet? BeastPet { get; set; }
@@ -83,6 +81,14 @@ namespace SorceryClans3.Data.Models
 				if (AngelIcon != null)
 					return true;
 				return true;
+			}
+		}
+		public bool SpellCaster
+		{
+			get
+			{
+				return GreaterUndead != null || GreaterDemon != null || SpiritArtifact != null
+					|| Harvest != null;//faerie bargain, angel statue
 			}
 		}
 		public bool CastQuantity => Harvest != null || LesserUndead != null || LesserDemon != null || Beast != null || BeastPet != null || AngelIcon != null;
@@ -264,6 +270,16 @@ namespace SorceryClans3.Data.Models
 				return colors.Count >= MagColorToCast;
 			return false;
 		}
+		public bool EligibleTarget(Soldier soldier)
+		{
+			if (Power != null)
+				return soldier.IsAlive && soldier.Power == null;
+			if (GreaterDemon != null)
+				return GreaterDemon.IsEligible(soldier);
+			if (GreaterUndead != null)
+				return GreaterUndead.IsEligible(soldier);
+			return false;
+		}
         public string SpellIcon
 		{
 			get
@@ -278,7 +294,7 @@ namespace SorceryClans3.Data.Models
 					case MagicColor.White: return MudBlazor.Icons.Material.Filled.WbSunny;
 					case MagicColor.Purple: return MudBlazor.Icons.Material.Filled.AutoFixHigh;
 					default: return "";
-                }
+				}
 			}
 		}
         public MudBlazor.Color IconColor

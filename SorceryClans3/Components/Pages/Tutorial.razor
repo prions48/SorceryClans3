@@ -559,19 +559,19 @@
     private int? SelectedPowerLevel { get; set; }
     private Artifact? SelectedArtifact { get; set; }
     private Mission Mission { get; set; }
-    private IList<Team> Teams { get; set; } = new List<Team>();
-    private IList<Team> AvailableTeams
+    private List<Team> Teams { get; set; } = new List<Team>();
+    private List<Team> AvailableTeams
     {
         get
         {
             return new List<Team>{ Team }.Concat(Teams.Where(e => e.MissionID == null)).ToList();
         }
     }
-    private IList<Soldier> AvailableSoldiers
+    private List<Soldier> AvailableSoldiers
     {
         get
         {
-            IList<Soldier> ret = new List<Soldier>() { Soldier };
+            List<Soldier> ret = new List<Soldier>() { Soldier };
             foreach (Team team in Teams.Where(e => e.MissionID == null || e.MissionID == Guid.Empty))
             {
                 ret = ret.Concat(team.GetAllSoldiers.Where(e => !SpellMissions.Select(f => f.TargetSoldier?.ID).Contains(e.ID))).ToList();

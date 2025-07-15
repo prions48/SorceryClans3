@@ -385,7 +385,7 @@
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>Name</MudTh>
-                            <MudTh>Type</MudTh>@*add search/filter and sort stuff soon...*@
+                            <MudTh>View</MudTh>
                             <MudTh>Power</MudTh>
                             <MudTh>Money</MudTh>
                             <MudTh>Consumables</MudTh>
@@ -394,7 +394,7 @@
                         <RowTemplate>
                             <MudTd>@context.SpellName</MudTd>
                             <MudTd>
-                                <MudIcon Icon="@context.Color.Icon()" Color="@context.Color.Color()" />
+                                <MudIconButton Icon="@context.Color.Icon()" Color="@context.Color.Color()" OnClick="() => ViewSpell(context)" />
                             </MudTd>
                             <MudTd>@context.CastDisplay</MudTd>
                             <MudTd>@context.MoneyToCast.ToString("C")</MudTd>
@@ -596,7 +596,7 @@
     {
         foreach (Soldier soldier in Engine.Soldiers)
         {
-            soldier.GainPower(100);
+            soldier.GainPower(1000);
         }
     }
     protected override void OnInitialized()
@@ -1299,14 +1299,23 @@
         var dialog = dialogService.Show<FacilityDialog>("Select Team", parameters, options);
         var result = await dialog.Result;
     }
+    private async Task ViewSpell(Spell spell)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(SpellInspector.Spell), spell);
+        var dialog = dialogService.Show<SpellInspector>(spell.SpellName, parameters, options);
+        var result = await dialog.Result;
+    }
     private async Task StartCastSpell(Spell spell)
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(TeamPicker.AvailableTeams), Engine.Research.GetAvailableTeams);
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Engine.Research.GetAvailableTeams.Where(e => !spell.SpellCaster || e.GetAllSoldiers.Any(f => spell.CanCast(f))).ToList());
         parameters.Add(nameof(TeamPicker.MScore), true);
         var dialog = dialogService.Show<TeamPicker>("Select Casting Team ", parameters, options);
         var result = await dialog.Result;
@@ -1319,9 +1328,61 @@
                 if (facility != null)
                 {
                     int? amount = null;
-                    if (spell.CastQuantity)
-                        amount = 1;//get from dialog
-                    facility.StartCastSpell(team, spell, amount);
+                    Soldier? caster = null;
+                    Soldier? target = null;
+                    bool proceed = true;
+                    if (spell.SpellCaster)
+                    {
+                        options = new DialogOptions();
+                        options.CloseOnEscapeKey = true;
+                        options.MaxWidth = MaxWidth.Large;
+                        parameters = new DialogParameters();
+                        parameters.Add(nameof(SoldierPicker.Soldiers), team.GetAllSoldiers.Where(e => spell.CanCast(e)).ToList());
+                        parameters.Add(nameof(SoldierPicker.ShowStats), true);
+                        dialog = dialogService.Show<SoldierPicker>("Select Caster", parameters, options);
+                        result = await dialog.Result;
+                        if (result?.Canceled == false)
+                        {
+                            caster = result.Data as Soldier;
+                        }
+                        proceed = caster != null;
+                    }
+                    if (proceed && spell.CastQuantity)
+                    {
+                        options = new DialogOptions();
+                        options.CloseOnEscapeKey = true;
+                        options.MaxWidth = MaxWidth.Large;
+                        parameters = new DialogParameters();
+                        parameters.Add(nameof(NumberPicker.Label), "Enter number of casts to perform.");
+                        parameters.Add(nameof(NumberPicker.Max), spell.CastLimit(Engine.Resources.Money));
+                        dialog = dialogService.Show<NumberPicker>("Spell Quantity ", parameters, options);
+                        result = await dialog.Result;
+                        if (result?.Canceled == false)
+                        {
+                            amount = result.Data as int?;
+                        }
+                        proceed = amount.HasValue;
+                    }
+                    if (proceed && spell.TargetSoldier)
+                    {
+                        options = new DialogOptions();
+                        options.CloseOnEscapeKey = true;
+                        options.MaxWidth = MaxWidth.Large;
+                        parameters = new DialogParameters();
+                        parameters.Add(nameof(SoldierPicker.Soldiers), Engine.Soldiers.Where(e => (e.Team == null || e.Team.MissionID == null) && spell.EligibleTarget(e)).ToList());
+                        parameters.Add(nameof(SoldierPicker.ShowStats), true);
+                        dialog = dialogService.Show<SoldierPicker>("Select Caster", parameters, options);
+                        result = await dialog.Result;
+                        if (result?.Canceled == false)
+                        {
+                            target = result.Data as Soldier;
+                        }
+                        proceed = target != null;
+                    }
+                    if (proceed)
+                    {
+                        facility.StartCastSpell(team, spell, caster, target, amount);
+                    }
                 }
             }
         }

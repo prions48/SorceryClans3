@@ -157,7 +157,7 @@ namespace SorceryClans3.Data.Models
                 }
             }
             Eco = (BeastEco)eco;
-            if (r.NextDouble() < ((seed+2)/15.0) && r.NextDouble() > .2)
+            if (true)//(r.NextDouble() < ((seed+2)/15.0) && r.NextDouble() > .2) //TESTING
             {
                 TamePower = new PowerTemplate(ID, seed / 10 + 1, MagicColor.Green)
                 {

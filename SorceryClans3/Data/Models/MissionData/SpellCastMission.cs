@@ -25,6 +25,13 @@ namespace SorceryClans3.Data.Models
             team.MissionID = ID;
             CastingSoldier = casting;
             TargetSoldier = target;
+            if (TargetSoldier != null)
+            {
+                if (TargetSoldier.Team == null)
+                    TargetSoldier.Team = new() { TeamName = "Receiving Spell", ID = this.ID };
+                else
+                    TargetSoldier.Team.MissionID = this.ID;
+            }
         }
         public SpellCastMission? IncrementDay()
         {
@@ -44,6 +51,17 @@ namespace SorceryClans3.Data.Models
             else if (CastingSpell.GreaterUndead != null && TargetSoldier != null)
             {
                 CastingSpell.GreaterUndead.Apply(TargetSoldier);
+            }
+            else if (CastingSpell.GreaterDemon != null && TargetSoldier != null)
+            {
+                CastingSpell.GreaterDemon.Apply(TargetSoldier);
+            }
+            if (TargetSoldier?.Team != null)
+            {
+                if (TargetSoldier.Team.ID == this.ID)
+                    TargetSoldier.Team = null;
+                else
+                    TargetSoldier.Team.MissionID = null;
             }
             int castcount = NumConsumables ?? 1;
             if (CastingSpell.UsesConsumables)

@@ -83,7 +83,7 @@ namespace SorceryClans3.Data.Models
         }
         public bool IsEligible(Soldier sold)
         {
-            return sold.Type == SoldierType.Standard && MinReqs.IsAbove(sold);
+            return !sold.IsAlive && sold.Type == SoldierType.Standard && MinReqs.IsAbove(sold);
         }
         public void Apply(Soldier sold)
         {
