@@ -56,6 +56,14 @@
                         {
                             <th>Counter</th>
                         }
+                        @if (Artifact.TravelBoost > 0)
+                        {
+                            <th>Travel</th>
+                        }
+                        @if (Artifact.GroupTravelBoost > 0)
+                        {
+                            <th>Group Travel</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -110,6 +118,14 @@
                         {
                             <th>@Artifact.CounterBoost%</th>
                         }
+                        @if (Artifact.TravelBoost > 0)
+                        {
+                            <th>@Artifact.TravelBoost</th>
+                        }
+                        @if (Artifact.GroupTravelBoost > 0)
+                        {
+                            <th>@Artifact.GroupTravelBoost</th>
+                        }
                     </tr>
                 </tbody>
             </MudSimpleTable>
@@ -160,7 +176,14 @@
                             }
                         </MudTd>
                         <MudTd>
-                            <MudIconButton OnClick="() => Select(context)" Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Success" />
+                            @if (context.ID == Artifact.AssignedSoldier?.ID)
+                            {
+                                <MudIconButton OnClick="() => Unselect(context)" Icon="@Icons.Material.TwoTone.RemoveCircle" Color="Color.Warning" />
+                            }
+                            else
+                            {
+                                <MudIconButton OnClick="() => Select(context)" Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Success" />
+                            }
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -181,5 +204,11 @@
     private void Select(Soldier sold)
     {
         MudDialog.Close(DialogResult.Ok(sold));
+    }
+    private void Unselect(Soldier sold)
+    {
+        sold.Artifact = null;
+        Artifact.AssignedSoldier = null;
+        MudDialog.Close(DialogResult.Cancel);
     }
 }

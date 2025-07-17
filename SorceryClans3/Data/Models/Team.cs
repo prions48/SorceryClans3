@@ -75,7 +75,7 @@ namespace SorceryClans3.Data.Models
             get
             {
                 List<MagicColor> colors = new List<MagicColor>();
-                foreach (Soldier s in Soldiers)
+                foreach (Soldier s in GetAllSoldiers)
                 {
                     colors = colors.Concat(s.GetColors).ToList();
                 }

@@ -24,7 +24,7 @@
         <td>
             @if (s.Artifact != null)
             {
-                <MudIconButton Icon="@s.Artifact.Icon" Color="Color.Primary" OnClick="() => ViewArtifact(s.Artifact)" />
+                <MudIconButton Icon="@s.Artifact.Icon" Color="@s.Artifact.GetColor()" OnClick="() => ViewArtifact(s.Artifact)" />
             }
         </td>
         <td>

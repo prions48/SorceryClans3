@@ -950,7 +950,6 @@
     {
         var options = new DialogOptions();
         options.CloseOnEscapeKey = true;
-        options.FullWidth = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
         parameters.Add(nameof(ArtifactPicker.Artifacts), Engine.Resources.Artifacts);
@@ -976,12 +975,12 @@
                     Soldier? soldier = result.Data as Soldier;
                     if (soldier != null)
                     {
-                        if (soldier.Artifact != null)
-                        {
+                        if (artifact.AssignedSoldier != null)//remove art from previous soldier
+                            artifact.AssignedSoldier.Artifact = null; 
+                        if (soldier.Artifact != null) //current soldier remove art
                             soldier.Artifact.AssignedSoldier = null;
-                        }
-                        soldier.Artifact = artifact;
-                        artifact.AssignedSoldier = soldier;
+                        soldier.Artifact = artifact;//new assign pt1
+                        artifact.AssignedSoldier = soldier;//new assign pt2
                     }
                 }
             }

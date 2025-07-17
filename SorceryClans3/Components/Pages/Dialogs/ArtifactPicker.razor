@@ -3,6 +3,7 @@
         <MudTable Items="Artifacts" Striped Bordered>
             <HeaderContent>
                 <MudTh>Name</MudTh>
+                <MudTh>Wielder</MudTh>
                 <MudTh>Com</MudTh>
                 <MudTh>Mag</MudTh>
                 <MudTh>Sub</MudTh>
@@ -15,6 +16,7 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTh>@context.ArtifactName</MudTh>
+                <MudTh>@context.AssignedSoldier?.SoldierName</MudTh>
                 <MudTh>@context.ComBoost</MudTh>
                 <MudTh>@context.MagBoost</MudTh>
                 <MudTh>@context.SubBoost</MudTh>
@@ -24,7 +26,8 @@
                 <MudTh>@context.LogBoost</MudTh>
                 <MudTh>@context.TacBoost</MudTh>
                 <MudTh>
-                    <MudIconButton OnClick="() => SelectArtifact(context)" Icon="@Icons.Material.TwoTone.SwapHorizontalCircle" />
+                    <MudIconButton OnClick="() => SelectArtifact(context)" Icon="@Icons.Material.TwoTone.SwapHorizontalCircle" 
+                    Color="Color.Info" Disabled="context.AssignedSoldier?.Team != null && (context.AssignedSoldier.Team.MissionID != null || !context.AssignedSoldier.Team.IsAtHome)" />
                 </MudTh>
             </RowTemplate>
         </MudTable>

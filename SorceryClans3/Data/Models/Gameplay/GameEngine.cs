@@ -16,6 +16,7 @@ namespace SorceryClans3.Data.Models
         public Resources Resources { get; set; } = new(); //home base resources
         public Defenses Defenses { get; set; } = new();
         public Research Research { get; set; }
+        private Random r = new();
         public GameEngine()
         {
             Research = new(CreateSoldiers, AddArtifact);
@@ -148,9 +149,23 @@ namespace SorceryClans3.Data.Models
             {
                 foreach (Soldier soldier in Soldiers)
                 {
-                    if (soldier.Health <= HealthLevel.Hurt)
+                    if (soldier.HPCurrent < soldier.HPMax)
                     {
-                        soldier.MedicalHeal(5);//experimental
+                        //soldier.MedicalHeal(5);//experimental failure?
+                        if (soldier.Health <= HealthLevel.Hurt)
+                        {
+                            if (r.Next(3) == 0)
+                            {
+                                soldier.HPCurrent++;
+                            }
+                        }
+                        else
+                        {
+                            if (r.Next(3) == 0)
+                            {
+                                soldier.Hurt(1);
+                            }
+                        }
                     }
                 }
                 Settings.SetNextHeal();
@@ -312,7 +327,6 @@ namespace SorceryClans3.Data.Models
         }
         private List<GameEvent> GenerateRandomEvents()
         {
-            Random r = new Random();
             List<GameEvent> randoms = [];
             if (Settings.BanditAttackOdds())//1 in 20, way too high for real
             {

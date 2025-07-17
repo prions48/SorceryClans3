@@ -37,7 +37,6 @@ namespace SorceryClans3.Data.Models
             {
                 dmg.Key.Hurt(dmg.Value);
             }
-            team.Cleanup();
         }
     }
 }

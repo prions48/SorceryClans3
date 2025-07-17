@@ -531,6 +531,10 @@ namespace SorceryClans3.Data.Models
                 lvl = (int)(lvl * 0.7);
             return lvl;
         }
+        public void HurtShuffle(int factor)
+        {
+            Hurt(r.Next(factor / 2, factor + 4));
+        }
         public void Hurt(int hp)
         {
             double pcthurt = hp * 1.0 / HPMax;
@@ -547,6 +551,8 @@ namespace SorceryClans3.Data.Models
                 Health = HealthLevel.Critical;
             if (HPCurrent < 0)
                 Health = HealthLevel.Dead;
+            if (Team != null)
+                Team.Cleanup();
         }
         public HealStatus MedicalHeal(int mp)
         {

@@ -123,7 +123,7 @@ namespace SorceryClans3.Data.Models
         {
             if (RealTime)
                 NextHeal = CurrentTime.AddHours(1);//no clue if this is right
-            NextHeal = CurrentTime.AddHours(6);
+            NextHeal = CurrentTime.AddDays(1);//AddHours(6);
         }
         public bool HealTime => CurrentTime >= NextHeal;
         #endregion
