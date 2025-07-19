@@ -13,6 +13,7 @@ namespace SorceryClans3.Data.Models
         public Team? DisplayTeam2 { get; set; }
         public TeamResult? DisplayResult { get; set; }
         public Soldier? NewSoldier { get; set; }
+        public List<Soldier> Deads { get; set; } = [];
         public bool OpenHealDialog { get; set; } = false;
         public bool OpenRescueDialog { get; set; } = false;
         //add more things
@@ -24,6 +25,21 @@ namespace SorceryClans3.Data.Models
             Message = msg;
             EventDate = date;
         }
+        public bool AnyDeaths => Deads.Count > 0;
+        public MarkupString DisplayDeaths
+        {
+            get
+            {
+                string result = "";
+                foreach (Soldier soldier in Deads)
+                {
+                    if (result != "")
+                        result += "<br />";
+                    result += soldier.SoldierName + " has died from their battle wounds!";
+                }
+                return (MarkupString)result;
+            }
+        }
         public MarkupString DisplayText
         {
             get
@@ -31,12 +47,10 @@ namespace SorceryClans3.Data.Models
                 string add = "";
                 if (DisplayResult != null && DisplayTeam != null)
                 {
-                    //foreach (KeyValuePair<Soldier, int> hp in DisplayResult.HPDamage)
-                    foreach (Soldier sold in DisplayTeam.GetAllSoldiers)
+                    foreach (Soldier sold in DisplayResult.HPDamage.Keys)//have to use this because dead soldiers are removed from team
                     {
                         if (sold.HPCurrent >= 0 && sold.Health < HealthLevel.Dead)
                         {
-
                             if (DisplayResult.HPDamage.TryGetValue(sold, out int dmg))
                             {
                                 (Guid, int, bool)? gain = DisplayResult.Gains.FirstOrDefault(e => e.Item1 == sold.ID);

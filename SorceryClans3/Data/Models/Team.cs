@@ -525,7 +525,10 @@ namespace SorceryClans3.Data.Models
                         if (Leaders[i].SubSoldiers[j].IsAlive)
                             j++;
                         else
+                        {
+                            Leaders[i].SubSoldiers[j].SubTo = null;
                             Leaders[i].SubSoldiers.RemoveAt(j);
+                        }
                     }
                     i++;
                 }
@@ -543,7 +546,10 @@ namespace SorceryClans3.Data.Models
                         if (Soldiers[i].SubSoldiers[j].IsAlive)
                             j++;
                         else
+                        {
+                            Soldiers[i].SubSoldiers[j].SubTo = null;
                             Soldiers[i].SubSoldiers.RemoveAt(j);
+                        }
                     }
                     i++;
                 }

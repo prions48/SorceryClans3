@@ -31,7 +31,10 @@ namespace SorceryClans3.Data.Models
         public int MinPowerForColor { get; set; }
         public int PowerIncrementForColor { get; set; }
         public int MaxColors { get; set; }
-
+        //here be the spells
+        public Beast? Beast { get; set; }
+        public GreaterDemon? Demon { get; set; }
+        public bool SpiritAttunement { get; set; } = false;
         public Power()
         {
 

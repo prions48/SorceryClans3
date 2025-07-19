@@ -317,7 +317,7 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                return (Power?.GBonus ?? 0) + (Artifact?.TravelBoost ?? 0);
+                return (Power?.GBonus ?? 0) + (Artifact?.GroupTravelBoost ?? 0);
             }
         }
         public bool IsIndependent { get { return Type.Independent(); } }

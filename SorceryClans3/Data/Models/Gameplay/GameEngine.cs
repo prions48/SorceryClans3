@@ -144,10 +144,12 @@ namespace SorceryClans3.Data.Models
             //add random things
             List<GameEvent> randoms = GenerateRandomEvents();
             Events.AddRange(randoms);
+            List<GameEvent> events = [];
 
             if (Settings.HealTime)
             {
-                foreach (Soldier soldier in Soldiers)
+                List<Soldier> deads = [];
+                foreach (Soldier soldier in Soldiers.Where(e => e.IsAlive))
                 {
                     if (soldier.HPCurrent < soldier.HPMax)
                     {
@@ -164,15 +166,19 @@ namespace SorceryClans3.Data.Models
                             if (r.Next(3) == 0)
                             {
                                 soldier.Hurt(1);
+                                if (!soldier.IsAlive)
+                                {
+                                    deads.Add(soldier);
+                                }
                             }
                         }
                     }
                 }
                 Settings.SetNextHeal();
+                if (deads.Count > 0)
+                    events.Add(new(deads, Settings.CurrentTime));
             }
-
             //process
-            List<GameEvent> events = [];
             int i = 0;
             while (i < Events.Count)
             {
@@ -200,6 +206,9 @@ namespace SorceryClans3.Data.Models
                 GameEventDisplay? merc = null;
                 switch (ev.Type)
                 {
+                    case MissionType.Announcement:
+                        displays.Add(ev.Announcement());
+                        break;
                     case MissionType.TravelToLocation:
                         disp = ev.ResolveReturn();
                         displays.Add(disp);

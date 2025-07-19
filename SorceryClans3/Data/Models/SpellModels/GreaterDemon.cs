@@ -159,6 +159,7 @@ namespace SorceryClans3.Data.Models
             power.MaxColors = 2 + DemonLevel;
             power.MinPowerForColor = 2000 - power.PowerIncrementForColor;
             power.Mastery = 0.5;//0.1;//testing
+            power.Demon = this;
             return power;
         }
     }

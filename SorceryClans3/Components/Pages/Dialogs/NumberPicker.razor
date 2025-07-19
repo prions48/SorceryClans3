@@ -6,7 +6,7 @@
         <MudStack Row>
             <MudNumericField T="int?" Min="1" @bind-Value="Number" Label="@Label" Max="@Max" />
             <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
-            <MudButton OnClick="Submit" Variant="Variant.Filled" Disabled="Number == null" Color="Color.Success">Submit</MudButton>
+            <MudButton OnClick="Submit" Variant="Variant.Filled" Disabled="Number == null" Color="Color.Info">Submit</MudButton>
         </MudStack>
     </DialogContent>
 </MudDialog>
@@ -15,7 +15,7 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public int Max { get; set; } = 99;
     [Parameter] public string Label { get; set; } = "Enter Value";
-    private int? Number { get; set; } = null;
+    private int? Number { get; set; } = 1;
     void Submit()
     {
         MudDialog.Close(DialogResult.Ok(Number));

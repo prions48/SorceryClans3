@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Identity.Client;
+using Microsoft.VisualBasic;
 
 namespace SorceryClans3.Data.Models
 {
@@ -16,11 +17,20 @@ namespace SorceryClans3.Data.Models
         public DefenseType? DefenseType { get; set; }
         public ClientCity? City { get; set; }
         public DefenseStructure? DefenseStructure { get; set; }
+        public List<Soldier> Deads { get; set; } = [];
         public Spell? HuntSpell { get; set; }
         public bool? RoundTrip { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
         public bool Cancelable { get; set; } = false;
+        public GameEvent(List<Soldier> deads, DateTime duedate)
+        {
+            Deads = deads;
+            EventCompleted = duedate;
+            Visible = true;
+            FixedDate = false;
+            Type = MissionType.Announcement;
+        }
         public GameEvent(Mission mission, DateTime duedate)
         {
             Type = mission.Type;
@@ -242,6 +252,13 @@ namespace SorceryClans3.Data.Models
                     DisplayResult = new TeamResult(TeamInTransit!, TeamInTransit!.BoostSoldiers(100), false, 1000)//tmp on diff //also don't forget this part does the damage
                 };
             }
+        }
+        public GameEventDisplay Announcement()
+        {
+            return new("", EventCompleted)
+            {
+                Deads = Deads
+            };
         }
     }
 }

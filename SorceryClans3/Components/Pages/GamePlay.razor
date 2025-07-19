@@ -59,7 +59,13 @@
                             @foreach (GameEventDisplay gameEvent in HistoryEvents.OrderByDescending(e => e.EventDate))
                             {
                                 <tr>
-                                    <td>@gameEvent.DisplayText</td>
+                                    <td>
+                                        @gameEvent.DisplayText
+                                        @if (gameEvent.AnyDeaths)
+                                        {
+                                            @gameEvent.DisplayDeaths
+                                        }
+                                        </td>
                                     <td>
                                         @gameEvent.EventDate.ToString(DTFormat)
                                     </td>
@@ -505,7 +511,13 @@
                 @foreach (GameEventDisplay display in DisplayEvents)
                 {
                     <tr>
-                        <td>@display.DisplayText</td>
+                        <td>
+                            @display.DisplayText
+                            @if (display.AnyDeaths)
+                            {
+                                @display.DisplayDeaths
+                            }
+                        </td>
                         <td>
                             @if (display.OpenHealDialog)
                             {
