@@ -35,7 +35,10 @@ namespace SorceryClans3.Data.Models
                 {
                     if (result != "")
                         result += "<br />";
-                    result += soldier.SoldierName + " has died from their battle wounds!";
+                    if (soldier.Type == SoldierType.LesserDemon && soldier.HPCurrent > 0)
+                        result += soldier.SoldierName + " has returned to the inferno from whence they came.";
+                    else
+                        result += soldier.SoldierName + " has died from their battle wounds!";
                 }
                 return (MarkupString)result;
             }

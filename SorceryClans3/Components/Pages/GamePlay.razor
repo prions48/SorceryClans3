@@ -385,7 +385,7 @@
                             <MudTd>@((context.Project?.Missions.Count ?? 0).ToString()) Teams</MudTd>
                         </RowTemplate>
                     </MudTable>
-                    <MudTable Striped Bordered Items="Engine.Research.Spells">
+                    <MudTable Striped Bordered Items="Engine.Research.AvailableSpells">
                         <ToolBarContent>
                             <MudText Typo="Typo.h6">Spells</MudText>
                         </ToolBarContent>
@@ -418,7 +418,7 @@
         <MudTabs Position="Position.Top">
             <MudTabPanel Text="Rescue"></MudTabPanel>
             <MudTabPanel Text="Resources">
-                <MudTable Striped Bordered Items="Engine.Research.Spells.Where(e => e.Consumables > 0 && (e.BeastPet != null || e.Beast != null))">
+                <MudTable Striped Bordered Items="Engine.Research.Spells.Where(e => e.MissionSendable)">
                     <HeaderContent>
                         <MudTh>Name</MudTh>
                         <MudTh>View</MudTh>
@@ -437,7 +437,7 @@
                             }
                         </MudTd>
                         <MudTd>
-                            <MudIconButton OnClick="() => StartHuntMission(context)" Icon="@Icons.Material.TwoTone.TrackChanges" Color="Color.Info" />
+                            <MudIconButton OnClick="() => StartHuntMission(context)" Icon="@Icons.Material.TwoTone.TrackChanges" Color="Color.Info" Disabled="context.MissionAvailable" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -634,7 +634,7 @@
                     soldier.CreateHealer();
                     soldier.Medical!.MedicalPowerBase = r.Next(soldier.Medical.HealBase*10);
                 }
-                Engine.Soldiers.Add(soldier);
+                Engine.AllSoldiers.Add(soldier);
             }
             if (x == 3)
                 x = 2;
@@ -691,7 +691,7 @@
         var parameters = new DialogParameters();
         parameters.Add(nameof(TeamInspector.Team), team);
         if (addsoldiers)
-            parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null).ToList());
+            parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null && (e.IsIndependent || (e.Type.TeamMatch(team.GetColors)))).ToList());
         var dialog = dialogService.Show<TeamInspector>("View Team " + team.TeamName, parameters, options);
         var result = await dialog.Result;
     }

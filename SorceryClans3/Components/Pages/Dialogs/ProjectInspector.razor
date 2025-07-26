@@ -20,7 +20,7 @@
                         <MudIconButton OnClick="() => mission.ShowTeam = !mission.ShowTeam" Color="Color.Default" Icon="@(mission.ShowTeam ? Icons.Material.Filled.KeyboardArrowDown : Icons.Material.Filled.KeyboardArrowRight)" />
                     </td>
                     <td>@mission.Team.TeamName</td>
-                    <td>@mission.Team.ResearchPower(Project.GetColor).ToString()</td>
+                    <td>@mission.Team.ResearchPower(Project.GetColor, false).ToString()</td>
                     <td>
                         <MagicIcons Colors="@(mission.Team.GetColors.Where(e => e == Project.GetColor).ToList())" />
                     </td>

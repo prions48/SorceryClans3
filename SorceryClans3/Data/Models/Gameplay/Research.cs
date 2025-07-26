@@ -12,7 +12,8 @@ namespace SorceryClans3.Data.Models
 		public Action<List<Soldier>> CreateSoldiers { get; set; }
 		public Action<Artifact> AddArtifact { get; set; }
 		Random r = new Random();
-		public IList<Spell> Spells { get; set; } = new List<Spell>();
+		public List<Spell> Spells { get; set; } = new List<Spell>();
+		public List<Spell> AvailableSpells { get { return Spells.Where(e => e.AvailableSpell).ToList(); } }
 		public Research(Action<List<Soldier>> createSoldiers, Action<Artifact> addArtifact)
 		{
 			CreateSoldiers = createSoldiers;
@@ -106,11 +107,15 @@ namespace SorceryClans3.Data.Models
 					{
 						case MagicColor.None: NewSpell = new Spell(spellColor, ResearchDiscovery.Power, powerpts); break;
 						case MagicColor.Black:
-							if (powerpts.PointsToScore(ResearchDiscovery.LesserUndead) * r.NextDouble() < 3.0)
+							if (r.Next(2) == 0 || NewSpell == null)//test!!!
+							{
+								//to add: necromancy artifact with trapped ghost
+								NewSpell = new Spell(spellColor, ResearchDiscovery.NecroArtifact, powerpts);
+							}
+							else if (powerpts.PointsToScore(ResearchDiscovery.LesserUndead) * r.NextDouble() < 3.0)
 							{
 								NewSpell = new Spell(spellColor, ResearchDiscovery.LesserUndead, powerpts);
 							}
-							//to add: necromancy artifact with trapped ghost
 							else
 							{
 								NewSpell = new Spell(spellColor, ResearchDiscovery.GreaterUndead, powerpts);

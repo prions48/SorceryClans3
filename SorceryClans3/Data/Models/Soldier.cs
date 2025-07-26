@@ -19,6 +19,8 @@ namespace SorceryClans3.Data.Models
         public string GivenName { get; set; }
         public string SoldierName { get { return ClanName + " " + GivenName; } }
         public SoldierType Type { get; set; } = SoldierType.Standard;
+        public bool Retired { get; set; } = false;
+        public int? RemainingActive { get; set; } = null;
         public int PowerLevel { get; set; }
         private int PowerLimit { get; set; }
         public int ComBase { get; set; }
@@ -323,8 +325,21 @@ namespace SorceryClans3.Data.Models
         public bool IsIndependent { get { return Type.Independent(); } }
         public bool IsCaster { get { return Type.CanSpellcast(); } }
         public bool IsHealer { get { return Medical != null && Medical.Trained; } }
-        public bool IsInjured { get { return HPCurrent < HPMax || Health != HealthLevel.Uninjured; } }
+        public bool IsInjured { get { return Type.Bleeds() && (HPCurrent < HPMax || Health != HealthLevel.Uninjured); } }
         public bool IsAlive { get { return HPCurrent >= 1 && Health != HealthLevel.Dead; } }
+        public bool IsActive
+        {
+            get
+            {
+                if (!IsAlive)
+                    return false;
+                if (Retired) //also handles demon timeups
+                    return false;
+                if ((Type == SoldierType.LesserUndead || Type == SoldierType.Beast || Type == SoldierType.GreaterSpirit) && SubTo == null)
+                    return false;
+                return true;
+            }
+        }
         private double HurtFactor
         {
             get
@@ -429,13 +444,16 @@ namespace SorceryClans3.Data.Models
             }
             return ResearchAffinity / 3.0;
         }
-        public double IncrementSkill(MagicColor color)
+        public double GetResearchSkill(MagicColor color, bool increment = true)
         {
             if (ResearchSkill.ContainsKey(color))
             {
-                ResearchSkill[color] += r.NextDouble() * 0.04 + 0.02;
-                if (ResearchSkill[color] > ResearchAffinity)
-                    ResearchSkill[color] = ResearchAffinity;
+                if (increment)
+                {
+                    ResearchSkill[color] += r.NextDouble() * 0.04 + 0.02;
+                    if (ResearchSkill[color] > ResearchAffinity)
+                        ResearchSkill[color] = ResearchAffinity;
+                }
                 return ResearchSkill[color];
             }
             return ResearchAffinity / 3.0;
@@ -553,6 +571,25 @@ namespace SorceryClans3.Data.Models
                 Health = HealthLevel.Dead;
             if (Team != null)
                 Team.Cleanup();
+            Cleanup();
+        }
+        private void Cleanup()
+        {
+            if (SubTo != null)
+            {
+                SubTo.SubSoldiers.Remove(this);
+                SubTo = null;
+            }
+            if (Power?.Demon != null)
+            {
+                Power.Demon.Invested = null;
+            }
+            if (Artifact != null)
+            {
+                Artifact.AssignedSoldier = null;
+                Artifact.Lost = true; //pickup on this in GameEngine, destroy icons + curses, create missions for others
+                Artifact = null;
+            }
         }
         public HealStatus MedicalHeal(int mp)
         {

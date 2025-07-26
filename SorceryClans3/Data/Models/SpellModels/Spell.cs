@@ -42,6 +42,16 @@ namespace SorceryClans3.Data.Models
 				return false;
 			}
 		}
+		public bool Buildable
+		{
+			get
+			{
+				//icons and curses are repeat-buildable, this is specifically for single-use builds
+				if (SpiritArtifact != null || Artifact != null) //statue
+					return true;
+				return false;
+			}
+		}
 		//spell models
 		public Beast? Beast { get; set; }
 		public BeastPet? BeastPet { get; set; }
@@ -54,6 +64,16 @@ namespace SorceryClans3.Data.Models
 		public LesserDemon? LesserDemon { get; set; }
 		public GreaterDemon? GreaterDemon { get; set; }
 		public AngelIcon? AngelIcon { get; set; }
+		public Artifact? Artifact { get; set; }
+		public bool AvailableSpell
+		{
+			get
+			{
+				if (Buildable)
+					return Built == false;
+				return true;
+			}
+		}
 		public bool Castable
 		{
 			get
@@ -65,7 +85,7 @@ namespace SorceryClans3.Data.Models
 				if (BeastPet != null)
 					return true;
 				if (Harvest != null)
-					return Consumables > 0;
+					return UnprocessedConsumables > 0;
 				if (Spirit != null)
 					return true;
 				if (SpiritArtifact != null)
@@ -80,6 +100,8 @@ namespace SorceryClans3.Data.Models
 					return GreaterDemon.Invested == null;
 				if (AngelIcon != null)
 					return true;
+				if (Artifact != null)
+					return Built == false;
 				return true;
 			}
 		}
@@ -94,8 +116,8 @@ namespace SorceryClans3.Data.Models
 		public bool CastQuantity => Harvest != null || LesserUndead != null || LesserDemon != null || Beast != null || BeastPet != null || AngelIcon != null;
 		public bool ProcessesConsumables => Harvest != null;
 		public bool UsesConsumables => Harvest != null || LesserUndead != null || Beast != null || BeastPet != null;
-		public bool GeneratesSoldier => LesserUndead != null || Spirit != null;
-		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null;//soon to add more!
+		public bool GeneratesSoldier => LesserDemon != null || Spirit != null;
+		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null || Artifact != null;//soon to add more!
 		
 		public int CastLimit(int money)
 		{
@@ -115,10 +137,14 @@ namespace SorceryClans3.Data.Models
 		}
 		public Artifact? GenerateArtifact()
 		{
+			if (Buildable)
+				Built = true;
 			if (SpiritArtifact != null)
 				return SpiritArtifact.Artifact;
 			if (AngelIcon != null)
 				return AngelIcon.GenerateIcon();
+			if (Artifact != null)
+				return Artifact;
 			return null;
 		}
 		public string BeastName { get { if (Beast != null) return Beast.BeastName; if (BeastPet != null) return BeastPet.BeastName; return ""; } } 
@@ -148,6 +174,8 @@ namespace SorceryClans3.Data.Models
 					return "Invest " + GreaterDemon.DemonName;
 				if (AngelIcon != null)
 					return "Create " + AngelIcon.ArtifactName() + " with the scope of " + AngelIcon.Angel.Scope;
+				if (Artifact != null)
+					return "Build the " + Artifact.ArtifactName;
 				return "Unknown";
 			}
 		}
@@ -240,9 +268,11 @@ namespace SorceryClans3.Data.Models
 					LesserUndead = new LesserUndead(pts);
 					Consumables = r.Next(3) + 3; break;
 				case ResearchDiscovery.GreaterUndead: GreaterUndead = new GreaterUndead(pts); break;
+				case ResearchDiscovery.NecroArtifact: Artifact = new NecroArtifact(pts); Built = false; break;
 				case ResearchDiscovery.LesserDemon: LesserDemon = new LesserDemon(pts); break;
 				case ResearchDiscovery.GreaterDemon: GreaterDemon = new GreaterDemon(pts); break;
 				case ResearchDiscovery.Angel: Angel angel = new Angel(pts); AngelIcon = new(angel); break;
+				case ResearchDiscovery.AngelStatue: Built = false; break;//tbd
 				default: break;
 			}
 			SetCosts(powerpts, disco.NeedsCaster(), zerocolor);
@@ -280,7 +310,34 @@ namespace SorceryClans3.Data.Models
 				return GreaterUndead.IsEligible(soldier);
 			return false;
 		}
-        public string SpellIcon
+		#region Hunt/etc Missions
+		public List<HunterMission> Missions { get; set; } = [];
+		public bool MissionSendable
+		{
+			get
+			{
+				if (BeastPet != null || Beast != null || Harvest != null)
+					return true;
+				//faerie also returns true somehow probably
+				return false;
+			}
+		}
+		public bool MissionAvailable
+		{
+			get
+			{
+				if (MissionSendable)
+				{
+					if (Harvest != null)
+						return Missions.Count > 0;
+					else //beast or beastpet
+						return Missions.Count > 0 && Consumables > 0;
+				}
+				return false;
+			}
+		}
+		#endregion
+		public string SpellIcon
 		{
 			get
 			{

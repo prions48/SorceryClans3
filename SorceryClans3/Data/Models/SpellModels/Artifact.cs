@@ -32,6 +32,7 @@ namespace SorceryClans3.Data.Models
         public DemonicCurse? Curse { get; set; }
         public string ArtifactName { get; set; }
         public Soldier? AssignedSoldier { get; set; } = null;
+        public bool Lost { get; set; } = false;
         public int ComBoost { get; set; }
         public int MagBoost { get; set; }
         public int SubBoost { get; set; }
@@ -65,7 +66,7 @@ namespace SorceryClans3.Data.Models
             LeadBoost = icon.Lead ?? 0;
             ResearchBoost = icon.Research ?? 0;
             HPBoost = icon.HPCost;
-            ArtIcon = ArtIcon.Angel;
+            ArtifactIcon = ArtIcon.Angel;
         }
         public Artifact()
         {
@@ -89,70 +90,70 @@ namespace SorceryClans3.Data.Models
             if ((art.ComBoost == art.MagBoost && art.ComBoost > 0) || (art.MagBoost == art.SubBoost && art.MagBoost > 0)
                 || (art.ComBoost == art.SubBoost && art.ComBoost > 0))
             {
-                ArtIcon = ArtIcon.Hammer;
+                ArtifactIcon = ArtIcon.Hammer;
                 return "The Mace of Balance";
             }
             if (art.HealBoost > 0)
             {
                 if (art.ComBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Sword;
+                    ArtifactIcon = ArtIcon.Sword;
                     return "The Blade of the Surgeon";
                 }
                 if (art.MagBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Wand;
+                    ArtifactIcon = ArtIcon.Wand;
                     return "The Rod of Vitality";
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Rope;
+                    ArtifactIcon = ArtIcon.Rope;
                     return "The Rope of the Nightingale";
                 }
-                ArtIcon = ArtIcon.Wand;
+                ArtifactIcon = ArtIcon.Wand;
                 return "The Staff of Healing";
             }
             if (art.ComBoost > art.MagBoost && art.MagBoost > art.SubBoost)
             {
                 if (art.MagBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Axe;
+                    ArtifactIcon = ArtIcon.Axe;
                     return "The Axe of the Moon";
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Knife;
+                    ArtifactIcon = ArtIcon.Knife;
                     return "The Dagger of Slaying";
                 }
-                ArtIcon = ArtIcon.Spear;
+                ArtifactIcon = ArtIcon.Spear;
                 return "The Glaive of Pain";
             }
             if (art.MagBoost > art.ComBoost && art.MagBoost > art.SubBoost)
             {
                 if (art.ComBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Sword;
+                    ArtifactIcon = ArtIcon.Sword;
                     return "The Mageblade of the Vortex";
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Clothing;
+                    ArtifactIcon = ArtIcon.Clothing;
                     return "The Cloak of Storms";
                 }
-                ArtIcon = ArtIcon.Wand;
+                ArtifactIcon = ArtIcon.Wand;
                 return "The Staff of the Archmage";
             }
             if (art.ComBoost > 0)
             {
-                ArtIcon = ArtIcon.Sickle;
+                ArtifactIcon = ArtIcon.Sickle;
                 return "The Rapier of Silence";
             }
             if (art.MagBoost > 0)
             {
-                ArtIcon = ArtIcon.Candle;
+                ArtifactIcon = ArtIcon.Candle;
                 return "The Candle of Power";
             }
-            ArtIcon = ArtIcon.Clothing;
+            ArtifactIcon = ArtIcon.Clothing;
             return "The Cloak of Invisibility";
         }
         private void SetStats(int lvl = 1)
@@ -202,73 +203,73 @@ namespace SorceryClans3.Data.Models
             if ((art.ComBoost == art.MagBoost && art.ComBoost > 0) || (art.MagBoost == art.SubBoost && art.MagBoost > 0)
                 || (art.ComBoost == art.SubBoost && art.ComBoost > 0))
             {
-                ArtIcon = ArtIcon.Hammer;
+                ArtifactIcon = ArtIcon.Hammer;
                 return "The Mace of the " + spirit;
             }
             if (art.HealBoost > 0)
             {
                 if (art.ComBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Sword;
+                    ArtifactIcon = ArtIcon.Sword;
                     return "The Scalpel of the " + spirit;
                 }
                 if (art.MagBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Wand;
+                    ArtifactIcon = ArtIcon.Wand;
                     return "The Rod of the " + spirit;
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Rope;
+                    ArtifactIcon = ArtIcon.Rope;
                     return "The Rope of the " + spirit;
                 }
-                ArtIcon = ArtIcon.Wand;
+                ArtifactIcon = ArtIcon.Wand;
                 return "The Staff of the " + spirit;
             }
             if (art.ComBoost > art.MagBoost && art.MagBoost > art.SubBoost)
             {
                 if (art.MagBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Axe;
+                    ArtifactIcon = ArtIcon.Axe;
                     return "The Axe of the " + spirit;
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Knife;
+                    ArtifactIcon = ArtIcon.Knife;
                     return "The Dagger of the " + spirit;
                 }
-                ArtIcon = ArtIcon.Spear;
+                ArtifactIcon = ArtIcon.Spear;
                 return "The Glaive of the " + spirit;
             }
             if (art.MagBoost > art.ComBoost && art.MagBoost > art.SubBoost)
             {
                 if (art.ComBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Sword;
+                    ArtifactIcon = ArtIcon.Sword;
                     return "The Mageblade of the " + spirit;
                 }
                 if (art.SubBoost > 0)
                 {
-                    ArtIcon = ArtIcon.Clothing;
+                    ArtifactIcon = ArtIcon.Clothing;
                     return "The Cloak of the " + spirit;
                 }
-                ArtIcon = ArtIcon.Wand;
+                ArtifactIcon = ArtIcon.Wand;
                 return "The Staff of the " + spirit;
             }
             if (art.ComBoost > 0)
             {
-                ArtIcon = ArtIcon.Sickle;
+                ArtifactIcon = ArtIcon.Sickle;
                 return "The Rapier of the " + spirit;
             }
             if (art.MagBoost > 0)
             {
-                ArtIcon = ArtIcon.Candle;
+                ArtifactIcon = ArtIcon.Candle;
                 return "The Candle of the " + spirit;
             }
-            ArtIcon = ArtIcon.Clothing;
+            ArtifactIcon = ArtIcon.Clothing;
             return "The Cloak of the " + spirit;
         }
-        private ArtIcon ArtIcon { get; set; } = ArtIcon.Sword;
+        protected ArtIcon ArtifactIcon { get; set; } = ArtIcon.Sword;
         public MudBlazor.Color GetColor()
         {
             if (Curse != null)
@@ -283,7 +284,7 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
-                switch (ArtIcon)
+                switch (ArtifactIcon)
                 {
                     case ArtIcon.Sword: return "<svg viewBox=\"0 0 24 24\"><path d=\"M6.92,5H5L14,14L15,13.06M19.96,19.12L19.12,19.96C18.73,20.35 18.1,20.35 17.71,19.96L14.59,16.84L11.91,19.5L10.5,18.09L11.92,16.67L3,7.75V3H7.75L16.67,11.92L18.09,10.5L19.5,11.91L16.83,14.58L19.95,17.7C20.35,18.1 20.35,18.73 19.96,19.12Z\" /></svg>";
                     case ArtIcon.Axe: return "<svg viewBox=\"0 0 24 24\"><title>axe-battle</title><path d=\"M21.47 12.43C19.35 14.55 15.82 13.84 15.82 13.84V9.6L3.41 22L2 20.59L14.4 8.18H10.16C10.16 8.18 9.45 4.65 11.57 2.53C13.69 .406 17.23 1.11 17.23 1.11V5.36L17.94 4.65L19.35 6.06L18.64 6.77H22.89C22.89 6.77 23.59 10.31 21.47 12.43Z\" /></svg>";

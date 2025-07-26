@@ -46,6 +46,7 @@ namespace SorceryClans3.Data.Models
             // do the thing here if needs doing (except creating soldier, that's in the result constructor)
             if (CastingSpell.Power != null && TargetSoldier != null)
             {
+                //don't forget to hurt them here first
                 TargetSoldier.Power = CastingSpell.Power.GeneratePower(true);
             }
             else if (CastingSpell.GreaterUndead != null && TargetSoldier != null)

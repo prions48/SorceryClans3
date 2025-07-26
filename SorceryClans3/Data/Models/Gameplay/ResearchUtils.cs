@@ -6,11 +6,13 @@ namespace SorceryClans3.Data.Models
         Artifact,
         LesserUndead,
         GreaterUndead,
+        NecroArtifact,
         LesserDemon,
         GreaterDemon,
         DemonicCurse,
         SpiritSoldier,
         SpiritArtifact,
+        SpiritWeather,
         BeastPet,
         BeastTame,
         BeastHarvest,
@@ -18,7 +20,7 @@ namespace SorceryClans3.Data.Models
         Nephilim,
         AngelStatue,
         SummonFaerie,
-        FaerieBargain
+        FaerieBargain//and a third?
     }
     //do extension spells get their own system?
     /*
@@ -38,18 +40,25 @@ namespace SorceryClans3.Data.Models
                 case ResearchDiscovery.BeastHarvest:
                 case ResearchDiscovery.BeastTame:
                 case ResearchDiscovery.SpiritSoldier:
-                    return (i - 100000) / 200000;
+                    return (i - 1000000) / 200000;
                 case ResearchDiscovery.LesserUndead:
                 case ResearchDiscovery.GreaterUndead:
-                    return (i - 100000) / 450000;
+                    return (i - 1000000) / 450000;
                 case ResearchDiscovery.LesserDemon:
                 case ResearchDiscovery.GreaterDemon:
-                    return (i - 100000) / 200000;
+                    return (i - 1000000) / 200000;
                 case ResearchDiscovery.Angel:
-                    return (i - 100000) / 600000;
+                    int ret = (i - 1000000) / 600000;
+                    if (ret > 10)
+                        ret = 10;
+                    return ret;
+                case ResearchDiscovery.Artifact:
+                    return 2 + (i - 1000000) / 1000000;
+                case ResearchDiscovery.NecroArtifact:
+                    return 1 + (i - 1000000) / 1500000;
                 case ResearchDiscovery.Power:
                 default:
-                    return 1 + (i - 100000) / 300000;
+                    return 1 + (i - 1000000) / 300000;
             }
         }
         public static bool NeedsCaster(this ResearchDiscovery disco)

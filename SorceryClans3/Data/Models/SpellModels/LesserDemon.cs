@@ -92,7 +92,8 @@ namespace SorceryClans3.Data.Models
                 SubBase = (int)((r.NextDouble() * .1 + .95) * sbase),
                 TravelBase = (int)((r.NextDouble() * .1 + .95) * tbase),
                 HPBase = hp,
-                HPCurrent = hp
+                HPCurrent = hp,
+                RemainingActive = duration //add randomness?
             };
             return ret;
         }

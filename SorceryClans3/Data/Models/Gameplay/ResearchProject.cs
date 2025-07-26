@@ -35,7 +35,7 @@ namespace SorceryClans3.Data.Models
 		{
 			Random r = new();
 			CurrentThreshold = threshold;
-			PointsToDiscover = PowerThreshold + r.Next(PowerThreshold);
+			PointsToDiscover = PowerThreshold + r.Next(1000000);
 		}
 		public void StartMission(Team team)
 		{
@@ -77,7 +77,8 @@ namespace SorceryClans3.Data.Models
 		}
 		public SpellDiscovery? AddProgress(Team team)
 		{
-			PowerPoints += team.ResearchPowerIncrement(Color);
+			int addpts = team.ResearchPower(Color);
+			PowerPoints += addpts;
 			IList<MagicColor> tcolors = team.GetColors;
 			ColorPoints += tcolors.Count(e => e == this.Color);
 			Random r = new Random();
@@ -96,6 +97,14 @@ namespace SorceryClans3.Data.Models
 					PowerPoints = discppts,
 					ColorPoints = disccpts
 				};
+			}
+			else
+			{
+				//this bit is because if color is lagging, points get inflated
+				if (PowerPoints - LastDiscoveryPts > PointsToDiscover)
+					PowerPoints = LastDiscoveryPts + PointsToDiscover + 1;
+				if (ColorPoints - LastDiscoveryClr > ColorThreshold * 2)
+					ColorPoints = LastDiscoveryClr + ColorThreshold * 2;
 			}
 			return null;
 		}

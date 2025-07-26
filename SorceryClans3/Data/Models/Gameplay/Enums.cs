@@ -174,6 +174,32 @@ namespace SorceryClans3.Data.Models
 				default: return factor;
 			}
 		}
+		public static bool Bleeds(this SoldierType type)
+		{
+			switch (type)
+			{
+				case SoldierType.Standard: return true;
+				case SoldierType.Beast: return true;
+				case SoldierType.LesserUndead: return false;
+				case SoldierType.GreaterUndead: return false;
+				case SoldierType.LesserSpirit: return false;
+				case SoldierType.GreaterSpirit: return false;
+				case SoldierType.LesserDemon: return false;
+				case SoldierType.GreaterDemon: return false;
+				case SoldierType.Nephilim: return false;
+				default: return false;
+			}
+		}
+		public static bool TeamMatch(this SoldierType type, List<MagicColor> colors)
+		{
+			if (type == SoldierType.LesserDemon)
+				return colors.Any(e => e == MagicColor.Red);
+			if (type == SoldierType.Beast)
+				return colors.Any(e => e == MagicColor.Green);
+			if (type == SoldierType.LesserSpirit)
+				return colors.Any(e => e == MagicColor.Blue);
+			return false;	
+		}
 	}
 	public enum SkillStat
 	{

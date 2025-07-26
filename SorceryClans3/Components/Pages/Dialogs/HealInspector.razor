@@ -72,7 +72,7 @@
             {
                 dropItem.Item.MedicIDs = new List<string>();
             }
-            if (!dropItem.Item.MedicIDs.Contains(dropItem.DropzoneIdentifier))
+            if (!dropItem.Item.MedicIDs.Contains(dropItem.DropzoneIdentifier) && dropItem.DropzoneIdentifier != dropItem.Item.PatientID.ToString())
             {
                 dropItem.Item.MedicIDs.Add(dropItem.DropzoneIdentifier);
             }

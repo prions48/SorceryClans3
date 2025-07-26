@@ -65,7 +65,7 @@ namespace SorceryClans3.Data.Models
             if (forcecolor == null)
             {
                 //this.Color = (MagicColor)r.Next(7);
-                this.Color = MagicColor.White; //TMP OVERRIDE FOR TESTING
+                this.Color = MagicColor.Black; //TMP OVERRIDE FOR TESTING
             }
             else
             {

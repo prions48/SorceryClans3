@@ -129,6 +129,20 @@ namespace SorceryClans3.Data.Models
                 return (int)(score * Teamwork * MagTeamSizeFactor);
             }
         }
+        public int MResearchScore
+        {
+            get
+            {
+                int score = 0;
+                IList<Soldier> solds = GetSoldiers.OrderBy(e => e.Magic).ToList();
+                for (int i = 0; i < solds.Count; i++) //fancy for diminished returns to add
+                {
+                    if (solds[i].IsIndependent)
+                        score += solds[i].Magic * solds[i].PowerLevel;
+                }
+                return (int)(score * Teamwork * MagTeamSizeFactor);
+            }
+        }
         public int SScore
         {
             get
@@ -391,7 +405,7 @@ namespace SorceryClans3.Data.Models
             BoostTeamwork(0.05);
             return GetAllSoldiers.Select(e => e.GainPower(r.Next(factor, factor * 2))).ToList();
         }
-        public int ResearchPower(MagicColor color)
+        public int ResearchPower(MagicColor color, bool increment = true)
         {
             if (Leaders.Count == 0)
                 return 0;
@@ -400,28 +414,12 @@ namespace SorceryClans3.Data.Models
             {
                 if (sold.ResearchSkill.ContainsKey(color))
                 {
-                    total += sold.ResearchSkill[color];
+                    total += sold.GetResearchSkill(color, increment);
                 }
             }
             if (total < 0)
                 return 0;
-            return (int)(MSpellScore * total / Leaders.Count);
-        }
-        public int ResearchPowerIncrement(MagicColor color)
-        {
-            if (Leaders.Count == 0)
-                return 0;
-            double total = 0;
-            foreach (Soldier sold in Leaders)
-            {
-                if (sold.ResearchSkill.ContainsKey(color))
-                {
-                    total += sold.IncrementSkill(color);
-                }
-            }
-            if (total < 0)
-                return 0;
-            return (int)(MScore * total / Leaders.Count);
+            return (int)(MResearchScore * total / Leaders.Count);
         }
         public string ResearchDisplay
         {

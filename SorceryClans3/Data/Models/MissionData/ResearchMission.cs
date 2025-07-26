@@ -15,7 +15,8 @@ namespace SorceryClans3.Data.Models
 			ID = Guid.NewGuid();
 			Team = team;
 			Random r = new Random();
-			NumDays = 6 + r.Next(3);
+			//NumDays = 25 + r.Next(12);//real
+			NumDays = 5 + r.Next(5);//for testing
 		}
 		public Team? AdvanceDay()
 		{

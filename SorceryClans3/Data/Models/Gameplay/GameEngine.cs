@@ -9,7 +9,8 @@ namespace SorceryClans3.Data.Models
         public List<GameEvent> VisibleEvents { get { return Events.Where(e => e.Visible).ToList(); } }
         public List<Mission> Missions { get; set; } = [];
         public List<Clan> Clans { get; set; } = [];
-        public List<Soldier> Soldiers { get; set; } = [];
+        public List<Soldier> AllSoldiers { get; set; } = [];
+        public List<Soldier> Soldiers { get { return AllSoldiers.Where(e => e.IsActive).ToList(); } }
         public List<Team> Teams { get; set; } = [];
         public Academy Academy { get; set; } = new();
         public List<ClientCity> Clients { get; set; } = [];
@@ -23,7 +24,7 @@ namespace SorceryClans3.Data.Models
         }
         private void CreateSoldiers(List<Soldier> soldiers)
         {
-            Soldiers.AddRange(soldiers);
+            AllSoldiers.AddRange(soldiers);
         }
         private void AddArtifact(Artifact artifact)
         {
@@ -149,30 +150,49 @@ namespace SorceryClans3.Data.Models
             if (Settings.HealTime)
             {
                 List<Soldier> deads = [];
-                foreach (Soldier soldier in Soldiers.Where(e => e.IsAlive))
+                foreach (Soldier soldier in Soldiers)
                 {
-                    if (soldier.HPCurrent < soldier.HPMax)
+                    if (soldier.RemainingActive.HasValue)
                     {
-                        //soldier.MedicalHeal(5);//experimental failure?
-                        if (soldier.Health <= HealthLevel.Hurt)
+                        soldier.RemainingActive--;
+                        if (soldier.RemainingActive <= 0)
                         {
-                            if (r.Next(3) == 0)
+                            soldier.Retired = true;
+                            if (soldier.Team != null)
                             {
-                                soldier.HPCurrent++;
-                            }
-                        }
-                        else
-                        {
-                            if (r.Next(3) == 0)
-                            {
-                                soldier.Hurt(1);
-                                if (!soldier.IsAlive)
-                                {
-                                    deads.Add(soldier);
-                                }
+                                deads.Add(soldier);
+                                soldier.Team.RemoveSoldier(soldier);
                             }
                         }
                     }
+                    if (!soldier.Type.Bleeds())
+                    {
+                        if (soldier.HPCurrent < soldier.HPMax)
+                            soldier.HPCurrent++;
+                        continue;
+                    }
+                    if (soldier.HPCurrent < soldier.HPMax)
+                        {
+                            //soldier.MedicalHeal(5);//experimental failure?
+                            if (soldier.Health <= HealthLevel.Hurt)
+                            {
+                                if (r.Next(3) == 0)
+                                {
+                                    soldier.HPCurrent++;
+                                }
+                            }
+                            else
+                            {
+                                if (r.Next(3) == 0)
+                                {
+                                    soldier.Hurt(1);
+                                    if (!soldier.IsAlive)
+                                    {
+                                        deads.Add(soldier);
+                                    }
+                                }
+                            }
+                        }
                 }
                 Settings.SetNextHeal();
                 if (deads.Count > 0)
@@ -301,9 +321,8 @@ namespace SorceryClans3.Data.Models
                     case MissionType.TameBeast:
                         disp = ev.ResolveHunt();
                         if (disp.NewSoldier != null)
-                            Soldiers.Add(disp.NewSoldier);
+                            AllSoldiers.Add(disp.NewSoldier);
                         displays.Add(disp);
-
                         break;
                     default:
                         displays.Add(new("Undefined game event", Settings.CurrentTime));
