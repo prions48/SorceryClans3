@@ -17,6 +17,7 @@ namespace SorceryClans3.Data.Models
                 return GameTime;
             }
         }
+        public string CurrentTimeFormatted => CurrentTime.ToString(DTFormat);
         public TimeSpan ElapsedGameTime
         {
             get
@@ -24,6 +25,16 @@ namespace SorceryClans3.Data.Models
                 return CurrentTime - StartDate;
             }
         }
+        public string DTFormat
+        {
+            get
+            {
+                if (RealTime)
+                    return @"MM/dd/yy hh\:mm tt";
+                return "MMM d, Year y";
+            }
+        }
+        
         public bool BypassDay1 { get { if (RealTime) return true; return !(GameTime.Day == 1 && GameTime.Hour == 0); } }
         #region Time Calcs
         public DateTime MissionEndTime(Mission mission)

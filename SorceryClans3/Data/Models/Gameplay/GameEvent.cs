@@ -131,17 +131,47 @@ namespace SorceryClans3.Data.Models
                 throw new Exception("Failure to resolve missing mission or team");
             var results = MissionToComplete.CompleteMission();
             List<(Guid, int, bool)> gains = [];
+            List<Soldier> newsolds = [];
             foreach (Soldier soldier in MissionToComplete.AttemptingTeam.GetAllSoldiers)
             {
                 gains.Add(soldier.GainPower(MissionToComplete.PowerGain()));
+                newsolds.AddRange(NecromancyScan(soldier, MissionToComplete));
             }
             //use diff to create game results
             return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
             {
                 DisplayMission = MissionToComplete,
                 DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
-                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2)
+                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2),
+                AddedSoldiers = newsolds
             };
+        }
+        private List<Soldier> NecromancyScan(Soldier soldier, Mission mission)
+        {
+            List<Soldier> newsolds = [];
+            int i = 0;
+            while (i < soldier.Consumables.Count)
+            {
+                Spell spell = soldier.Consumables[i];
+                if (spell.LesserUndead != null && mission.CScore >= spell.LesserUndead.ScoreToGenerate())
+                {
+                    Soldier newsold = spell.LesserUndead.GenerateSoldier();
+                    soldier.SubSoldiers.Add(newsold);
+                    newsold.SubTo = soldier;
+                    soldier.Consumables.RemoveAt(i);
+                    newsolds.Add(newsold);
+                }
+                else
+                    i++;
+            }
+            if (soldier.Artifact is NecroArtifact necro && mission.CScore >= necro.ScoreToGenerate())//tmp
+            {
+                Soldier newsold = necro.GenerateSoldier(mission.Client.ID);
+                soldier.SubSoldiers.Add(newsold);
+                newsold.SubTo = soldier;
+                newsolds.Add(newsold);
+            }
+            return newsolds;
         }
         public GameEventDisplay ResolveReturn(bool liaison = false)
         {

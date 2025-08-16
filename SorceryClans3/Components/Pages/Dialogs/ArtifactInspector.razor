@@ -129,6 +129,25 @@
                     </tr>
                 </tbody>
             </MudSimpleTable>
+            @if (Artifact is NecroArtifact necro)
+            {
+                <MudSimpleTable Striped Bordered>
+                    <thead>
+                        <tr>
+                            <th>Duration</th>
+                            <th>Subtlety Breach</th>
+                            <th>Boosted Stat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@necro.Duration days</td>
+                            <td>@necro.SubtletyBreach</td>
+                            <td>@necro.Secondary.ToString()</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            }
             @if (SoldierPicker)
             {
                 <MudTable Items="Soldiers" Striped Bordered>

@@ -12,7 +12,9 @@ namespace SorceryClans3.Data.Models
         public MapLocation? Location { get; set; }
         public ClientImportance Importance { get; set; }
         public DateTime ExpirationDate { get; set; }
-        public IList<string> Rewards
+        public List<SpiritWeather> StatMods { get; set; } = [];
+        public bool Completed { get; set; } = false;
+        public List<string> Rewards
         {
             get
             {
@@ -75,6 +77,10 @@ namespace SorceryClans3.Data.Models
                 Resources.BoostMoney(1.5);
             else if (Importance == ClientImportance.Critical)
                 Resources.BoostMoney(3.0);
+        }
+        public void AddStatMod(SpiritWeather statmod)
+        {
+            StatMods.Add(statmod);
         }
         protected void SetScore(bool forceall)
         {
@@ -170,20 +176,35 @@ namespace SorceryClans3.Data.Models
                     }
                 }
             }
-            bool success = PassStat(CScore, team.CScore, passcolor, CPenalty) &&
-                   PassStat(MScore, team.MScore, passcolor, MPenalty) &&
-                   PassStat(SScore, team.SScore, passcolor, SPenalty) &&
-                   PassStat(KScore, team.KScore, passcolor, KPenalty) && (passcolor || PctSuccessOnColorFail(failby, failbypct));//if color inadequate, tops out at 50% pass rate
+            int tCScore = team.CScore + StatMods.Sum(e => e.ComEffect(Location));
+            int tMScore = team.MScore;//+ StatMods.Sum(e => e.MMod());
+            int tSScore = team.SScore + StatMods.Sum(e => e.SubEffect(Location));
+            int tKScore = team.KScore;// + StatMods.Sum(e => e.KMod());
+            bool success = PassStat(CScore, tCScore, passcolor, CPenalty) &&
+                   PassStat(MScore, tMScore, passcolor, MPenalty) &&
+                   PassStat(SScore, tSScore, passcolor, SPenalty) &&
+                   PassStat(KScore, tKScore, passcolor, KPenalty) && (passcolor || PctSuccessOnColorFail(failby, failbypct));//if color inadequate, tops out at 50% pass rate
             int diff = 0;
-            int cdiff = DiffSuccess(CScore, team.CScore, passcolor, CPenalty);
-            int mdiff = DiffSuccess(MScore, team.MScore, passcolor, MPenalty);
-            int sdiff = DiffSuccess(SScore, team.SScore, passcolor, SPenalty);
-            int kdiff = DiffSuccess(KScore, team.KScore, passcolor, KPenalty);
+            int cdiff = DiffSuccess(CScore, tCScore, passcolor, CPenalty);
+            int mdiff = DiffSuccess(MScore, tMScore, passcolor, MPenalty);
+            int subpen = 0;
+            foreach (Soldier soldier in team.GetAllSoldiers)
+            {
+                if (soldier.Artifact is NecroArtifact necro && necro.TargetID == Client.ID)
+                    subpen += necro.SubtletyBreach;
+            }
+            int sscore = (SScore ?? 0) - subpen;
+            if (sscore < 0)
+                sscore = 0;
+            int sdiff = DiffSuccess(sscore, tSScore, passcolor, SPenalty);
+            int kdiff = DiffSuccess(KScore, tKScore, passcolor, KPenalty);
             if (success)
                 diff = cdiff + mdiff + sdiff + kdiff;
             else
                 diff = (cdiff > 0 ? 0 : cdiff) + (mdiff > 0 ? 0 : mdiff) +
                        (sdiff > 0 ? 0 : sdiff) + (kdiff > 0 ? 0 : kdiff);
+            Completed = true;
+            StatMods.Clear();//for contract missions
             return (success, diff);
         }
         private bool PctSuccessOnColorFail(int failby, double failbypct)

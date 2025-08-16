@@ -28,6 +28,7 @@ namespace SorceryClans3.Data.Models
     public class Artifact
     {
         public Guid ID { get; set; } = Guid.NewGuid();
+        public int Level { get; set; }
         public Guid? IconID { get; set; }
         public DemonicCurse? Curse { get; set; }
         public string ArtifactName { get; set; }
@@ -50,6 +51,7 @@ namespace SorceryClans3.Data.Models
         public int ResearchBoost { get; set; }
         public Artifact(AngelIcon icon) //for icons, for now
         {
+            Level = icon.Level;
             ID = Guid.NewGuid();
             IconID = icon.ID;
             ArtifactName = icon.ArtifactName();
@@ -70,17 +72,20 @@ namespace SorceryClans3.Data.Models
         }
         public Artifact()
         {
+            Level = 1;
             ID = Guid.NewGuid();
             SetStats();
             ArtifactName = SetArtifactName();
         }
         public Artifact(int lvl)
         {
+            Level = lvl;
             SetStats(lvl);
             ArtifactName = SetArtifactName();
         }
         public Artifact(int lvl, string spirit)
         {
+            Level = lvl;
             SetStats(lvl / 2);
             ArtifactName = SetSpiritName(spirit);
         }

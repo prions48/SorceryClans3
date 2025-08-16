@@ -41,6 +41,7 @@ namespace SorceryClans3.Data.Models
         public override (bool, int) CompleteMission()
         {
             var result = base.CompleteMission();
+            Completed = false;
             MissionDays = r.Next(30) + 5;
             SetScore(r.Next(3) > 0);//but not disp!
             NumEvents++;

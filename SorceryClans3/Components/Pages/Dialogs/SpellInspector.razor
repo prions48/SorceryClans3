@@ -57,6 +57,10 @@
                 <ArtifactInspector Artifact="Spell.SpiritArtifact.Artifact" />
                 <SoldierInspector Soldier="Spell.SpiritArtifact.Spirit" />
             }
+            @if (Spell.Artifact != null)
+            {
+                <ArtifactInspector Artifact="Spell.Artifact" />
+            }
             @if (Spell.LesserUndead != null)
             {
                 <SoldierInspector Soldier="@Spell.LesserUndead.GenerateSoldier()" />

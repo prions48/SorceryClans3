@@ -11,6 +11,13 @@ namespace SorceryClans3.Data.Models
         public List<Clan> Clans { get; set; } = [];
         public List<Soldier> AllSoldiers { get; set; } = [];
         public List<Soldier> Soldiers { get { return AllSoldiers.Where(e => e.IsActive).ToList(); } }
+        public List<GameEvent> InProgressMissions
+        {
+            get
+            {
+                return Events.Where(e => e.MissionToComplete != null).ToList();
+            }
+        }
         public List<Team> Teams { get; set; } = [];
         public Academy Academy { get; set; } = new();
         public List<ClientCity> Clients { get; set; } = [];
@@ -158,6 +165,16 @@ namespace SorceryClans3.Data.Models
                         if (soldier.RemainingActive <= 0)
                         {
                             soldier.Retired = true;
+                            if (soldier.SubTo != null)
+                            {
+                                if (soldier.SubTo.Artifact is NecroArtifact necro)
+                                {
+                                    necro.TargetID = null;
+                                    necro.UndeadID = null;
+                                }
+                                soldier.SubTo.SubSoldiers.Remove(soldier);
+                                soldier.SubTo = null;
+                            }
                             if (soldier.Team != null)
                             {
                                 deads.Add(soldier);

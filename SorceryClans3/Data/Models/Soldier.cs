@@ -14,7 +14,7 @@ namespace SorceryClans3.Data.Models
 {
     public class Soldier : IHP
     {
-        public Guid ID { get; set; }
+        public Guid ID { get; set; } = Guid.NewGuid();
         public string ClanName { get; set; }
         public string GivenName { get; set; }
         public string SoldierName { get { return ClanName + " " + GivenName; } }
@@ -79,6 +79,7 @@ namespace SorceryClans3.Data.Models
         public Team? Team { get; set; } //testing, might break JSONs?
         public Power? Power { get; set; }
         public Artifact? Artifact { get; set; }
+        public List<Spell> Consumables { get; set; } = [];
         public Medical? Medical { get; set; }
         public List<Style> Styles { get; set; } = new List<Style>();
         public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();

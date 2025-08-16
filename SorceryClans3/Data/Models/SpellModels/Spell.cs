@@ -59,6 +59,7 @@ namespace SorceryClans3.Data.Models
 		public PowerTemplate? Power { get; set; }
 		public LesserSpirit? Spirit { get; set; }
 		public GreaterSpirit? SpiritArtifact { get; set; }
+		public SpiritWeather? SpiritWeather { get; set; }
 		public LesserUndead? LesserUndead { get; set; }
 		public GreaterUndead? GreaterUndead { get; set; }
 		public LesserDemon? LesserDemon { get; set; }
@@ -90,8 +91,10 @@ namespace SorceryClans3.Data.Models
 					return true;
 				if (SpiritArtifact != null)
 					return Built == false;
-				if (LesserUndead != null)
+				if (SpiritWeather != null)
 					return true;
+				if (LesserUndead != null)
+						return true;
 				if (GreaterUndead != null)
 					return true;
 				if (LesserDemon != null)
@@ -164,6 +167,8 @@ namespace SorceryClans3.Data.Models
 					return "Summon " + Spirit.GetName;
 				if (SpiritArtifact != null)
 					return "Construct " + SpiritArtifact.Artifact.ArtifactName;
+				if (SpiritWeather != null)
+					return "Conjure " + SpiritWeather.WeatherName;
 				if (LesserUndead != null)
 					return "Build " + ConsumablePrint(0) + " to resurrect " + LesserUndead.UndeadName;
 				if (GreaterUndead != null)
@@ -264,6 +269,7 @@ namespace SorceryClans3.Data.Models
 				case ResearchDiscovery.BeastHarvest: Consumables = 3; UnprocessedConsumables = 3; break;//set in Research.cs
 				case ResearchDiscovery.SpiritSoldier: Spirit = new LesserSpirit(pts, r.NextDouble() < .15); break;
 				case ResearchDiscovery.SpiritArtifact: SpiritArtifact = new GreaterSpirit(pts); Built = false; break;
+				case ResearchDiscovery.SpiritWeather: SpiritWeather = new SpiritWeather(pts); break;
 				case ResearchDiscovery.LesserUndead:
 					LesserUndead = new LesserUndead(pts);
 					Consumables = r.Next(3) + 3; break;

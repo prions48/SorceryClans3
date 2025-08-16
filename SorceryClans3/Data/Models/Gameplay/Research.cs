@@ -133,11 +133,14 @@ namespace SorceryClans3.Data.Models
 							}
 							break;
 						case MagicColor.Blue:
-							if (r.Next(powerpts) < 2000000)
+							if (r.Next(2) == 0)
+							{
+								NewSpell = new Spell(spellColor, ResearchDiscovery.SpiritWeather, powerpts);
+							}
+							else if (r.Next(powerpts) < 2000000)
 							{
 								NewSpell = new Spell(spellColor, ResearchDiscovery.SpiritSoldier, powerpts);
 							}
-							//to add: weather control spell to boost mercenary mission or cover retreat of hurt team
 							else
 							{
 								NewSpell = new Spell(spellColor, ResearchDiscovery.SpiritArtifact, powerpts);

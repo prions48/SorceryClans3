@@ -17,7 +17,7 @@
             }
             else
             {
-                <MudText>@Engine.Settings.CurrentTime.ToString(DTFormat)</MudText>
+                <MudText>@Engine.Settings.CurrentTimeFormatted</MudText>
                 @if (!Engine.Settings.RealTime)
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
@@ -67,7 +67,7 @@
                                         }
                                         </td>
                                     <td>
-                                        @gameEvent.EventDate.ToString(DTFormat)
+                                        @gameEvent.EventDate.ToString(Engine.Settings.DTFormat)
                                     </td>
                                 </tr>
                             }
@@ -406,7 +406,8 @@
                             <MudTd>@context.MoneyToCast.ToString("C")</MudTd>
                             <MudTd>@context.ConsumableCountDisplay</MudTd>
                             <MudTd>
-                                <MudIconButton Icon="@Icons.Material.TwoTone.MenuBook" Color="Color.Info" OnClick="() => StartCastSpell(context)" Disabled="!context.Castable" />
+                                <MudIconButton Icon="@Icons.Material.TwoTone.MenuBook" Color="Color.Info" OnClick="() => StartCastSpell(context)" 
+                                Disabled="!context.Castable || (context.SpiritWeather != null && !Engine.InProgressMissions.Any(e => context.SpiritWeather.InRange(e.MissionToComplete!.Location!)))" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -571,15 +572,6 @@
             if (Engine.Settings.RealTime)
                 return @"hh\:mm\:ss"; //return @"hh\:mm\:ss\:ff";
             return "%d";
-        }
-    }
-    private string DTFormat
-    {
-        get
-        {
-            if (Engine.Settings.RealTime)
-                return @"MM/dd/yy hh\:mm tt";
-            return "MMM d, Year y";
         }
     }
     private bool ViewLeadDialog = false;
@@ -964,7 +956,7 @@
         options.CloseOnEscapeKey = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(ArtifactPicker.Artifacts), Engine.Resources.Artifacts);
+        parameters.Add(nameof(ArtifactPicker.Artifacts), Engine.Resources.Artifacts.Where(e => !e.Lost).ToList());
         var dialog = dialogService.Show<ArtifactPicker>("All Artifacts", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)
@@ -1390,9 +1382,39 @@
                         }
                         proceed = target != null;
                     }
+                    //now for specialty targeting
+                    Mission? selectedmission = null;
+                    if (proceed && spell.SpiritWeather != null)
+                    {
+                        List<GameEvent> events = Engine.InProgressMissions;
+                        if (events.Count == 0)
+                        {
+                            Snackbar.Add("No in progress missions.", Severity.Warning);
+                            return;
+                        }
+                        events = events.Where(e => spell.SpiritWeather.InRange(e.MissionToComplete!.Location!)).ToList();
+                        if (events.Count == 0)
+                        {
+                            Snackbar.Add("No in progress missions within spell range.", Severity.Warning);
+                            return;
+                        }
+                        options = new DialogOptions();
+                        options.CloseOnEscapeKey = true;
+                        options.MaxWidth = MaxWidth.Large;
+                        parameters = new DialogParameters();
+                        parameters.Add(nameof(InProgressMissionPicker.Events), events);
+                        parameters.Add(nameof(InProgressMissionPicker.Settings), Engine.Settings);
+                        dialog = dialogService.Show<InProgressMissionPicker>("Select Mission", parameters, options);
+                        result = await dialog.Result;
+                        if (result?.Canceled == false)
+                        {
+                            selectedmission = result.Data as Mission;
+                        }
+                        proceed = selectedmission != null;
+                    }
                     if (proceed)
                     {
-                        facility.StartCastSpell(team, spell, caster, target, amount);
+                        facility.StartCastSpell(team, spell, caster, target, amount, selectedmission);
                     }
                 }
             }

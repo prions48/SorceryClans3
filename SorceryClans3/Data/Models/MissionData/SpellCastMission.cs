@@ -12,6 +12,7 @@ namespace SorceryClans3.Data.Models
         public Team CastingTeam { get; set; }
         public Soldier? CastingSoldier { get; set; }
         public Soldier? TargetSoldier { get; set; }
+        public Mission? TargetMission { get; set; }
         public int? NumConsumables { get; set; }
         public List<Soldier> AddedSoldiers { get; set; } = [];
         public SpellCastMission(Spell spell, Team team, Soldier? casting = null, Soldier? target = null, int? quantity = null)
@@ -57,6 +58,12 @@ namespace SorceryClans3.Data.Models
             {
                 CastingSpell.GreaterDemon.Apply(TargetSoldier);
             }
+            else if (CastingSpell.SpiritWeather != null)
+            {
+                if (TargetMission == null)
+                    throw new Exception("Failure to configure spirit weather mission.");
+                TargetMission.AddStatMod(CastingSpell.SpiritWeather);
+            }
             if (TargetSoldier?.Team != null)
             {
                 if (TargetSoldier.Team.ID == this.ID)
@@ -99,6 +106,12 @@ namespace SorceryClans3.Data.Models
             if (TargetSoldier != null)
             {
                 return $"Spell completed: {CastingSpell.SpellName} cast on {TargetSoldier.SoldierName}";
+            }
+            if (TargetMission != null)
+            {
+                if (TargetMission.Completed)
+                    return $"Spell completed: {CastingSpell.SpiritWeather?.WeatherName ?? "Unknown"} conjured but not in time to affect mission!";
+                return $"Spell completed: {CastingSpell.SpiritWeather?.WeatherName ?? "Unknown"} conjured to affect the mission for {TargetMission.Client.CityName}.";
             }
             return $"Spell completed: {CastingSpell.SpellName}";
         }

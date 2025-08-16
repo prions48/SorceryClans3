@@ -41,6 +41,8 @@ namespace SorceryClans3.Data.Models
                 case ResearchDiscovery.BeastTame:
                 case ResearchDiscovery.SpiritSoldier:
                     return (i - 1000000) / 200000;
+                case ResearchDiscovery.SpiritWeather:
+                    return (i - 1000000) / 250000;
                 case ResearchDiscovery.LesserUndead:
                 case ResearchDiscovery.GreaterUndead:
                     return (i - 1000000) / 450000;

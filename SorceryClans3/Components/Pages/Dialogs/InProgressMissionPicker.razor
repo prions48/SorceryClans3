@@ -1,0 +1,63 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@inject IDialogService dialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Events">
+            <HeaderContent>
+                <MudTh>Client</MudTh>
+                <MudTh>Team</MudTh>
+                <MudTh>Reqs</MudTh>
+                <MudTh>Stats</MudTh>
+                <MudTh>Deadline</MudTh>
+                <MudTh>Select</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.MissionToComplete!.Client.CityName</MudTd>
+                <MudTd>@context.TeamInTransit!.TeamName</MudTd>
+                <MudTd>
+                    <MudStack>
+                        <MudStack Row>
+                            <p>Com:</p>
+                            <p>@context.MissionToComplete!.CDisp</p>
+                        </MudStack>
+                        <MudStack Row>
+                            <p>Sub:</p>
+                            <p>@context.MissionToComplete!.SDisp</p>
+                        </MudStack>
+                    </MudStack>
+                </MudTd>
+                <MudTd>
+                    <MudStack>
+                        <MudStack Row>
+                            <p>Com:</p>
+                            <p>@context.TeamInTransit!.CScore</p>
+                        </MudStack>
+                        <MudStack Row>
+                            <p>Sub:</p>
+                            <p>@context.TeamInTransit!.SScore</p>
+                        </MudStack>
+                    </MudStack>
+                </MudTd>
+                <MudTd>@context.EventCompleted.ToString(Settings.DTFormat)</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Info" OnClick="() => Submit(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Info">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<GameEvent> Events { get; set; } = [];
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; }
+    void Submit(GameEvent gameEvent)
+    {
+        MudDialog.Close(DialogResult.Ok(gameEvent));
+    }
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+}

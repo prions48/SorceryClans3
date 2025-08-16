@@ -139,6 +139,7 @@ namespace SorceryClans3.Data.Models
                 return;
             s.ClanName = title;
             s.GivenName = dname;
+            s.TeachBase /= 4; //demons don't like sharing secrets...
             s.Power = GeneratePower();
             Invested = s;
         }

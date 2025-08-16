@@ -14,6 +14,7 @@ namespace SorceryClans3.Data.Models
         public TeamResult? DisplayResult { get; set; }
         public Soldier? NewSoldier { get; set; }
         public List<Soldier> Deads { get; set; } = [];
+        public List<Soldier> AddedSoldiers { get; set; } = [];
         public bool OpenHealDialog { get; set; } = false;
         public bool OpenRescueDialog { get; set; } = false;
         //add more things
@@ -36,9 +37,25 @@ namespace SorceryClans3.Data.Models
                     if (result != "")
                         result += "<br />";
                     if (soldier.Type == SoldierType.LesserDemon && soldier.HPCurrent > 0)
-                        result += soldier.SoldierName + " has returned to the inferno from whence they came.";
+                        result += "The " + soldier.SoldierName + " has returned to the inferno from whence they came.";
+                    else if (soldier.Type == SoldierType.LesserUndead && soldier.HPCurrent > 0)
+                        result += "The " + soldier.SoldierName + " has returned to the wheel of reincarnation.";
                     else
                         result += soldier.SoldierName + " has died from their battle wounds!";
+                }
+                return (MarkupString)result;
+            }
+        }
+        public MarkupString DisplayAdds
+        {
+            get
+            {
+                string result = "";
+                foreach (Soldier soldier in AddedSoldiers)
+                {
+                    if (result != "")
+                        result += "<br />";
+                    
                 }
                 return (MarkupString)result;
             }
