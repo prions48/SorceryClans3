@@ -37,12 +37,11 @@ namespace SorceryClans3.Data.Models
             if (Teams.Remove(team))
                 team.MissionID = null;
         }
-        public void StartCastSpell(Team team, Spell spell, Soldier? caster = null, Soldier? target = null, int? quantity = null, Mission? selectedmission = null)
+        public void StartCastSpell(Team team, Spell spell, Soldier? caster = null, Soldier? target = null, int? quantity = null)
         {
             if (Teams.Contains(team))
             {
                 SpellCastMission mission = new(spell, team, caster, target, quantity);
-                mission.TargetMission = selectedmission;
                 SpellCastMissions.Add(mission);
                 team.MissionID = mission.ID;
             }

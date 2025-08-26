@@ -204,6 +204,12 @@ namespace SorceryClans3.Data.Models
                 diff = (cdiff > 0 ? 0 : cdiff) + (mdiff > 0 ? 0 : mdiff) +
                        (sdiff > 0 ? 0 : sdiff) + (kdiff > 0 ? 0 : kdiff);
             Completed = true;
+            foreach (SpiritWeather weather in StatMods)
+            {
+                weather.AssignedSoldier!.Artifact = null; //damage happens *after* this part right?
+                weather.AssignedSoldier = null;
+                weather.Lost = true; //deleting artifact has to happen elsewhere, same as with icons
+            }
             StatMods.Clear();//for contract missions
             return (success, diff);
         }

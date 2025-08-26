@@ -32,6 +32,10 @@
                         <th>Research</th>
                     }
                     <th>Color</th>
+                    @if (Mission != null)
+                    {
+                        <th>Boosts</th>
+                    }
                     <th>Select</th>
                 </tr>
             </thead>
@@ -42,7 +46,7 @@
                         <td>@team.TeamName</td>
                         @if (CScore || AllScores)
                         {
-                            <td>@team.CScore</td>
+                            <td>@(team.CScore + (Mission == null ? 0 : ActiveWeathers.Where(e => e.AssignedSoldier?.Team?.ID == team.ID).Sum(e => e.ComEffect(Mission.Location ?? MapLocation.HomeBase, true))))</td>
                         }
                         @if (MScore || AllScores || ResearchScores)
                         {
@@ -50,7 +54,7 @@
                         }
                         @if (SScore || AllScores)
                         {
-                            <td>@team.SScore</td>
+                            <td>@(team.SScore + (Mission == null ? 0 : ActiveWeathers.Where(e => e.AssignedSoldier?.Team?.ID == team.ID).Sum(e => e.SubEffect(Mission.Location ?? MapLocation.HomeBase))))</td>
                         }
                         @if (KScore || AllScores)
                         {
@@ -68,6 +72,21 @@
                         <td>
                             <MagicIcons Colors="@(team.GetColors)" />
                         </td>
+                        @if (Mission != null)
+                        {
+                            <td>
+                                <MudStack>
+                                    @foreach (Soldier s in team.GetAllSoldiers)
+                                    {
+                                        @if (s.Artifact is SpiritWeather weather)
+                                        {
+                                            <MudButton Variant="Variant.Outlined" Color="@(ActiveWeathers.Contains(weather) ? Color.Warning : Color.Info)"
+                                             Disabled="!weather.InRange(Mission.Location ?? MapLocation.HomeBase)" OnClick="() => ToggleWeather(weather)">@weather.WeatherName</MudButton>
+                                        }
+                                    }
+                                </MudStack>
+                            </td>
+                        }
                         <td>
                             <MudIconButton OnClick="() => Submit(team)" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Info" />
                         </td>
@@ -88,9 +107,24 @@
     [Parameter] public bool Teach { get; set; } = false;
     [Parameter] public bool KScore { get; set; } = false;
     [Parameter] public bool ResearchScores { get; set; } = false;
+    [Parameter] public Mission? Mission { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    private List<SpiritWeather> ActiveWeathers { get; set; } = [];
+    private void ToggleWeather(SpiritWeather weather)
+    {
+        if (ActiveWeathers.Contains(weather))
+        {
+            ActiveWeathers.Remove(weather);
+        }
+        else
+        {
+            ActiveWeathers.Add(weather);
+        }
+    }
     void Submit(Team team)
     {
+        if (Mission != null)
+            Mission.StatMods.AddRange(ActiveWeathers.Where(e => e.AssignedSoldier?.Team?.ID == team.ID).ToList());
         MudDialog.Close(DialogResult.Ok(team));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

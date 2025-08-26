@@ -368,6 +368,28 @@ namespace SorceryClans3.Data.Models
                     displays.Add(new($"Team {team.TeamName} must render medical assistance to itself.", Settings.CurrentTime) { OpenHealDialog = true, DisplayTeam = team, DisplayTeam2 = team });
                 }
             }
+            //resolve lost/consumed artifacts
+            int a = 0;
+            while (a < Resources.Artifacts.Count)
+            {
+                Artifact art = Resources.Artifacts[a];
+                if (art.Lost)
+                {
+                    if (art is SpiritWeather weather || art.IconID != null)
+                    {
+                        Resources.Artifacts.RemoveAt(a);
+                        continue;
+                    }
+                    else
+                    {
+                        //generate lost artifact mission here right?
+                        //displays.Add(new lost artifact mission)
+                        a++;
+                    }
+                }
+                else
+                    a++;
+            }
             return displays;
         }
         private List<GameEvent> GenerateRandomEvents()

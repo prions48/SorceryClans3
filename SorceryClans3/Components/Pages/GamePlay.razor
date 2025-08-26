@@ -406,8 +406,7 @@
                             <MudTd>@context.MoneyToCast.ToString("C")</MudTd>
                             <MudTd>@context.ConsumableCountDisplay</MudTd>
                             <MudTd>
-                                <MudIconButton Icon="@Icons.Material.TwoTone.MenuBook" Color="Color.Info" OnClick="() => StartCastSpell(context)" 
-                                Disabled="!context.Castable || (context.SpiritWeather != null && !Engine.InProgressMissions.Any(e => context.SpiritWeather.InRange(e.MissionToComplete!.Location!)))" />
+                                <MudIconButton Icon="@Icons.Material.TwoTone.MenuBook" Color="Color.Info" OnClick="() => StartCastSpell(context)" Disabled="!context.Castable" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -1383,7 +1382,8 @@
                         proceed = target != null;
                     }
                     //now for specialty targeting
-                    Mission? selectedmission = null;
+                    //UPDATE: changing to artifact deployment.  Will hang onto this in case it's useful for rescuing or something
+                    /*Mission? selectedmission = null;
                     if (proceed && spell.SpiritWeather != null)
                     {
                         List<GameEvent> events = Engine.InProgressMissions;
@@ -1408,13 +1408,13 @@
                         result = await dialog.Result;
                         if (result?.Canceled == false)
                         {
-                            selectedmission = result.Data as Mission;
+                            selectedmission = (result.Data as GameEvent)?.MissionToComplete;
                         }
                         proceed = selectedmission != null;
-                    }
+                    }*/
                     if (proceed)
                     {
-                        facility.StartCastSpell(team, spell, caster, target, amount, selectedmission);
+                        facility.StartCastSpell(team, spell, caster, target, amount);
                     }
                 }
             }

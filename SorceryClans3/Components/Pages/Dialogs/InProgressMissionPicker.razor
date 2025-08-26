@@ -14,7 +14,7 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd>@context.MissionToComplete!.Client.CityName</MudTd>
-                <MudTd>@context.TeamInTransit!.TeamName</MudTd>
+                <MudTd>@context.MissionToComplete!.AttemptingTeam!.TeamName</MudTd>
                 <MudTd>
                     <MudStack>
                         <MudStack Row>
@@ -31,11 +31,11 @@
                     <MudStack>
                         <MudStack Row>
                             <p>Com:</p>
-                            <p>@context.TeamInTransit!.CScore</p>
+                            <p>@context.MissionToComplete!.AttemptingTeam!.CScore</p>
                         </MudStack>
                         <MudStack Row>
                             <p>Sub:</p>
-                            <p>@context.TeamInTransit!.SScore</p>
+                            <p>@context.MissionToComplete!.AttemptingTeam!.SScore</p>
                         </MudStack>
                     </MudStack>
                 </MudTd>
@@ -55,6 +55,10 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public List<GameEvent> Events { get; set; } = [];
     [Parameter, EditorRequired] public GameSettings Settings { get; set; }
+    protected override void OnInitialized()
+    {
+
+    }
     void Submit(GameEvent gameEvent)
     {
         MudDialog.Close(DialogResult.Ok(gameEvent));

@@ -60,6 +60,7 @@
         parameters.Add("MScore", mission.MScore.HasValue);
         parameters.Add("SScore", mission.SScore.HasValue);
         parameters.Add("KScore", mission.KScore.HasValue);
+        parameters.Add("Mission", mission);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
         if (result?.Canceled == false)

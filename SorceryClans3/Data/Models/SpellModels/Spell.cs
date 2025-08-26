@@ -94,7 +94,7 @@ namespace SorceryClans3.Data.Models
 				if (SpiritWeather != null)
 					return true;
 				if (LesserUndead != null)
-						return true;
+					return true;
 				if (GreaterUndead != null)
 					return true;
 				if (LesserDemon != null)
@@ -120,7 +120,7 @@ namespace SorceryClans3.Data.Models
 		public bool ProcessesConsumables => Harvest != null;
 		public bool UsesConsumables => Harvest != null || LesserUndead != null || Beast != null || BeastPet != null;
 		public bool GeneratesSoldier => LesserDemon != null || Spirit != null;
-		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null || Artifact != null;//soon to add more!
+		public bool GeneratesArtifact => SpiritArtifact != null || AngelIcon != null || Artifact != null || SpiritWeather != null;//soon to add more!
 		
 		public int CastLimit(int money)
 		{
@@ -144,6 +144,8 @@ namespace SorceryClans3.Data.Models
 				Built = true;
 			if (SpiritArtifact != null)
 				return SpiritArtifact.Artifact;
+			if (SpiritWeather != null)
+				return SpiritWeather.GenerateArtifact();
 			if (AngelIcon != null)
 				return AngelIcon.GenerateIcon();
 			if (Artifact != null)

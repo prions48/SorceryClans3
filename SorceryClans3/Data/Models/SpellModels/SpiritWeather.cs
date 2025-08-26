@@ -2,9 +2,10 @@ using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
 {
-    public class SpiritWeather
+    public class SpiritWeather : Artifact
     {
         public Guid ID { get; set; }
+        public Guid TypeID { get; set; }
         public string WeatherName { get { return EffectAdj + " " + EffectName; } }
         public string EffectName { get; set; } = string.Empty;
         public string EffectAdj { get; set; } = string.Empty;
@@ -12,10 +13,25 @@ namespace SorceryClans3.Data.Models
         public double EffectiveMajorRange { get; set; }
         public double EffectiveMinorRange { get; set; }
         public double StealthOnly { get; set; }
-        private int Level { get; set; } //let's try 1-20...
         private int EffectScale { get; set; } = 1;//larger area
         private int EffectScope { get; set; } = 1;//larger power
         private Random r = new();
+        public SpiritWeather(SpiritWeather weather)
+        {
+            TypeID = weather.ID;
+            EffectName = weather.EffectName;
+            EffectAdj = weather.EffectAdj;
+            Location = weather.Location;
+            EffectiveMajorRange = weather.EffectiveMajorRange;
+            EffectiveMinorRange = weather.EffectiveMinorRange;
+            StealthOnly = weather.StealthOnly;
+            EffectScale = weather.EffectScale;
+            EffectScope = weather.EffectScope;
+            ArtifactName = weather.ArtifactName;
+            ComBoost = weather.ComBoost;
+            MagBoost = weather.MagBoost;
+            SubBoost = weather.SubBoost;
+        }
         public SpiritWeather(int lvl)
         {
             Level = lvl;
@@ -33,13 +49,17 @@ namespace SorceryClans3.Data.Models
             Location = new MapLocation(20, 5);
             EffectiveMajorRange = 5 * EffectScale + r.NextDouble() * 5;
             EffectiveMinorRange = 5 * EffectScale + r.NextDouble() * 5 + EffectiveMajorRange;
+            ComBoost = 1 + lvl / 8;
+            MagBoost = 1 + lvl / 8;
+            SubBoost = 1 + lvl / 8;
+            ArtifactName = "The Staff of the " + EffectName; //tmp
         }
         public int ComEffect(MapLocation? location, bool force = false)
         {
             bool inner = location == null || InMajorRange(location);
             if (r.NextDouble() < StealthOnly && !force)
                 return 0;
-            return EffectScale * 100000  / (inner ? 1 : 2); //tmp
+            return (int)(EffectScale * (force ? StealthOnly : 1) * 100000 / (inner ? 1 : 2)); //tmp
         }
         public int SubEffect(MapLocation? location)
         {
@@ -67,6 +87,10 @@ namespace SorceryClans3.Data.Models
                     return "Confusion and Distraction";
                 return "Stealth Only";
             }
+        }
+        public Artifact GenerateArtifact()
+        {
+            return new SpiritWeather(this);
         }
     }
 }
