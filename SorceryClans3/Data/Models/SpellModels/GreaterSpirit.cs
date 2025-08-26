@@ -11,13 +11,14 @@ namespace SorceryClans3.Data.Models
             ID = Guid.NewGuid();
             int seed = rank / 2;
             string ntype, etype; //control, nature, element
-            int cb,mb,sb,kb;
+            int cb, mb, sb, kb;
             int tough, newhp;
             int topart, topsol;
-            int prim=0,sec=0,tert=0;
-            do {
-                cb=0; mb=0; sb=0; kb=0; tough=0; newhp=0;prim=0;sec=0;tert=0;
-                for (int i = 0; i <= (int)(rank*1.4+10); i++)
+            int prim = 0, sec = 0, tert = 0;
+            do
+            {
+                cb = 0; mb = 0; sb = 0; kb = 0; tough = 0; newhp = 0; prim = 0; sec = 0; tert = 0;
+                for (int i = 0; i <= (int)(rank * 1.4 + 10); i++)
                 {
                     if (r.NextDouble() < .5)
                         prim++;
@@ -28,7 +29,7 @@ namespace SorceryClans3.Data.Models
                 }
                 if (r.NextDouble() < .15) //heal
                 {
-                    switch (r.Next(3)+rank/7)
+                    switch (r.Next(3) + rank / 7)
                     {
                         case 0: ntype = "Cat"; kb += prim; sb += sec; mb += tert; break;
                         case 1: ntype = "Lynx"; kb += prim; cb += sec; mb += tert; break;
@@ -47,7 +48,7 @@ namespace SorceryClans3.Data.Models
                 }
                 else
                 {
-                    switch (r.Next(10)+rank/5) //rank should only be like up to 20
+                    switch (r.Next(10) + rank / 5) //rank should only be like up to 20
                     {
                         case 0: case 1: ntype = "Condor"; sb += prim; cb += sec; mb += tert; break;
                         case 2: ntype = "Harpy"; sb += prim; cb += sec; mb += tert; break;
@@ -82,9 +83,9 @@ namespace SorceryClans3.Data.Models
                         default: etype = "Dust"; sb += seed; break;
                     }
                 }
-                
+
                 Artifact = new Artifact(rank);
-                newhp = 4+r.Next(3)+rank/5*(tough+1)+tough*3;
+                newhp = 4 + r.Next(3) + rank / 5 * (tough + 1) + tough * 3;
                 //return true on pwr to signal greater spirit
                 if (kb > 0)
                     topsol = 0;
@@ -123,6 +124,7 @@ namespace SorceryClans3.Data.Models
                     Trained = kb > 0
                 }
             };
+            Artifact.SpiritSoldier = Spirit;
         }
     }
 }

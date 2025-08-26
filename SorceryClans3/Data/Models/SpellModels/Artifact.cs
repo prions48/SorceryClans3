@@ -33,6 +33,7 @@ namespace SorceryClans3.Data.Models
         public DemonicCurse? Curse { get; set; }
         public string ArtifactName { get; set; }
         public Soldier? AssignedSoldier { get; set; } = null;
+        public Soldier? SpiritSoldier { get; set; } = null;
         public bool Lost { get; set; } = false;
         public int ComBoost { get; set; }
         public int MagBoost { get; set; }
@@ -74,8 +75,9 @@ namespace SorceryClans3.Data.Models
         {
             Level = 1;
             ID = Guid.NewGuid();
-            SetStats();
-            ArtifactName = SetArtifactName();
+            //SetStats();
+            //ArtifactName = SetArtifactName();
+            ArtifactName = "";
         }
         public Artifact(int lvl)
         {
@@ -279,7 +281,11 @@ namespace SorceryClans3.Data.Models
         {
             if (Curse != null)
                 return MudBlazor.Color.Error;
-            if (AssignedSoldier?.Type == SoldierType.GreaterSpirit)
+            if (SpiritSoldier != null)
+                return MudBlazor.Color.Info;
+            if (this is NecroArtifact)
+                return MudBlazor.Color.Dark;
+            if (this is SpiritWeather)
                 return MudBlazor.Color.Info;
             if (IconID != null)
                 return MudBlazor.Color.Warning;

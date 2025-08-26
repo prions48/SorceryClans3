@@ -52,7 +52,19 @@ namespace SorceryClans3.Data.Models
             ComBoost = 1 + lvl / 8;
             MagBoost = 1 + lvl / 8;
             SubBoost = 1 + lvl / 8;
+            ChaBoost = 0;
+            LogBoost = 0;
+            TacBoost = 0;
+            TravelBoost = 0;
+            GroupTravelBoost = 0;
+            HPBoost = 0;
+            HealBoost = 0;
+            TeachBoost = 0;
+            CounterBoost = 0;
+            LeadBoost = 0;
+            ResearchBoost = 0;
             ArtifactName = "The Staff of the " + EffectName; //tmp
+            ArtifactIcon = ArtIcon.Wand;
         }
         public int ComEffect(MapLocation? location, bool force = false)
         {

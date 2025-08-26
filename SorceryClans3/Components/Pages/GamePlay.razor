@@ -978,12 +978,7 @@
                     Soldier? soldier = result.Data as Soldier;
                     if (soldier != null)
                     {
-                        if (artifact.AssignedSoldier != null)//remove art from previous soldier
-                            artifact.AssignedSoldier.Artifact = null; 
-                        if (soldier.Artifact != null) //current soldier remove art
-                            soldier.Artifact.AssignedSoldier = null;
-                        soldier.Artifact = artifact;//new assign pt1
-                        artifact.AssignedSoldier = soldier;//new assign pt2
+                        soldier.EquipArtifact(artifact); //removes previous wielder and previous wieldee, also handles adding spirit soldier
                     }
                 }
             }

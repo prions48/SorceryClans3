@@ -646,6 +646,31 @@ namespace SorceryClans3.Data.Models
             SubSoldiers.Add(soldier);
             soldier.SubTo = this;
         }
+        public void EquipArtifact(Artifact artifact)
+        {
+            RemoveArtifact();
+            if (artifact.AssignedSoldier != null)
+                artifact.AssignedSoldier.RemoveArtifact();
+            Artifact = artifact;
+            artifact.AssignedSoldier = this;
+            if (Artifact.SpiritSoldier != null)
+            {
+                AddSubSoldier(Artifact.SpiritSoldier);
+            }
+        }
+        public void RemoveArtifact()
+        {
+            if (Artifact != null)
+            {
+                if (Artifact.SpiritSoldier != null)
+                {
+                    SubSoldiers.Remove(Artifact.SpiritSoldier);
+                    Artifact.SpiritSoldier.SubTo = null;
+                }
+                Artifact.AssignedSoldier = null;
+                Artifact = null;
+            }
+        }
         public void CreateHealer()
         {
             if (PowerLevel < 500 || Medical == null)

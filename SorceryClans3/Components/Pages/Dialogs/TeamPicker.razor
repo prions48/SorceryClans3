@@ -124,7 +124,7 @@
     void Submit(Team team)
     {
         if (Mission != null)
-            Mission.StatMods.AddRange(ActiveWeathers.Where(e => e.AssignedSoldier?.Team?.ID == team.ID).ToList());
+            Mission.StatMods.AddRange(ActiveWeathers.Where(e => e.AssignedSoldier?.Team?.ID == team.ID));
         MudDialog.Close(DialogResult.Ok(team));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());

@@ -226,8 +226,7 @@
     }
     private void Unselect(Soldier sold)
     {
-        sold.Artifact = null;
-        Artifact.AssignedSoldier = null;
+        sold.RemoveArtifact();
         MudDialog.Close(DialogResult.Cancel);
     }
 }
