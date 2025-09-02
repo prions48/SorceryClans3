@@ -61,8 +61,8 @@
 
 @code {
     [Parameter] public List<Soldier> Soldiers { get; set; } = [];
-    [Parameter, EditorRequired] public Action<Soldier> ToggleLeader { get; set; }
-    [Parameter, EditorRequired] public Action<Soldier> RemoveSoldier { get; set; }
+    [Parameter, EditorRequired] public Action<Soldier> ToggleLeader { get; set; } = default!;
+    [Parameter, EditorRequired] public Action<Soldier> RemoveSoldier { get; set; } = default!;
     [Parameter] public bool ActionsAvailable { get; set; } = false;
     private bool ViewPow = false;
     private Power? SelectedPower { get; set; }

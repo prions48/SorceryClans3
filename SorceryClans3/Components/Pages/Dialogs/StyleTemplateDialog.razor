@@ -1,0 +1,17 @@
+<MudDialog>
+    <DialogContent>
+        <StyleTemplateInspector Style="Style" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public StyleTemplate Style { get; set; }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

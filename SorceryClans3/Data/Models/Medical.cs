@@ -4,7 +4,9 @@ namespace SorceryClans3.Data.Models
     {
         public int MedicalPowerBase { get; set; } = 0;
         public int MedicalPower { get { return (int)(MedicalPowerBase * FatigueFactor); } }
-        public int MedicFatigue { get; set; }
+        private int _medicFatigue = 0;
+        public int MedicFatigue { get { return _medicFatigue; } set { _medicFatigue = Math.Max(value, 0); } }
+        public DateTime LastActivity { get; set; } = DateTime.MinValue;
         private double FatigueFactor
         {
             get
@@ -119,6 +121,14 @@ namespace SorceryClans3.Data.Models
                 }
             }
             return z;
+        }
+        public void Rest(GameSettings settings)
+        {
+            if (LastActivity.Add(settings.RestGap) < settings.CurrentTime)
+            {
+                MedicFatigue--;//floor is 0
+                LastActivity = settings.CurrentTime;
+            }
         }
         public bool CanTrain => MedicalPowerBase < HealBase * 10 && MedicalPowerBase < 100;
     }

@@ -1,0 +1,73 @@
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Striped Bordered>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Rank</th>
+                    @if (Style.CBonus > 0)
+                    {
+                        <th>Com</th>
+                    }
+                    @if (Style.MBonus > 0)
+                    {
+                        <th>Mag</th>
+                    }
+                    @if (Style.SBonus > 0)
+                    {
+                        <th>Sub</th>
+                    }
+                    @if (Style.KBonus > 0)
+                    {
+                        <th>Heal</th>
+                    }
+                    <th>Teach</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Style.StyleName</td>
+                    <td>@Style.CurrentRank.Name</td>
+                    @if (Style.CBonus > 0)
+                    {
+                        <td>@Style.CBonus</td>
+                    }
+                    @if (Style.MBonus > 0)
+                    {
+                        <td>@Style.MBonus</td>
+                    }
+                    @if (Style.SBonus > 0)
+                    {
+                        <td>@Style.SBonus</td>
+                    }
+                    @if (Style.KBonus > 0)
+                    {
+                        <td>@Style.KBonus</td>
+                    }
+                    <td>
+                        @if (Style.Teach == RankTeach.Teach)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Primary" />
+                        }
+                        else if (Style.Teach == RankTeach.AssistTeach)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.StarHalf" Color="Color.Secondary" />
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Style Style { get; set; } = null!;
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

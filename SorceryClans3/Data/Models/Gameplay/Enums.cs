@@ -198,7 +198,7 @@ namespace SorceryClans3.Data.Models
 				return colors.Any(e => e == MagicColor.Green);
 			if (type == SoldierType.LesserSpirit)
 				return colors.Any(e => e == MagicColor.Blue);
-			return false;	
+			return true;
 		}
 	}
 	public enum SkillStat

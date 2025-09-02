@@ -1,4 +1,5 @@
 @namespace SorceryClans3.Components.Pages.Dialogs
+@inject IDialogService dialogService
 
 <MudSimpleTable Striped Bordered Outlined>
     <thead>
@@ -79,18 +80,18 @@
     </tbody>
 </MudSimpleTable>
 
-<MudDialog @bind-IsVisible="ViewPower">
-    <TitleContent>@Style.Power?.PowerName</TitleContent>
-    <DialogContent>
-        <PowerInspector Power="Style.Power" />
-    </DialogContent>
-</MudDialog>
-
 @code {
     [Parameter, EditorRequired] public StyleTemplate Style { get; set; }
-    private bool ViewPower = false;
-    private void OpenPower()
+    private async Task OpenPower()
     {
-        ViewPower = true;
+        if (Style.Power == null)
+            return;
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(PowerInspectorDialog.Power), Style.Power);
+        var dialog = dialogService.Show<PowerInspectorDialog>(Style.Power.PowerName, parameters, options);
+        var result = await dialog.Result;
     }
 }

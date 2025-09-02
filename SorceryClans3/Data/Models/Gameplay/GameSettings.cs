@@ -8,15 +8,8 @@ namespace SorceryClans3.Data.Models
         public DateTime GameTime { get; set; }
         public Random r { get; set; } = new();
         public DateTime NextHeal { get; set; }
-        public DateTime CurrentTime
-        {
-            get
-            {
-                if (RealTime)
-                    return DateTime.Now;
-                return GameTime;
-            }
-        }
+        public TimeSpan RestGap => RealTime ? new TimeSpan(6, 0, 0) : new TimeSpan(2, 0, 0, 0);
+        public DateTime CurrentTime => RealTime ? DateTime.Now : GameTime;
         public string CurrentTimeFormatted => CurrentTime.ToString(DTFormat);
         public TimeSpan ElapsedGameTime
         {

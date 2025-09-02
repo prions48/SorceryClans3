@@ -39,6 +39,7 @@
 @code {
     [Parameter, EditorRequired] public Team MedicTeam { get; set; }
     [Parameter, EditorRequired] public Team PatientTeam { get; set; }
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; }
     [Parameter] public EventCallback CompleteMission { get; set; }
     private IList<MedicPatients> Medics { get; set; } = new List<MedicPatients>();
     private IList<Patient> Patients { get; set; } = new List<Patient>();
@@ -104,6 +105,7 @@
                 if (numpatients > 0)
                 {
                     soldier.Medical!.MedicFatigue += numpatients;
+                    soldier.Medical!.LastActivity = Settings.CurrentTime;
                     medic.Fatigue = soldier.Medical!.MedicFatigue;
                     soldier.Medical!.GainMedicPower();
                 }

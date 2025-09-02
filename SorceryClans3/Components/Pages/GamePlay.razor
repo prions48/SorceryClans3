@@ -95,6 +95,10 @@
                     {
                         <MudIconButton Icon="@context.Power.Color.Icon()" Color="@context.Power.Color.Color()" OnClick="() => ViewPower(context.Power)" />
                     }
+                    @if (context.Style != null)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.FrontHand" Color="Color.Secondary" OnClick="() => ViewStyleTemplate(context.Style)" />
+                    }
                 </MudTd>
                 <MudTd>@Soldiers.Count(e => e.ClanID == context.ID)</MudTd>
             </RowTemplate>
@@ -114,6 +118,7 @@
                     <MudTh>Leader</MudTh>
                     <MudTh>Power</MudTh>
                     <MudTh>Artifact</MudTh>
+                    <MudTh>Styles</MudTh>
                     <MudTh>Team</MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -133,6 +138,12 @@
                         }
                     </MudTd>
                     <MudTd>@context.Artifact?.ArtifactName</MudTd>
+                    <MudTd>
+                        @foreach (Style style in context.Styles)
+                        {
+                            <MudIconButton Icon="@Icons.Material.TwoTone.FrontHand" Color="Color.Secondary" OnClick="() => ViewStyle(style)" />
+                        }
+                    </MudTd>
                     <MudTd>@context.Team?.TeamName</MudTd>
                 </RowTemplate>
             </MudTable>
@@ -465,6 +476,12 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>Style Training</td>
+                            <td>
+                                <MudButton OnClick="StartStyleTraining" Variant="Variant.Filled" Color="Color.Info">Select Team</MudButton>
+                            </td>
+                        </tr>
+                        <tr>
                             <td>Alchemy Training</td>
                             <td>Button</td>
                         </tr>
@@ -522,6 +539,7 @@
                             @if (display.OpenHealDialog)
                             {
                                 <MudIconButton Icon="@Icons.Material.TwoTone.MedicalServices" Color="Color.Error" OnClick="() => OpenHealDialog(display)" />
+                                <MudIconButton Icon="@Icons.Material.TwoTone.CreditCardOff" Color="Color.Warning" OnClick="() => CancelHealDialog(display)" />
                             }
                             @if (display.DisplayTeam != null)
                             {
@@ -610,7 +628,7 @@
         int x = 3;
         for (int i = 0; i < 4; i++)
         {
-            Clan clan = new Clan(x);
+            Clan clan = new Clan(x, i < 2);
             Engine.Clans.Add(clan);
             for (int j = 0; j < r.Next(3)+4; j++)
             {
@@ -682,7 +700,7 @@
         var parameters = new DialogParameters();
         parameters.Add(nameof(TeamInspector.Team), team);
         if (addsoldiers)
-            parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null && (e.IsIndependent || (e.Type.TeamMatch(team.GetColors)))).ToList());
+            parameters.Add(nameof(TeamInspector.AvailableSoldiers), Engine.Soldiers.Where(e => e.Team == null).ToList());
         var dialog = dialogService.Show<TeamInspector>("View Team " + team.TeamName, parameters, options);
         var result = await dialog.Result;
     }
@@ -1048,6 +1066,10 @@
     {
         Engine.UnassignDefense(structure);
     }
+    private void CancelHealDialog(GameEventDisplay display)
+    {
+        display.OpenHealDialog = false;
+    }
     private async Task OpenHealDialog(GameEventDisplay display)
     {
         if (!display.OpenHealDialog || display.DisplayTeam == null)
@@ -1104,6 +1126,7 @@
         var parameters = new DialogParameters();
         parameters.Add(nameof(HealDialog.PatientTeam), patient);
         parameters.Add(nameof(HealDialog.MedicTeam), medic);
+        parameters.Add(nameof(HealDialog.Settings), Engine.Settings);
         var dialog = dialogService.Show<HealDialog>("Healing for Team " + (patient.TeamName), parameters, options);
         var result = await dialog.Result;
         display.OpenHealDialog = false;
@@ -1253,6 +1276,60 @@
                         Engine.StartMedTrainMission(team, medic);
                 }
             } 
+        }
+    }
+    private async Task ViewStyle(Style style)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(StyleDialog.Style), style);
+        var dialog = dialogService.Show<StyleDialog>(style.StyleName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task StartStyleTraining()
+    {
+        var options2 = new DialogOptions();
+        options2.CloseOnEscapeKey = true;
+        options2.MaxWidth = MaxWidth.Large;
+        var parameters2 = new DialogParameters();
+        parameters2.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome && e.Leaders.Any(f => f.Styles.Any(g => g.Teach != RankTeach.NoTeach))).ToList());
+        var dialog2 = dialogService.Show<TeamPicker>("Select Team", parameters2, options2);
+        var result2 = await dialog2.Result;
+        Team? team = result2.Data as Team;
+        if (team == null)
+            return;
+        Soldier? trainer = null;
+        if (team.Leaders.Count == 1)
+            trainer = team.Leaders.FirstOrDefault();
+        if (trainer == null)
+        {
+            var options = new DialogOptions();
+            options.CloseOnEscapeKey = true;
+            options.MaxWidth = MaxWidth.Large;
+            var parameters = new DialogParameters();
+            parameters.Add(nameof(SoldierPicker.Soldiers), team.Leaders);
+            parameters.Add(nameof(SoldierPicker.ShowTeach), true);
+            var dialog = dialogService.Show<SoldierPicker>("Select trainer", parameters, options);
+            var result = await dialog.Result;
+            trainer = result.Data as Soldier;
+        }
+        StyleTemplate? style = null;
+        if (trainer != null && trainer.Styles.Count(e => e.Teach != RankTeach.NoTeach) > 1)
+        {
+            var options = new DialogOptions();
+            options.CloseOnEscapeKey = true;
+            options.MaxWidth = MaxWidth.Large;
+            var parameters = new DialogParameters();
+            parameters.Add(nameof(StyleTemplatePicker.Styles), Engine.AllStyles.Where(e => trainer.Styles.Where(f => f.Teach != RankTeach.NoTeach).Select(f => f.StyleID).Contains(e.ID)).ToList());
+            var dialog = dialogService.Show<StyleTemplatePicker>("Select Training Style", parameters, options);
+            var result = await dialog.Result;
+            style = result.Data as StyleTemplate;
+        }
+        if (trainer != null && style != null)
+        {
+            Engine.StartStyleTrainMission(team, trainer, style);
         }
     }
     #endregion
@@ -1484,6 +1561,16 @@
         parameters.Add(nameof(PowerInspectorDialog.Power), power);
         parameters.Add(nameof(PowerInspectorDialog.Powerlevel), null);
         var dialog = dialogService.Show<PowerInspectorDialog>(power.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewStyleTemplate(StyleTemplate template)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Medium;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(StyleTemplateDialog.Style), template);
+        var dialog = dialogService.Show<StyleTemplateDialog>(template.StyleName, parameters, options);
         var result = await dialog.Result;
     }
     private async Task StartHuntMission(Spell spell)

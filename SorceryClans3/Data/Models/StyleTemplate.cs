@@ -34,7 +34,7 @@ namespace SorceryClans3.Data.Models
                 ReqPower = StyleReqPower.AcceptsPower;
             else
                 ReqPower = StyleReqPower.NoAcceptsPower;
-            if (r.NextDouble()*lvl > 1.5)
+            if (r.NextDouble()*lvl > 1.5 && ReqPower == StyleReqPower.NoAcceptsPower)
                 GivePower = StyleGivePower.GivePower;
             else
                 GivePower = StyleGivePower.NoGivePower;
@@ -139,9 +139,9 @@ namespace SorceryClans3.Data.Models
                 }            
             }
         }
-        public Style CreateStyle()
+        public Style CreateStyle(Soldier sold)
         {
-            return new Style(this);
+            return new Style(this, sold);
         }
         private static SkillStat SelectStat(SkillStat stat1, SkillStat stat2, SkillStat stat3)
         {

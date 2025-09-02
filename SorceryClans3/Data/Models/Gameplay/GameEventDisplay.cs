@@ -40,6 +40,8 @@ namespace SorceryClans3.Data.Models
                         result += "The " + soldier.SoldierName + " has returned to the inferno from whence they came.";
                     else if (soldier.Type == SoldierType.LesserUndead && soldier.HPCurrent > 0)
                         result += "The " + soldier.SoldierName + " has returned to the wheel of reincarnation.";
+                    else if ((soldier.Type == SoldierType.Beast || soldier.Type == SoldierType.LesserSpirit) && soldier.HPCurrent > 0)
+                        result += "The " + soldier.SoldierName + " has escaped their team.";
                     else
                         result += soldier.SoldierName + " has died from their battle wounds!";
                 }

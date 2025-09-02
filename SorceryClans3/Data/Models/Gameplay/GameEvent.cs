@@ -19,6 +19,7 @@ namespace SorceryClans3.Data.Models
         public DefenseStructure? DefenseStructure { get; set; }
         public List<Soldier> Deads { get; set; } = [];
         public Spell? HuntSpell { get; set; }
+        public StyleTemplate? TrainStyle { get; set; }
         public bool? RoundTrip { get; set; }
         public bool Visible { get; set; }
         public bool FixedDate { get; set; }
@@ -59,7 +60,7 @@ namespace SorceryClans3.Data.Models
             City = city;
             RoundTrip = roundtrip;
         }
-        public GameEvent(Team team, MissionType type, DateTime duedate, Soldier soldier)
+        public GameEvent(Team team, MissionType type, DateTime duedate, Soldier soldier, StyleTemplate? style = null)
         {
             //training missions
             TeamInTransit = team;
@@ -69,6 +70,7 @@ namespace SorceryClans3.Data.Models
             FixedDate = false;
             Cancelable = true;
             EventCompleted = duedate;
+            TrainStyle = style;
         }
         public GameEvent(Team team, MissionType type, DateTime duedate, DefenseStructure structure)
         {
@@ -238,6 +240,14 @@ namespace SorceryClans3.Data.Models
             bool success = TeamInTransit!.MedicalTraining(FocusSoldier!);
             TeamInTransit.MissionID = null;
             return new($"Team {TeamInTransit.TeamName} has returned from medical training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
+        }
+        public GameEventDisplay ResolveStyleTraining()
+        {
+            if (FocusSoldier == null || TrainStyle == null)
+                throw new Exception("Style training not configured.");
+            bool success = TeamInTransit!.StyleTraining(FocusSoldier, TrainStyle);
+            TeamInTransit.MissionID = null;
+            return new($"Team {TeamInTransit.TeamName} has returned from style training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
         }
         public GameEventDisplay ResolveRescue()
         {

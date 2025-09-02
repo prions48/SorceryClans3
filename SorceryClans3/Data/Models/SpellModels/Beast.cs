@@ -7,10 +7,10 @@ namespace SorceryClans3.Data.Models
         public string BeastName { get; set; }
         public string FullName { get { return BeastAdj + " " + BeastName; } }
         public string ToolName { get; set; }
-        public bool AvailableForHarvest { get { return Ecoable && Harvest == null /*&& NumTamed > 1 r.Next(10) + 5*/; } }//tmp for testing
+        public bool AvailableForHarvest { get { return Ecoable && Harvest == null && NumTamed > r.Next(_seed) + 5; } }//tmp for testing
         private bool Ecoable { get; set; }
         public Guid? Harvest { get; set; } = null;
-        public int NumTamed { get; set; } = 1;
+        public int NumTamed { get; set; } = 0;
         private BeastEco Eco { get; set; }
         public PowerTemplate? TamePower { get; set; } = null;
         public StatBlock MinReqs { get; set; }
@@ -22,6 +22,7 @@ namespace SorceryClans3.Data.Models
         public int? dseed;
         public int ride = 0;
         public int kseed; //healing beasts?? exciting...
+        private int _seed;
         Random r = new Random();
         private HunterMission? TameMission { get; set; }
         private bool coinFlip()
@@ -30,6 +31,7 @@ namespace SorceryClans3.Data.Models
         }
         public Beast(int seed)
         {
+            _seed = seed;
             int brute = 0, mystic = 0, mag = 0, stealth = 0, tough = 0, fight = 0, legend = 0, eco = 0, heal = 0;
             int? travel = null;
             bool hoofed = false;
@@ -301,7 +303,7 @@ namespace SorceryClans3.Data.Models
         }
         public BeastHarvest? CreateHarvest(int seed)
         {
-            if (!Ecoable)
+            if (!Ecoable || Harvest != null)
                 return null;
             BeastHarvest harvest = new BeastHarvest(seed, Eco, this);
             this.Harvest = harvest.ID;
@@ -355,6 +357,8 @@ namespace SorceryClans3.Data.Models
                 MountCountBase = ride,
                 TypeID = this.ID
             };
+            if (soldname != null) //taming event
+                NumTamed++;
             ret.HPCurrent = ret.HPMax;
             ret.CalcLimit();
             return ret;

@@ -89,7 +89,8 @@
         var result = await dialog.Result;
         if (result?.Canceled == false)
         {
-            Team.RemoveSoldier(s);
+            List<Soldier> removed = Team.RemoveSoldier(s);
+            AvailableSoldiers.AddRange(removed);
             StateHasChanged();
         }
     }
@@ -99,7 +100,7 @@
         options.CloseOnEscapeKey = true;
         options.MaxWidth = MaxWidth.Large;
         var parameters = new DialogParameters();
-        parameters.Add(nameof(SoldierPicker.Soldiers), AvailableSoldiers);
+        parameters.Add(nameof(SoldierPicker.Soldiers), AvailableSoldiers.Where(e => (e.IsIndependent || (e.Type.TeamMatch(Team.GetColors)))).ToList());
         parameters.Add(nameof(SoldierPicker.ShowStats), true);
         parameters.Add(nameof(SoldierPicker.ShowMedic), true);
         var dialog = dialogService.Show<SoldierPicker>("Add Soldier", parameters, options);

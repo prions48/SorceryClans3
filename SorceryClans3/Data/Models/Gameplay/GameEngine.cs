@@ -9,6 +9,18 @@ namespace SorceryClans3.Data.Models
         public List<GameEvent> VisibleEvents { get { return Events.Where(e => e.Visible).ToList(); } }
         public List<Mission> Missions { get; set; } = [];
         public List<Clan> Clans { get; set; } = [];
+        public List<StyleTemplate> ExtraStyles { get; set; } = [];
+        public List<StyleTemplate> AllStyles
+        {
+            get
+            {
+                List<StyleTemplate> ret = ExtraStyles.ToList();
+                foreach (Clan clan in Clans)
+                    if (clan.Style != null)
+                        ret.Add(clan.Style);
+                return ret;
+            }
+        }
         public List<Soldier> AllSoldiers { get; set; } = [];
         public List<Soldier> Soldiers { get { return AllSoldiers.Where(e => e.IsActive).ToList(); } }
         public List<GameEvent> InProgressMissions
@@ -113,6 +125,11 @@ namespace SorceryClans3.Data.Models
             team.MissionID = medic.ID;
             Events.Add(new(team, MissionType.MedicalTraining, Settings.TrainingDate(), medic));
         }
+        public void StartStyleTrainMission(Team team, Soldier teacher, StyleTemplate template)
+        {
+            team.MissionID = teacher.ID;
+            Events.Add(new(team, MissionType.StyleTraining, Settings.TrainingDate(), teacher, template));
+        }
         public List<DefenseType> InProgressBuildings(DefenseType? type = null)
         {
             return Events.Where(e => e.DefenseType != null && (type == null || e.DefenseType == type)).Select(e => e.DefenseType!.Value).ToList();
@@ -159,6 +176,7 @@ namespace SorceryClans3.Data.Models
                 List<Soldier> deads = [];
                 foreach (Soldier soldier in Soldiers)
                 {
+                    soldier.Medical?.Rest(Settings);
                     if (soldier.RemainingActive.HasValue)
                     {
                         soldier.RemainingActive--;
@@ -176,9 +194,8 @@ namespace SorceryClans3.Data.Models
                                 soldier.SubTo = null;
                             }
                             if (soldier.Team != null)
-                            {
-                                deads.Add(soldier);
-                                soldier.Team.RemoveSoldier(soldier);
+                            { 
+                                deads.AddRange(soldier.Team.RemoveSoldier(soldier));
                             }
                         }
                     }
@@ -211,7 +228,6 @@ namespace SorceryClans3.Data.Models
                             }
                         }
                 }
-                Settings.SetNextHeal();
                 if (deads.Count > 0)
                     events.Add(new(deads, Settings.CurrentTime));
             }
@@ -331,6 +347,9 @@ namespace SorceryClans3.Data.Models
                     case MissionType.MedicalTraining:
                         displays.Add(ev.ResolveMedicalTraining());
                         break;
+                    case MissionType.StyleTraining:
+                        displays.Add(ev.ResolveStyleTraining());
+                        break;
                     case MissionType.MedicalRescue:
                         displays.Add(ev.ResolveRescue());
                         Events.Add(new GameEvent(ev.TeamInTransit!, Settings.TravelCompletion(ev.Destination!, ev.TeamInTransit!.Location ?? MapLocation.HomeBase, ev.TeamInTransit.DScore), MissionType.TravelToLocation, ev.TeamInTransit!.Location ?? MapLocation.HomeBase));
@@ -361,12 +380,16 @@ namespace SorceryClans3.Data.Models
                 displays.AddRange(msgs.Select(e => new GameEventDisplay(e, Settings.CurrentTime)));
             }
             //healing soldiers who are on their own team
-            foreach (Team team in Teams)
+            if (Settings.HealTime)
             {
-                if (!displays.Any(e => e.DisplayTeam?.ID == team.ID) && team.GetAllSoldiers.Any(e => e.IsInjured) && team.GetAllSoldiers.Any(e => e.HealScore > 0))
+                foreach (Team team in Teams)
                 {
-                    displays.Add(new($"Team {team.TeamName} must render medical assistance to itself.", Settings.CurrentTime) { OpenHealDialog = true, DisplayTeam = team, DisplayTeam2 = team });
+                    if (!displays.Any(e => e.DisplayTeam?.ID == team.ID) && team.GetAllSoldiers.Any(e => e.IsInjured) && team.GetAllSoldiers.Any(e => e.HealScore > 0))
+                    {
+                        displays.Add(new($"Team {team.TeamName} must render medical assistance to itself.", Settings.CurrentTime) { OpenHealDialog = true, DisplayTeam = team, DisplayTeam2 = team });
+                    }
                 }
+                Settings.SetNextHeal();
             }
             //resolve lost/consumed artifacts
             int a = 0;

@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using MudBlazor.Extensions;
 
 namespace SorceryClans3.Data.Models
@@ -28,19 +30,35 @@ namespace SorceryClans3.Data.Models
             Soldiers.Add(s);
             s.Team = this;
         }
-        public void RemoveSoldier(Soldier s)
+        public List<Soldier> RemoveSoldier(Soldier s)
         {
+            List<Soldier> toremove2 = [];
             if (Leaders.Contains(s))
             {
                 Leaders.Remove(s);
                 s.Team = null;
-                return;
+                toremove2.Add(s);
             }
             if (Soldiers.Contains(s))
             {
                 Soldiers.Remove(s);
                 s.Team = null;
+                toremove2.Add(s);
             }
+            //scan to check if soldier leaving means pets/demons are now uncontrolled
+            var colors = GetColors;
+            List<Soldier> toremove = [];
+            foreach (Soldier sold in Soldiers)
+            {
+                if (!sold.IsIndependent && !sold.Type.TeamMatch(colors))
+                    toremove.Add(sold);
+            }
+            foreach (Soldier sold in toremove)
+            {
+                RemoveSoldier(sold);
+                sold.Retired = !IsAtHome; //run awaaaay
+            }
+            return toremove2.Concat(toremove).ToList();
         }
         public bool EligibleToHunt(Beast? beast = null)
         {
@@ -494,6 +512,48 @@ namespace SorceryClans3.Data.Models
             }
             return true;
         }
+        public bool StyleTraining(Soldier trainer, StyleTemplate template)
+        {
+            if (!Leaders.Contains(trainer) || !trainer.Styles.Any(e => e.StyleID == template.ID))
+                return false;
+            bool result = false;
+            int support = GetAllSoldiers.SelectMany(e => e.Styles).Where(e => e.StyleID == template.ID).Sum(e => e.Teach == RankTeach.Teach ? 2 : e.Teach == RankTeach.AssistTeach ? 1 : 0);
+            if (support == 0)
+                return false;
+            Random r = new();
+            foreach (Style style in trainer.Styles)
+            {
+                if (style.StyleID != template.ID)
+                    continue;
+                if (style.Teach == RankTeach.NoTeach)
+                    return false;
+                foreach (Soldier soldier in GetAllSoldiers)
+                {
+                    if (soldier.ID == trainer.ID)
+                        continue;
+                    if (soldier.Type != SoldierType.Standard)
+                        continue;
+                    if (soldier.Styles.Any(e => e.StyleID == template.ID))
+                    {
+                        Style? style2 = soldier.Styles.FirstOrDefault(e => e.StyleID == template.ID);
+                        if (style2 != null && style.StyleXP * soldier.TeachSkill > style2.StyleXP)
+                        {
+                            style2.Level(true);
+                        }
+                    }
+                    else if (style.Teach == RankTeach.Teach)
+                    {
+                        if (template.SoldierEligible(soldier) && r.NextDouble() < soldier.StyleAptitude / support)
+                        {
+                            soldier.AddStyle(template);
+                            result = true;
+                        }
+                    }
+                }
+
+            }
+            return result;
+        }
         public void PromoteToLeader(Soldier soldier)
         {
             if (Soldiers.Contains(soldier))
@@ -513,6 +573,7 @@ namespace SorceryClans3.Data.Models
         public void Cleanup()
         {
             int i = 0;
+            List<Soldier> toremove = [];
             while (i < Leaders.Count)
             {
                 if (Leaders[i].IsAlive)
@@ -524,6 +585,8 @@ namespace SorceryClans3.Data.Models
                             j++;
                         else
                         {
+                            if (Leaders[i].Artifact?.SpiritSoldier == Leaders[i].SubSoldiers[j])
+                                Leaders[i].Artifact!.SpiritSoldier = null;
                             Leaders[i].SubSoldiers[j].SubTo = null;
                             Leaders[i].SubSoldiers.RemoveAt(j);
                         }
@@ -531,7 +594,11 @@ namespace SorceryClans3.Data.Models
                     i++;
                 }
                 else
-                    Leaders.RemoveAt(i);
+                {
+                    toremove.Add(Leaders[i++]);
+                    //Leaders.RemoveAt(i);
+                    //actually add to list and then remove
+                }
             }
             i = 0;
             while (i < Soldiers.Count)
@@ -545,6 +612,8 @@ namespace SorceryClans3.Data.Models
                             j++;
                         else
                         {
+                            if (Soldiers[i].Artifact?.SpiritSoldier == Soldiers[i].SubSoldiers[j])
+                                Soldiers[i].Artifact!.SpiritSoldier = null;
                             Soldiers[i].SubSoldiers[j].SubTo = null;
                             Soldiers[i].SubSoldiers.RemoveAt(j);
                         }
@@ -552,7 +621,14 @@ namespace SorceryClans3.Data.Models
                     i++;
                 }
                 else
-                    Soldiers.RemoveAt(i);
+                {
+                    toremove.Add(Soldiers[i++]);
+                    //Soldiers.RemoveAt(i);
+                }
+            }
+            foreach (Soldier sold in toremove)
+            {
+                RemoveSoldier(sold);
             }
         }
         public string TeachDisplay

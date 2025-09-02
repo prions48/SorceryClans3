@@ -38,19 +38,19 @@ namespace SorceryClans3.Data.Models
             ID = Guid.NewGuid();
             SetStats();
         }
-        public Clan(int lvl)
+        public Clan(int lvl, bool? style = null)
         {
             ClanName = Names.ClanName();
             ID = Guid.NewGuid();
-            SetStats(lvl);
+            SetStats(lvl, style: style);
         }
-        public Clan(int lvl, MagicColor? color)
+        public Clan(int lvl, MagicColor? color, bool? style)
         {
             ClanName = Names.ClanName();
             ID = Guid.NewGuid();
-            SetStats(lvl, color);
+            SetStats(lvl, color, style);
         }
-        private void SetStats(int elite = 0, MagicColor? color = null)
+        private void SetStats(int elite = 0, MagicColor? color = null, bool? style = null)
         {
             int pts = elite * 3;
             Random r = new Random();
@@ -77,11 +77,11 @@ namespace SorceryClans3.Data.Models
                     SubElite++;
                 }
             }
-            if (r.NextDouble() < elite * 0.25)
+            if (r.NextDouble() < elite * 0.25 && style != true)
             {
                 Power = new PowerTemplate(this.ID, elite, color);
             }
-            else if (r.NextDouble() < .5)
+            else if (r.NextDouble() < .5 || style == true)
             {
                 Style = new StyleTemplate(elite);
             }

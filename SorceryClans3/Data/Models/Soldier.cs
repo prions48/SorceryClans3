@@ -82,6 +82,7 @@ namespace SorceryClans3.Data.Models
         public List<Spell> Consumables { get; set; } = [];
         public Medical? Medical { get; set; }
         public List<Style> Styles { get; set; } = new List<Style>();
+        public double StyleAptitude { get; set; }
         public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();
         public IDictionary<MagicColor, double> ResearchSkill { get; set; } = new Dictionary<MagicColor, double>();
         public double ResearchAffinityBase { get; set; }
@@ -129,6 +130,7 @@ namespace SorceryClans3.Data.Models
             MaxTeach = r.NextDouble() * 2; //linked to Charisma
             ResearchAffinityBase = r.NextDouble() + 0.5; //linked to Logistics
             CounterIntelMax = r.NextDouble();
+            StyleAptitude = r.NextDouble();
             if (MaxTeach < .7 && ResearchAffinity < 0.8 && CounterIntelMax < .5)
             {
                 switch (r.Next(3))
@@ -164,7 +166,7 @@ namespace SorceryClans3.Data.Models
             Power = clan.Power?.GeneratePower();
             if (clan.Style != null && clan.Style.MinReqs.IsAbove(this))
             {
-                Styles.Add(clan.Style.CreateStyle());
+                AddStyle(clan.Style);
             }
         }
         public List<MagicColor> GetColors
@@ -472,9 +474,31 @@ namespace SorceryClans3.Data.Models
             PowerLevel += pg;
             LevelLead();
             LevelMedic();
+            LevelStyles();
             if (Power != null)
                 Power.IncreaseMastery();
             return (ID, pg, hp);
+        }
+        public void AddStyle(StyleTemplate template)
+        {
+            if (Styles.Any(e => e.StyleID == template.ID))
+                return;
+            Styles.Add(template.CreateStyle(this));
+        }
+        public void LevelStyles()
+        {
+            if (Styles.Count == 0)
+                return;
+            if (Styles.Count == 1)
+            {
+                Styles[0].Level();
+                return;
+            }
+            double totalgap = Styles.Sum(e => e.LevelGap());
+            if (r.Next(10) == 0 || totalgap < r.NextDouble())
+            {
+                Styles[r.Next(Styles.Count)].Level();
+            }
         }
         public void LevelLead(int additional = 10, double boost = 0.08)
         {
@@ -569,15 +593,21 @@ namespace SorceryClans3.Data.Models
             if (HPCurrent == 0 && Health != HealthLevel.Dead)
                 Health = HealthLevel.Critical;
             if (HPCurrent < 0)
+            {
                 Health = HealthLevel.Dead;
+                DeadSoldier();
+            }
             if (Team != null)
                 Team.Cleanup();
-            Cleanup();
         }
-        private void Cleanup()
+        private void DeadSoldier()
         {
             if (SubTo != null)
             {
+                if (SubTo.Artifact?.SpiritSoldier == this)
+                {
+                    SubTo.Artifact.SpiritSoldier = null;//end of the spirit soldier, and the spirit artifact becomes a regular one
+                }
                 SubTo.SubSoldiers.Remove(this);
                 SubTo = null;
             }
@@ -814,6 +844,23 @@ namespace SorceryClans3.Data.Models
                 if (TeachSkill < 1.2)
                     return "Good";
                 if (TeachSkill < 1.6)
+                    return "Excellent";
+                return "Legendary";
+            }
+        }
+        public string StyleAptitudeDisplay
+        {
+            get
+            {
+                if (StyleAptitude < .2)
+                    return "Poor";
+                if (StyleAptitude < .4)
+                    return "Mediocre";
+                if (StyleAptitude < .6)
+                    return "Fair";
+                if (StyleAptitude < .8)
+                    return "Good";
+                if (StyleAptitude < .95)
                     return "Excellent";
                 return "Legendary";
             }

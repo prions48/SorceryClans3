@@ -1,0 +1,59 @@
+@inject IDialogService dialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Styles">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Com</MudTh>
+                <MudTh>Mag</MudTh>
+                <MudTh>Sub</MudTh>
+                <MudTh>Heal</MudTh>
+                <MudTh>Power</MudTh>
+                <MudTh>Action</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.StyleName</MudTd>
+                <MudTd>@context.CTotal</MudTd>
+                <MudTd>@context.MTotal</MudTd>
+                <MudTd>@context.STotal</MudTd>
+                <MudTd>@context.KTotal</MudTd>
+                <MudTd>
+                    @if (context.Power != null)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.BrightnessHigh" Color="Color.Info" OnClick="() => OpenPower(context.Power)" />
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.TwoTone.AddCircle" Color="Color.Success" OnClick="() => Select(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public List<StyleTemplate> Styles { get; set; } = [];
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private void Select(StyleTemplate template)
+    {
+        MudDialog.Close(DialogResult.Ok(template));
+    }
+    private async Task OpenPower(PowerTemplate template)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(PowerInspectorDialog.Power), template);
+        var dialog = dialogService.Show<PowerInspectorDialog>(template.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
+}
