@@ -13,9 +13,9 @@
     }
 </span>
 @code {
-    [Parameter] public FaerieCourt Court { get; set; }
+    [Parameter, EditorRequired] public FaerieCourt Court { get; set; } = default!;
     [Parameter] public int LeftPad { get; set; } = 20;
-    [Parameter] public Action<FaerieCourt> SelectCourt { get; set; }
+    [Parameter, EditorRequired] public Action<FaerieCourt> SelectCourt { get; set; } = default!;
     [Parameter] public bool Selected { get; set; } = false;
     private string IconColor
     {

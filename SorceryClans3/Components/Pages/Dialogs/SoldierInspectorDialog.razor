@@ -12,7 +12,7 @@
 
 @code{
     [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Soldier Soldier { get; set; }
+    [Parameter, EditorRequired] public Soldier Soldier { get; set; } = default!;
     private void Cancel() => MudDialog.Cancel();
     protected override void OnInitialized()
     {

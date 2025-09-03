@@ -3,5 +3,5 @@
 
 <MudText Color="@Soldier.Health.Color()">@Soldier.HPCurrent / @Soldier.HPMax (@Soldier.Health.ToString())</MudText>
 @code{
-    [Parameter, EditorRequired] public IHP Soldier { get; set; }
+    [Parameter, EditorRequired] public IHP Soldier { get; set; } = default!;
 }

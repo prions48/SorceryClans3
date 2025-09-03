@@ -9,7 +9,7 @@ namespace SorceryClans3.Data.Models
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public Guid? ClanID { get; set; }
         public bool IsTemplate { get { return true; } }
-        public string PowerName { get; set; }
+        public string PowerName { get; set; } = "";
 		public int CBonusMax { get; set; }
 		public int MBonusMax { get; set; }
 		public int SBonusMax { get; set; }

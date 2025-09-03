@@ -4,7 +4,7 @@ namespace SorceryClans3.Data.Models
 {
     public class StyleTemplate
     {
-        public Guid ID { get; set; }
+        public Guid ID { get; set; } = Guid.NewGuid();
         public Guid? ClanID { get; set; }
         public string StyleName { get; set; }
         public StatBlock MinReqs { get; set; }

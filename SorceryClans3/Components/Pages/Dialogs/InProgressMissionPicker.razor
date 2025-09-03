@@ -54,7 +54,7 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public List<GameEvent> Events { get; set; } = [];
-    [Parameter, EditorRequired] public GameSettings Settings { get; set; }
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; } = default!;
     protected override void OnInitialized()
     {
 

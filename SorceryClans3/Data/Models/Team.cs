@@ -536,14 +536,14 @@ namespace SorceryClans3.Data.Models
                     if (soldier.Styles.Any(e => e.StyleID == template.ID))
                     {
                         Style? style2 = soldier.Styles.FirstOrDefault(e => e.StyleID == template.ID);
-                        if (style2 != null && style.StyleXP * soldier.TeachSkill > style2.StyleXP)
+                        if (style2 != null && style.StyleXP * trainer.TeachSkill > style2.StyleXP)
                         {
                             style2.Level(true);
                         }
                     }
                     else if (style.Teach == RankTeach.Teach)
                     {
-                        if (template.SoldierEligible(soldier) && r.NextDouble() < soldier.StyleAptitude / support)
+                        if (template.SoldierEligible(soldier) && r.NextDouble() / support < soldier.StyleAptitude * trainer.TeachSkill)
                         {
                             soldier.AddStyle(template);
                             result = true;

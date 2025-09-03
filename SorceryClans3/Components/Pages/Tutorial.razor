@@ -550,15 +550,15 @@
 </MudDialog>
 
 @code{
-    private Clan Clan { get; set; }
+    private Clan Clan { get; set; } = new();
     private int ClanLevel { get; set; }
-    private Soldier Soldier { get; set; }
-    private Team Team { get; set; }
+    private Soldier Soldier { get; set; } = new();
+    private Team Team { get; set; } = new();
     private Team? SelectedTeam { get; set; } = null;
     private IPower? SelectedPower { get; set; }
     private int? SelectedPowerLevel { get; set; }
     private Artifact? SelectedArtifact { get; set; }
-    private Mission Mission { get; set; }
+    private Mission? Mission { get; set; }
     private List<Team> Teams { get; set; } = new List<Team>();
     private List<Team> AvailableTeams
     {

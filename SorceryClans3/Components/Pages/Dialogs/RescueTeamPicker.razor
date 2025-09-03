@@ -41,7 +41,7 @@
 </MudDialog>
 
 @code {
-    [Parameter, EditorRequired] public Team Rescuee { get; set; }
+    [Parameter, EditorRequired] public Team Rescuee { get; set; } = default!;
     [Parameter] public List<Team> AvailableTeams { get; set; } = [];
     [Parameter] public MapLocation Location { get; set; } = new();
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
@@ -57,7 +57,7 @@
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     public class RescueTeam
     {
-        public Team Team { get; set; }
+        public Team Team { get; set; } = default!;
         public MapLocation? InterceptPoint { get; set; }
     }
 }

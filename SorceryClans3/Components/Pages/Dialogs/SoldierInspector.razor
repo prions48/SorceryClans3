@@ -55,7 +55,7 @@
 </MudDialog>
 
 @code {
-    [Parameter, EditorRequired] public Soldier Soldier { get; set; }
+    [Parameter, EditorRequired] public Soldier Soldier { get; set; } = default!;
     private bool ViewLeaderDialog { get; set; } = false;
     private void OpenDialog()
     {

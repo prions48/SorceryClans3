@@ -37,9 +37,9 @@
 
 
 @code {
-    [Parameter, EditorRequired] public Team MedicTeam { get; set; }
-    [Parameter, EditorRequired] public Team PatientTeam { get; set; }
-    [Parameter, EditorRequired] public GameSettings Settings { get; set; }
+    [Parameter, EditorRequired] public Team MedicTeam { get; set; } = default!;
+    [Parameter, EditorRequired] public Team PatientTeam { get; set; } = default!;
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; } = default!;
     [Parameter] public EventCallback CompleteMission { get; set; }
     private IList<MedicPatients> Medics { get; set; } = new List<MedicPatients>();
     private IList<Patient> Patients { get; set; } = new List<Patient>();

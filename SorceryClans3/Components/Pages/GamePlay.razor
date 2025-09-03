@@ -1297,7 +1297,7 @@
         parameters2.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome && e.Leaders.Any(f => f.Styles.Any(g => g.Teach != RankTeach.NoTeach))).ToList());
         var dialog2 = dialogService.Show<TeamPicker>("Select Team", parameters2, options2);
         var result2 = await dialog2.Result;
-        Team? team = result2.Data as Team;
+        Team? team = result2?.Data as Team;
         if (team == null)
             return;
         Soldier? trainer = null;
@@ -1313,19 +1313,24 @@
             parameters.Add(nameof(SoldierPicker.ShowTeach), true);
             var dialog = dialogService.Show<SoldierPicker>("Select trainer", parameters, options);
             var result = await dialog.Result;
-            trainer = result.Data as Soldier;
+            trainer = result?.Data as Soldier;
         }
         StyleTemplate? style = null;
-        if (trainer != null && trainer.Styles.Count(e => e.Teach != RankTeach.NoTeach) > 1)
+        if (trainer != null)
         {
-            var options = new DialogOptions();
-            options.CloseOnEscapeKey = true;
-            options.MaxWidth = MaxWidth.Large;
-            var parameters = new DialogParameters();
-            parameters.Add(nameof(StyleTemplatePicker.Styles), Engine.AllStyles.Where(e => trainer.Styles.Where(f => f.Teach != RankTeach.NoTeach).Select(f => f.StyleID).Contains(e.ID)).ToList());
-            var dialog = dialogService.Show<StyleTemplatePicker>("Select Training Style", parameters, options);
-            var result = await dialog.Result;
-            style = result.Data as StyleTemplate;
+            if (trainer.Styles.Count(e => e.Teach != RankTeach.NoTeach) > 1)
+            {
+                var options = new DialogOptions();
+                options.CloseOnEscapeKey = true;
+                options.MaxWidth = MaxWidth.Large;
+                var parameters = new DialogParameters();
+                parameters.Add(nameof(StyleTemplatePicker.Styles), Engine.AllStyles.Where(e => trainer.Styles.Where(f => f.Teach != RankTeach.NoTeach).Select(f => f.StyleID).Contains(e.ID)).ToList());
+                var dialog = dialogService.Show<StyleTemplatePicker>("Select Training Style", parameters, options);
+                var result = await dialog.Result;
+                style = result?.Data as StyleTemplate;
+            }
+            else
+                style = Engine.AllStyles.FirstOrDefault(e => e.ID == trainer.Styles.FirstOrDefault(f => f.Teach != RankTeach.NoTeach)?.StyleID);
         }
         if (trainer != null && style != null)
         {
@@ -1335,11 +1340,11 @@
     #endregion
 
     #region Research
-    private async Task CreateFacility()
+    private void CreateFacility()
     {
         Engine.Research.AddFacility();
     }
-    private async Task UpgradeFacility(ResearchFacility facility)
+    private void UpgradeFacility(ResearchFacility facility)
     {
         //dummy for the moment
         facility.NumTeams++;

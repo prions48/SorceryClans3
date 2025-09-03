@@ -44,7 +44,7 @@
 @code {
     [Parameter] public List<MissionContract> Contracts { get; set; } = [];
     [Parameter] public List<Team> Teams { get; set; } = [];
-    [Parameter, EditorRequired] public GameSettings Settings { get; set; }
+    [Parameter, EditorRequired] public GameSettings Settings { get; set; } = default!;
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
     private async Task SelectTeamForMission(MissionContract mission)
