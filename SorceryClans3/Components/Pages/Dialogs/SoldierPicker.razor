@@ -14,7 +14,7 @@
                     <MudTh>S</MudTh>
                     <MudTh>Lead</MudTh>
                 }
-                <MudTh>Power</MudTh>
+                <MudTh>Boosts</MudTh>
                 @if (ShowMedic)
                 {
                     <MudTh>Medic</MudTh>
@@ -45,6 +45,14 @@
                     @if (context.Power != null)
                     {
                         <MudIconButton Icon="@context.Power.Color.Icon()" Color="context.Power.Color.Color()" OnClick="() => ViewPower(context)" />
+                    }
+                    @if (context.Artifact != null)
+                    {
+                        <MudIconButton Icon="@context.Artifact.Icon" Color="@context.Artifact.GetColor()" OnClick="() => ViewArtifact(context.Artifact)" />
+                    }
+                    @foreach (Style style in context.Styles)
+                    {
+                        <MudIconButton Icon="@style.Icon" Color="@style.IconColor" OnClick="() => ViewStyle(style)" />
                     }
                 </MudTd>
                 @if (ShowMedic)
@@ -129,6 +137,27 @@
         parameters.Add(nameof(PowerInspectorDialog.Power), soldier.Power);
         parameters.Add(nameof(PowerInspectorDialog.Powerlevel), soldier.PowerLevel);
         var dialog = dialogService.Show<PowerInspectorDialog>(soldier.Power.PowerName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewArtifact(Artifact art)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add("Artifact", art);
+        var dialog = dialogService.Show<ArtifactInspector>(art.ArtifactName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewStyle(Style style)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(StyleDialog.Style), style);
+        var dialog = dialogService.Show<StyleDialog>(style.StyleName, parameters, options);
         var result = await dialog.Result;
     }
 }

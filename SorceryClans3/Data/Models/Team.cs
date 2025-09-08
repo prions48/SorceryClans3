@@ -521,36 +521,34 @@ namespace SorceryClans3.Data.Models
             if (support == 0)
                 return false;
             Random r = new();
-            foreach (Style style in trainer.Styles)
+            Style? style = trainer.Styles.FirstOrDefault(e => e.StyleID == template.ID);
+            if (style == null)
+                return false;
+            if (style.Teach == RankTeach.NoTeach)
+                return false;
+            foreach (Soldier soldier in GetAllSoldiers)
             {
-                if (style.StyleID != template.ID)
+                if (soldier.ID == trainer.ID)
                     continue;
-                if (style.Teach == RankTeach.NoTeach)
-                    return false;
-                foreach (Soldier soldier in GetAllSoldiers)
+                if (soldier.Type != SoldierType.Standard)
+                    continue;
+                soldier.TrainStyle(support);
+                if (soldier.Styles.Any(e => e.StyleID == template.ID))
                 {
-                    if (soldier.ID == trainer.ID)
-                        continue;
-                    if (soldier.Type != SoldierType.Standard)
-                        continue;
-                    if (soldier.Styles.Any(e => e.StyleID == template.ID))
+                    Style? style2 = soldier.Styles.FirstOrDefault(e => e.StyleID == template.ID);
+                    if (style2 != null && style.StyleXP * trainer.TeachSkill > style2.StyleXP)
                     {
-                        Style? style2 = soldier.Styles.FirstOrDefault(e => e.StyleID == template.ID);
-                        if (style2 != null && style.StyleXP * trainer.TeachSkill > style2.StyleXP)
-                        {
-                            style2.Level(true);
-                        }
-                    }
-                    else if (style.Teach == RankTeach.Teach)
-                    {
-                        if (template.SoldierEligible(soldier) && r.NextDouble() / support < soldier.StyleAptitude * trainer.TeachSkill)
-                        {
-                            soldier.AddStyle(template);
-                            result = true;
-                        }
+                        style2.Level(true);
                     }
                 }
-
+                else if (style.Teach == RankTeach.Teach)
+                {
+                    if (template.SoldierEligible(soldier) && r.NextDouble() / support < soldier.StyleAptitude * trainer.TeachSkill)
+                    {
+                        soldier.AddStyle(template);
+                        result = true;
+                    }
+                }
             }
             return result;
         }

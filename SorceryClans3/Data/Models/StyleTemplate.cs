@@ -30,9 +30,9 @@ namespace SorceryClans3.Data.Models
         public StyleTemplate(int lvl)
         {
             //half ass it a little bit for now
-            if (r.NextDouble()*lvl < 1)
+            //if (r.NextDouble()*lvl < 1)
                 ReqPower = StyleReqPower.AcceptsPower;
-            else
+            //else
                 ReqPower = StyleReqPower.NoAcceptsPower;
             if (r.NextDouble()*lvl > 1.5 && ReqPower == StyleReqPower.NoAcceptsPower)
                 GivePower = StyleGivePower.GivePower;
@@ -66,7 +66,7 @@ namespace SorceryClans3.Data.Models
             SkillStat prim = (SkillStat)(r.NextDouble()*3.3);
             SkillStat sec = (SkillStat)(r.NextDouble()*3.3);
             SkillStat tert = (SkillStat)r.Next(3);
-            StyleName = Names.StyleName(prim,sec,lvl);
+            StyleName = Names.StyleName(prim,sec,lvl, null);
             int? cmin = null, mmin = null, smin = null, kmin = null, cmax = null, mmax = null, smax = null, kmax = null;
             switch (prim)
             {
@@ -126,7 +126,8 @@ namespace SorceryClans3.Data.Models
                 BoostStat bsprim = (BoostStat)prim;
                 if (bsprim == BoostStat.HP)
                     bsprim = BoostStat.Heal;
-                Power = new PowerTemplate(ID, lvl <= 3 ? lvl : 3, MagicColor.None, bsprim);
+                Power = new PowerTemplate(ID, lvl <= 3 ? lvl : 3, false, bsprim);
+                StyleName = Names.StyleName(prim,sec,lvl, Power.Color);
                 Power.Heritability = null;
                 string[] words = StyleName.Split(" ");
                 Power.PowerName = words[words.Length-2] + " " + words[words.Length-1] + " " + Names.StylePower();
@@ -135,8 +136,7 @@ namespace SorceryClans3.Data.Models
                     if (i == 0)
                         continue;
                     Ranks[i].GivePower = true;
-
-                }            
+                }
             }
         }
         public Style CreateStyle(Soldier sold)

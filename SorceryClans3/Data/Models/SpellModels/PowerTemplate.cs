@@ -57,10 +57,18 @@ namespace SorceryClans3.Data.Models
             ClanID = clanid;
             InitPower(lvl, color, prim);
         }
+        public PowerTemplate(Guid clanid, int lvl, bool includenone, BoostStat prim)
+        {
+            ClanID = clanid;
+            Random r = new();
+            int none = includenone ? 1 : 0;
+            MagicColor color = (MagicColor)(r.Next(6 + none) + (1 - none));
+            InitPower(lvl, color, prim);
+        }
         private void InitPower(int lvl = 1, MagicColor? forcecolor = null, BoostStat? prim = null, BoostStat? sec = null, BoostStat? tert = null)
         {
             Random r = new Random();
-            Heritability = 0.15 + (0.03 * (lvl+1)) + r.NextDouble()*(0.1 * lvl);
+            Heritability = 0.15 + (0.03 * (lvl + 1)) + r.NextDouble() * (0.1 * lvl);
             //very simple atm
             if (forcecolor == null)
             {
@@ -73,13 +81,13 @@ namespace SorceryClans3.Data.Models
             }
             if (prim == null)
             {
-                prim = (BoostStat)(int)(r.NextDouble()*3.3);
+                prim = (BoostStat)(int)(r.NextDouble() * 3.3);
                 if (prim == BoostStat.HP)
                     prim = BoostStat.Heal;
             }
             if (sec == null)
             {
-                sec = (BoostStat)(int)(r.NextDouble()*4.3);
+                sec = (BoostStat)(int)(r.NextDouble() * 4.3);
             }
             if (tert == null)
             {
@@ -100,8 +108,8 @@ namespace SorceryClans3.Data.Models
                 case BoostStat.Combat: CBonusMax++; break;
                 case BoostStat.Magic: MBonusMax++; break;
                 case BoostStat.Subtlety: SBonusMax++; break;
-                case BoostStat.HP: HBonusMax+=2; break;
-                case BoostStat.Heal: KBonusMax+=2; pts--; break;
+                case BoostStat.HP: HBonusMax += 2; break;
+                case BoostStat.Heal: KBonusMax += 2; pts--; break;
             }
             for (int i = 0; i < pts; i++)
             {
@@ -133,23 +141,24 @@ namespace SorceryClans3.Data.Models
                         continue;
                     }
                 }
-                switch (SelectStat(prim.Value,sec.Value,tert.Value))
+                switch (SelectStat(prim.Value, sec.Value, tert.Value))
                 {
                     case BoostStat.Combat: CBonusMax++; break;
                     case BoostStat.Magic: MBonusMax++; break;
                     case BoostStat.Subtlety: SBonusMax++; break;
                     case BoostStat.HP: HBonusMax += r.Next(3) + 1; break;
-                    case BoostStat.Heal: int k = r.Next(lvl/2+2); 
-                    KBonusMax = KBonusMax + k; i += k; ; break;
+                    case BoostStat.Heal:
+                        int k = r.Next(lvl / 2 + 2);
+                        KBonusMax = KBonusMax + k; i += k; ; break;
                 }
             }
             this.PowerName = Names.PowerName(this.Color, lvl, prim.Value, sec.Value);
-            MinPowerForColor = (r.Next(10) * 50) + (1500 - betterpower*300);
-			PowerIncrementForColor = (r.Next(2+lvl) * 50) + 800 + (100*lvl) - (betterpower*250) - (100*betterpower2);
+            MinPowerForColor = (r.Next(10) * 50) + (1500 - betterpower * 300);
+            PowerIncrementForColor = (r.Next(2 + lvl) * 50) + 800 + (100 * lvl) - (betterpower * 250) - (100 * betterpower2);
             if (PowerIncrementForColor < 250)
                 PowerIncrementForColor = 250;
-			MaxColors = r.Next(lvl/2+2, 3+(lvl/2)) + betterpower2*2;
-            Heritability += 0.25*betterpower3;
+            MaxColors = r.Next(lvl / 2 + 2, 3 + (lvl / 2)) + betterpower2 * 2;
+            Heritability += 0.25 * betterpower3;
             if (Heritability > .95)
                 Heritability = .95;
         }

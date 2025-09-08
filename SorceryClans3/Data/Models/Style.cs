@@ -46,5 +46,21 @@ namespace SorceryClans3.Data.Models
         {
             return Aptitude - (StyleXP / 100.0);
         }
+        public string Icon
+        {
+            get
+            {
+                return MudBlazor.Icons.Material.Filled.FrontHand;//for now...
+            }
+        }
+        public MudBlazor.Color IconColor
+        {
+            get
+            {
+                if (CurrentRank.GivePower)
+                    return Template.Power?.Color.Color() ?? MudBlazor.Color.Secondary;
+                return MudBlazor.Color.Secondary;
+            }
+        }
     }
 }

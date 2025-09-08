@@ -1,0 +1,60 @@
+@namespace SorceryClans3.Components.Pages.Dialogs
+@inject IDialogService dialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Team.GetAllSoldiers.Where(e => e.Styles.Count > 0)">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Lead</MudTh>
+                <MudTh>Aptitude</MudTh>
+                <MudTh>Styles</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SoldierName</MudTd>
+                <MudTd>
+                    @if (context.IsLeading)
+                    {
+                        <MudIconButton Icon="@Icons.Material.TwoTone.Groups" Color="Color.Info" OnClick="() => ViewLead(context)" />
+                    }
+                </MudTd>
+                <MudTd>@context.StyleAptitudeDisplay</MudTd>
+                <MudTd>
+                    @foreach (Style style in context.Styles)
+                    {
+                        <MudIconButton Icon="@style.Icon" Color="@style.IconColor" OnClick="() => ViewStyle(style)" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Team Team { get; set; } = default!;
+    void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private async Task ViewStyle(Style style)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(StyleDialog.Style), style);
+        var dialog = dialogService.Show<StyleDialog>(style.StyleName, parameters, options);
+        var result = await dialog.Result;
+    }
+    private async Task ViewLead(Soldier soldier)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Small;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(LeadershipDialog.Soldier), soldier);
+        var dialog = dialogService.Show<LeadershipDialog>(soldier.SoldierName + " Leadership", parameters, options);
+        var result = await dialog.Result;
+    }
+}

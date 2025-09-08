@@ -83,6 +83,7 @@ namespace SorceryClans3.Data.Models
         public Medical? Medical { get; set; }
         public List<Style> Styles { get; set; } = new List<Style>();
         public double StyleAptitude { get; set; }
+        private int NumStyleTrains { get; set; } = 0;
         public IDictionary<Guid, double> Teamwork { get; set; } = new Dictionary<Guid, double>();
         public IDictionary<MagicColor, double> ResearchSkill { get; set; } = new Dictionary<MagicColor, double>();
         public double ResearchAffinityBase { get; set; }
@@ -479,11 +480,42 @@ namespace SorceryClans3.Data.Models
                 Power.IncreaseMastery();
             return (ID, pg, hp);
         }
+        public void TrainStyle(int support)
+        {
+            if (NumStyleTrains == 0 && Styles.Count == 0)
+            {
+                NumStyleTrains++;
+                return;
+            }
+            if (Styles.Count == 0 || StyleAptitude < 0.3)
+                return;
+            double factor = support > r.Next(10) ? 0.03 : support > r.Next(5) ? 0.02 : 0.01;
+            NumStyleTrains++;
+            if (NumStyleTrains < 50)
+            {
+                if (NumStyleTrains % 5 == 0)
+                    StyleAptitude += r.NextDouble() * factor;
+            }
+            else if (NumStyleTrains < 100)
+            {
+                if (NumStyleTrains % 10 == 0)
+                    StyleAptitude += r.NextDouble() * factor;
+            }
+            else
+            {
+                if (NumStyleTrains % 25 == 0)
+                    StyleAptitude += r.NextDouble() * factor;
+            }
+            if (StyleAptitude > 1.0)
+                StyleAptitude = 1.0; //consider whether to keep this...
+        }
         public void AddStyle(StyleTemplate template)
         {
             if (Styles.Any(e => e.StyleID == template.ID))
                 return;
             Styles.Add(template.CreateStyle(this));
+            if (NumStyleTrains == 0)
+                NumStyleTrains = 1;
         }
         public void LevelStyles()
         {
@@ -852,6 +884,8 @@ namespace SorceryClans3.Data.Models
         {
             get
             {
+                if (NumStyleTrains == 0)
+                    return "Not Assessed";
                 if (StyleAptitude < .2)
                     return "Poor";
                 if (StyleAptitude < .4)

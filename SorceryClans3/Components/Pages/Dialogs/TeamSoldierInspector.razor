@@ -20,11 +20,13 @@
             {
                 <MudIconButton Icon="@s.Power.Icon" Color="@(s.Power.IconColor)" OnClick="() => ViewPower(s)" />
             }
-        </td>
-        <td>
             @if (s.Artifact != null)
             {
                 <MudIconButton Icon="@s.Artifact.Icon" Color="@s.Artifact.GetColor()" OnClick="() => ViewArtifact(s.Artifact)" />
+            }
+            @foreach (Style style in s.Styles)
+            {
+                <MudIconButton Icon="@style.Icon" Color="@style.IconColor" OnClick="() => ViewStyle(style)" />
             }
         </td>
         <td>
@@ -85,6 +87,17 @@
         var dialog = dialogService.Show<ArtifactInspector>(art.ArtifactName, parameters, options);
         var result = await dialog.Result;
     }
+    private async Task ViewStyle(Style style)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(StyleDialog.Style), style);
+        var dialog = dialogService.Show<StyleDialog>(style.StyleName, parameters, options);
+        var result = await dialog.Result;
+    }
+
     private Soldier? SelectedSoldier { get; set; }
     private string? SelectedLeadName { get; set; }
     private void ViewLeadership(Soldier sold)

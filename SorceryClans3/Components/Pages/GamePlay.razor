@@ -23,6 +23,7 @@
                     <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="StartTime">Advance Time</MudButton>
                 }
                 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Cheat">Cheat</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="CheatMax">CheatMax</MudButton>
             }
             <MudSimpleTable Striped Bordered>
                 <thead>
@@ -141,7 +142,7 @@
                     <MudTd>
                         @foreach (Style style in context.Styles)
                         {
-                            <MudIconButton Icon="@Icons.Material.TwoTone.FrontHand" Color="Color.Secondary" OnClick="() => ViewStyle(style)" />
+                            <MudIconButton Icon="@style.Icon" Color="@style.IconColor" OnClick="() => ViewStyle(style)" />
                         }
                     </MudTd>
                     <MudTd>@context.Team?.TeamName</MudTd>
@@ -618,6 +619,16 @@
         foreach (Soldier soldier in Engine.Soldiers)
         {
             soldier.GainPower(1000);
+        }
+    }
+    private void CheatMax()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            foreach (Soldier soldier in Engine.Soldiers)
+            {
+                soldier.GainPower(100);
+            }
         }
     }
     protected override void OnInitialized()
@@ -1295,6 +1306,7 @@
         options2.MaxWidth = MaxWidth.Large;
         var parameters2 = new DialogParameters();
         parameters2.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null && e.IsAtHome && e.Leaders.Any(f => f.Styles.Any(g => g.Teach != RankTeach.NoTeach))).ToList());
+        parameters2.Add(nameof(TeamPicker.ShowStyles), true);
         var dialog2 = dialogService.Show<TeamPicker>("Select Team", parameters2, options2);
         var result2 = await dialog2.Result;
         Team? team = result2?.Data as Team;

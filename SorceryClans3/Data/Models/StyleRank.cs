@@ -3,7 +3,7 @@ namespace SorceryClans3.Data.Models
     public class StyleRank
     {
         public Guid StyleID { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public int CBonus { get; set; }
         public int MBonus { get; set; }
         public int SBonus { get; set; }

@@ -31,6 +31,10 @@
                         <th>Spell</th>
                         <th>Research</th>
                     }
+                    @if (ShowStyles)
+                    {
+                        <th>Styles</th>
+                    }
                     <th>Color</th>
                     @if (Mission != null)
                     {
@@ -68,6 +72,12 @@
                         {
                             <td>@team.MSpellScore</td>
                             <td>@team.ResearchDisplay</td>
+                        }
+                        @if (ShowStyles)
+                        {
+                            <td>
+                                <MudIconButton OnClick="() => ViewSoldierStyles(team)" Color="Color.Secondary" Icon="@Icons.Material.Filled.FrontHand" />
+                            </td>
                         }
                         <td>
                             <MagicIcons Colors="@(team.GetColors)" />
@@ -107,6 +117,7 @@
     [Parameter] public bool Teach { get; set; } = false;
     [Parameter] public bool KScore { get; set; } = false;
     [Parameter] public bool ResearchScores { get; set; } = false;
+    [Parameter] public bool ShowStyles { get; set; } = false;
     [Parameter] public Mission? Mission { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     private List<SpiritWeather> ActiveWeathers { get; set; } = [];
@@ -128,4 +139,14 @@
         MudDialog.Close(DialogResult.Ok(team));
     }
     void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private async Task ViewSoldierStyles(Team team)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamStyleViewer.Team), team);
+        var dialog = dialogService.Show<TeamStyleViewer>(team.TeamName, parameters, options);
+        var result = await dialog.Result;
+    }
 }
