@@ -949,7 +949,7 @@
         parameters.Add("MScore", true);
         var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result?.Canceled == false)
         {
             Team? team = result.Data as Team;
             if (team != null)

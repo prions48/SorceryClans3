@@ -362,9 +362,5 @@ namespace SorceryClans3.Data.Models
                 return implement.Substring(0, 1).ToUpper() + implement.Substring(1);
             }
         }
-        public DemonicCurse()
-        {
-            ;//file init
-        }
     }
 }

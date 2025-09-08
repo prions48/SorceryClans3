@@ -323,16 +323,16 @@ namespace SorceryClans3.Data.Models
                 return false;
             return soldier.Power.ID == TamePower.ID;
         }
-        public Mission GetMission
+        public Mission? GetMission
         {
             get
             {
                 return TameMission;
             }
         }
-        public HunterMission StartMission()
+        public HunterMission? StartMission()
         {
-            HunterMission ret = TameMission;
+            HunterMission? ret = TameMission;
             /*TameMission = new HunterMission(pseed * 30, true, true)
             {
                 Type = MissionType.TameBeast

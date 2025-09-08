@@ -117,9 +117,7 @@
                     <MudTh>Lvl</MudTh>
                     <MudTh>Stats</MudTh>
                     <MudTh>Leader</MudTh>
-                    <MudTh>Power</MudTh>
-                    <MudTh>Artifact</MudTh>
-                    <MudTh>Styles</MudTh>
+                    <MudTh>Boosts</MudTh>
                     <MudTh>Team</MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -137,9 +135,10 @@
                         {
                             <MudIconButton Icon="@context.Power.Color.Icon()" Color="@context.Power.Color.Color()" OnClick="() => ViewPower(context)" />
                         }
-                    </MudTd>
-                    <MudTd>@context.Artifact?.ArtifactName</MudTd>
-                    <MudTd>
+                        @if (context.Artifact != null)
+                        {
+                            <MudIconButton Icon="@context.Artifact.Icon" Color="@context.Artifact.GetColor()" OnClick="() => ViewArtifact(context.Artifact)" />
+                        }
                         @foreach (Style style in context.Styles)
                         {
                             <MudIconButton Icon="@style.Icon" Color="@style.IconColor" OnClick="() => ViewStyle(style)" />
@@ -978,6 +977,17 @@
     #endregion
 
     #region Artifacts
+    private async Task ViewArtifact(Artifact art)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.FullWidth = true;
+        options.MaxWidth = MaxWidth.Large;
+        var parameters = new DialogParameters();
+        parameters.Add("Artifact", art);
+        var dialog = dialogService.Show<ArtifactInspector>(art.ArtifactName, parameters, options);
+        var result = await dialog.Result;
+    }
     private async Task OpenArtifactDialog()
     {
         var options = new DialogOptions();

@@ -289,7 +289,7 @@ namespace SorceryClans3.Data.Models
                 return MudBlazor.Color.Info;
             if (IconID != null)
                 return MudBlazor.Color.Warning;
-            return MudBlazor.Color.Primary;
+            return MudBlazor.Color.Tertiary;
         }
         public string Icon
         {
