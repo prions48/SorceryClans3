@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Identity.Client;
 using Microsoft.VisualBasic;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
@@ -8,7 +9,7 @@ namespace SorceryClans3.Data.Models
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public MissionType Type { get; set; }
-        public Mission? MissionToComplete { get; set; }
+        public IMission? MissionToComplete { get; set; }
         public Team? TeamInTransit { get; set; }
         public Team? TargetTeam { get; set; }
         public Soldier? FocusSoldier { get; set; }
@@ -107,11 +108,12 @@ namespace SorceryClans3.Data.Models
             FixedDate = true;
             EventCompleted = duedate;
         }
-        public GameEvent(Team team1, Team team2, MapLocation location, DateTime duedate)
+        public GameEvent(RescueMission mission, MapLocation location, DateTime duedate)
         {
             Type = MissionType.MedicalRescue;
-            TeamInTransit = team1;
-            TargetTeam = team2;
+            MissionToComplete = mission;
+            TeamInTransit = mission.Rescuers;
+            TargetTeam = mission.Rescuees;
             EventCompleted = duedate;
             Visible = true;
             FixedDate = true;
@@ -129,22 +131,22 @@ namespace SorceryClans3.Data.Models
         }
         public GameEventDisplay ResolveMercenary()
         {
-            if (MissionToComplete?.AttemptingTeam == null)
+            if (MissionToComplete is not Mission mission || mission.AttemptingTeam == null)
                 throw new Exception("Failure to resolve missing mission or team");
-            var results = MissionToComplete.CompleteMission();
+            var results = mission.CompleteMission();
             List<(Guid, int, bool)> gains = [];
             List<Soldier> newsolds = [];
-            foreach (Soldier soldier in MissionToComplete.AttemptingTeam.GetAllSoldiers)
+            foreach (Soldier soldier in mission.AttemptingTeam.GetAllSoldiers)
             {
-                gains.Add(soldier.GainPower(MissionToComplete.PowerGain()));
-                newsolds.AddRange(NecromancyScan(soldier, MissionToComplete));
+                gains.Add(soldier.GainPower(mission.PowerGain()));
+                newsolds.AddRange(NecromancyScan(soldier, mission));
             }
             //use diff to create game results
             return new($"Mission {(results.Item1 ? "succeeded" : "failed")}!", EventCompleted)
             {
-                DisplayMission = MissionToComplete,
-                DisplayTeam = MissionToComplete?.AttemptingTeam ?? TeamInTransit,
-                DisplayResult = new TeamResult(MissionToComplete!.AttemptingTeam, gains, results.Item1, results.Item2),
+                DisplayMission = mission,
+                DisplayTeam = mission?.AttemptingTeam ?? TeamInTransit,
+                DisplayResult = new TeamResult(mission!.AttemptingTeam, gains, results.Item1, results.Item2),
                 AddedSoldiers = newsolds
             };
         }
@@ -179,7 +181,7 @@ namespace SorceryClans3.Data.Models
         {
             if (TeamInTransit == null)
                 throw new Exception("Failure to resolve missing team");
-            TeamInTransit.MissionID = null;
+            TeamInTransit.ClearMission();
             TeamInTransit.Location = Destination;
             return new($"Team {TeamInTransit.TeamName} has {(liaison ? "arrived to coordinate missions at" : "arrived at ")} {TeamInTransit.Location?.LocationName ?? "home base."}.", EventCompleted)
             {
@@ -188,9 +190,9 @@ namespace SorceryClans3.Data.Models
         }
         public GameEventDisplay? ResolvePayday()
         {
-            if (MissionToComplete == null)
+            if (MissionToComplete is not Mission mission)
                 return null;
-            if (MissionToComplete.AttemptingTeam == null || MissionToComplete.AttemptingTeam.MissionID != MissionToComplete.ID)
+            if (mission.AttemptingTeam == null || mission.AttemptingTeam.MissionID != mission.MissionID)
                 return null;
             MissionContract? contract = MissionToComplete as MissionContract;
             if (contract == null)
@@ -208,7 +210,7 @@ namespace SorceryClans3.Data.Models
                 throw new Exception("Failure to configure travel");
             if (RoundTrip == false)
             {
-                TeamInTransit.MissionID = null;
+                TeamInTransit.ClearMission();
                 TeamInTransit.Location = null;
                 return new($"Team {TeamInTransit.TeamName} has returned to home base, bringing resources from {City.CityName}.", EventCompleted);
             }
@@ -229,7 +231,7 @@ namespace SorceryClans3.Data.Models
         public GameEventDisplay ResolveLeadershipTraining()
         {
             bool success = TeamInTransit!.LeadershipTraining(FocusSoldier!);
-            TeamInTransit.MissionID = null;
+            TeamInTransit.ClearMission();
             return new($"Team {TeamInTransit!.TeamName} has returned from leadership training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted)
             {
                 DisplayTeam = TeamInTransit
@@ -238,7 +240,7 @@ namespace SorceryClans3.Data.Models
         public GameEventDisplay ResolveMedicalTraining()
         {
             bool success = TeamInTransit!.MedicalTraining(FocusSoldier!);
-            TeamInTransit.MissionID = null;
+            TeamInTransit.ClearMission();
             return new($"Team {TeamInTransit.TeamName} has returned from medical training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
         }
         public GameEventDisplay ResolveStyleTraining()
@@ -246,7 +248,7 @@ namespace SorceryClans3.Data.Models
             if (FocusSoldier == null || TrainStyle == null)
                 throw new Exception("Style training not configured.");
             bool success = TeamInTransit!.StyleTraining(FocusSoldier, TrainStyle);
-            TeamInTransit.MissionID = null;
+            TeamInTransit.ClearMission();
             return new($"Team {TeamInTransit.TeamName} has returned from style training under {FocusSoldier!.SoldierName}, {(success ? "triumphant" : "exhausted")}.", EventCompleted);
         }
         public GameEventDisplay ResolveRescue()
@@ -276,7 +278,7 @@ namespace SorceryClans3.Data.Models
                 newsoldier = HuntSpell.BeastPet.GenerateSoldier();
                 TeamInTransit.AddSoldier(newsoldier);
             }
-            TeamInTransit.MissionID = null;
+            TeamInTransit.ClearMission();
             if (newsoldier != null)
             {
                 return new("Team " + TeamInTransit.TeamName + " has tamed " + newsoldier.SoldierName, EventCompleted)

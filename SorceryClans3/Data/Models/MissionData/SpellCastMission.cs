@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
-    public class SpellCastMission
+    public class SpellCastMission : IMission
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
+        public Guid MissionID => ID;
+        public string MissionName => CastingSpell.SpellName;
         public int PowerPointsRemaining { get; set; }
         public int ColorPointsRemaining { get; set; }
         public MagicColor Color { get; set; }
@@ -22,15 +25,15 @@ namespace SorceryClans3.Data.Models
             ColorPointsRemaining = spell.ColorToCast * (quantity ?? 1);
             Color = spell.Color;
             CastingTeam = team;
-            team.MissionID = ID;
+            team.AssignMission(this);
             CastingSoldier = casting;
             TargetSoldier = target;
             if (TargetSoldier != null)
             {
                 if (TargetSoldier.Team == null)
                     TargetSoldier.Team = new() { TeamName = "Receiving Spell", ID = this.ID };
-                else
-                    TargetSoldier.Team.MissionID = this.ID;
+                else if (TargetSoldier.Team.MissionID != this.ID)
+                    TargetSoldier.Team.AssignMission(this);
             }
         }
         public SpellCastMission? IncrementDay()
@@ -62,7 +65,7 @@ namespace SorceryClans3.Data.Models
                 if (TargetSoldier.Team.ID == this.ID)
                     TargetSoldier.Team = null;
                 else
-                    TargetSoldier.Team.MissionID = null;
+                    TargetSoldier.Team.ClearMission();
             }
             int castcount = NumConsumables ?? 1;
             if (CastingSpell.UsesConsumables)

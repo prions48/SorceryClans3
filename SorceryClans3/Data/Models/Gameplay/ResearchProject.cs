@@ -6,7 +6,7 @@ namespace SorceryClans3.Data.Models
 	public class ResearchProject
 	{
 		[Key] public Guid ID { get; set; }
-		public Guid FacilityID { get; set; }
+		public ResearchFacility Facility { get; set; }
 		private int PowerPoints { get; set; }
 		private int ColorPoints { get; set; }
 		private int LastDiscoveryPts { get; set; }
@@ -21,10 +21,10 @@ namespace SorceryClans3.Data.Models
 		public List<Team> GetTeams { get { return Missions.Where(e => e.Team != null).Select(e => e.Team!).ToList(); } }
 		private MagicColor Color { get; set; }
 		public MagicColor GetColor { get { return Color; } }
-		public ResearchProject(Guid facilityid, MagicColor color)
+		public ResearchProject(ResearchFacility facility, MagicColor color)
 		{
 			ID = Guid.NewGuid();
-			FacilityID = facilityid;
+			Facility = facility;
 			LastDiscoveryPts = 0;
 			LastDiscoveryClr = 0;
 			PowerPoints = 0;
@@ -45,9 +45,8 @@ namespace SorceryClans3.Data.Models
 				if (!sold.ResearchSkill.ContainsKey(Color))
 					sold.ResearchSkill.Add(Color, 0.2 + r.NextDouble() * 0.2); //(r.NextDouble() * .5) - .75);
 			}
-			ResearchMission mission = new ResearchMission(team);
+			ResearchMission mission = new ResearchMission(this, team);
 			Missions.Add(mission);
-			team.MissionID = mission.ID;
 		}
 		public ProjectResult IncrementDay()
 		{
@@ -62,7 +61,7 @@ namespace SorceryClans3.Data.Models
 					SpellDiscovery? spell = AddProgress(team);
 					if (spell != null)
 						Result.Discoveries.Add(spell);
-					team.MissionID = FacilityID;
+					team.AssignMission(Facility);
 					if (Missions[i].Cycle)
 					{
 						TeamResetIDs.Add(team.ID);

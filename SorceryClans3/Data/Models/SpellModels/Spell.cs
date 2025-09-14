@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using SorceryClans3.Data.Abstractions;
 namespace SorceryClans3.Data.Models
 {
-	public class Spell : ISpell
+	public class Spell : ISpell, IMission
 	{
 		[Key] public Guid ID { get; set; }
+		public Guid MissionID => ID;
+		public string MissionName => Beast != null ? $"Attempt to tame the {Beast.FullName}" : "Unknown spell mission";
 		//base stats & casting
 		public int MoneyToCast { get; set; }
 		public int PowerToCast { get; set; }

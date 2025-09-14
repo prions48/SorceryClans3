@@ -1,14 +1,18 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.Metadata.Ecma335;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
-    public class Mission
+    public class Mission : IMission
     {
-        public Guid ID { get; set; }
+        public Guid ID { get; set; } = Guid.NewGuid();
+        public Guid MissionID => ID;
         protected int Seed { get; set; }
         public Team? AttemptingTeam { get; set; }
         public MissionType Type { get; set; } = MissionType.Mercenary;
         public ClientCity Client { get; set; } = new(0);
+        public string MissionName => $"Mercenary Mission for {Client.CityName}";
         public MapLocation? Location { get; set; }
         public ClientImportance Importance { get; set; }
         public DateTime ExpirationDate { get; set; }

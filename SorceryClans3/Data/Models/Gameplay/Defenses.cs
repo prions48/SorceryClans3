@@ -1,4 +1,5 @@
 using System.Reflection.Metadata.Ecma335;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
@@ -20,9 +21,11 @@ namespace SorceryClans3.Data.Models
             Structures.Add(new(type));
         }
     }
-    public class DefenseStructure
+    public class DefenseStructure : IMission
     {
         public Guid ID { get; set; } = Guid.NewGuid();
+        public Guid MissionID => ID;
+        public string MissionName => $"Constructing {Type}";
         public Team? Team { get; set; } = null;
         public DefenseType Type { get; set; }
         public DefenseStructure(DefenseType type)

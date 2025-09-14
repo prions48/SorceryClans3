@@ -96,7 +96,7 @@
         {
             if (interrupt)
             {
-                team.MissionID = Facility.ID;
+                team.AssignMission(Facility);
                 Facility.Project!.Missions.Remove(mission);
             }
             else

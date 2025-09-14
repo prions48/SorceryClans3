@@ -163,6 +163,7 @@
                     <MudTh>Sub</MudTh>
                     <MudTh>Heal</MudTh>
                     <MudTh># Soldiers</MudTh>
+                    <MudTh>Assignment</MudTh>
                     <MudTh>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -172,6 +173,7 @@
                     <MudTd>@context.SScore</MudTd>
                     <MudTd>@context.KScore</MudTd>
                     <MudTd>@context.SoldierCount</MudTd>
+                    <MudTd>@context.MissionName</MudTd>
                     <MudTd>
                         <MudIconButton Icon="@Icons.Material.TwoTone.ManageAccounts" Color="Color.Info" OnClick="() => ManageTeam(context)" />
                     </MudTd>
@@ -1472,7 +1474,7 @@
                         parameters = new DialogParameters();
                         parameters.Add(nameof(SoldierPicker.Soldiers), Engine.Soldiers.Where(e => (e.Team == null || e.Team.MissionID == null) && spell.EligibleTarget(e)).ToList());
                         parameters.Add(nameof(SoldierPicker.ShowStats), true);
-                        dialog = dialogService.Show<SoldierPicker>("Select Caster", parameters, options);
+                        dialog = dialogService.Show<SoldierPicker>("Select Spell Recipient", parameters, options);
                         result = await dialog.Result;
                         if (result?.Canceled == false)
                         {

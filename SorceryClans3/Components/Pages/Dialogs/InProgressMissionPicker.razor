@@ -13,17 +13,33 @@
                 <MudTh>Select</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.MissionToComplete!.Client.CityName</MudTd>
-                <MudTd>@context.MissionToComplete!.AttemptingTeam!.TeamName</MudTd>
+                <MudTd>
+                    @if (context.MissionToComplete is Mission mission)
+                    {
+                        <p>@mission.Client.CityName</p>
+                    }
+                    </MudTd>
+                <MudTd>
+                    @if (context.MissionToComplete is Mission mission)
+                    {
+                        <p>@mission.AttemptingTeam!.TeamName</p>
+                    }
+                </MudTd>
                 <MudTd>
                     <MudStack>
                         <MudStack Row>
                             <p>Com:</p>
-                            <p>@context.MissionToComplete!.CDisp</p>
+                            @if (context.MissionToComplete is Mission mission)
+                            {
+                                <p>@mission.CDisp</p>
+                            }
                         </MudStack>
                         <MudStack Row>
                             <p>Sub:</p>
-                            <p>@context.MissionToComplete!.SDisp</p>
+                            @if (context.MissionToComplete is Mission mission)
+                            {
+                                <p>@mission.SDisp</p>
+                            }
                         </MudStack>
                     </MudStack>
                 </MudTd>
@@ -31,11 +47,17 @@
                     <MudStack>
                         <MudStack Row>
                             <p>Com:</p>
-                            <p>@context.MissionToComplete!.AttemptingTeam!.CScore</p>
+                            @if (context.MissionToComplete is Mission mission)
+                            {
+                                <p>@mission.AttemptingTeam!.CScore</p>
+                            }
                         </MudStack>
                         <MudStack Row>
                             <p>Sub:</p>
-                            <p>@context.MissionToComplete!.AttemptingTeam!.SScore</p>
+                            @if (context.MissionToComplete is Mission mission)
+                            {
+                                <p>@mission.AttemptingTeam!.SScore</p>
+                            }
                         </MudStack>
                     </MudStack>
                 </MudTd>

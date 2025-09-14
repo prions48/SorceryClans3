@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Filters;
-using MudBlazor.Extensions;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
@@ -9,7 +7,11 @@ namespace SorceryClans3.Data.Models
     {
         public Guid ID { get; set; }
         public string TeamName { get; set; }
-        public Guid? MissionID { get; set; }
+        public IMission? Mission { get; set; }
+        public Guid? MissionID => Mission?.MissionID;
+        public void ClearMission() => Mission = null;
+        public void AssignMission(IMission mission) => Mission = mission;
+        public string MissionName => Mission?.MissionName ?? "Idle";
         public MapLocation? Location { get; set; } = null;
         public MapLocation BaseLocation { get { return Location ?? MapLocation.HomeBase; } }
         public Resources Resources { get; set; } = new();

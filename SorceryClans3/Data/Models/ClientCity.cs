@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using SorceryClans3.Data.Abstractions;
 using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
 {
-    public class ClientCity
+    public class ClientCity : IMission
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
+        public Guid MissionID => ID;
+        public string MissionName => $"Traveling to {CityName}";
         public Resources Resources { get; set; } = new();
         public MapLocation Location { get; set; }
         public int Distance { get { return (int)Math.Ceiling(Location.GetDistance()); } }

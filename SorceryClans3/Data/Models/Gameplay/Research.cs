@@ -45,7 +45,7 @@ namespace SorceryClans3.Data.Models
 			{
 				Body.Add(Color, new BodyOfKnowledge());
 			}
-			ResearchProject project = new ResearchProject(facility.ID, Color);
+			ResearchProject project = new ResearchProject(facility, Color);
 			facility.Project = project;
 		}
 		public void AddTeamToProject(ResearchProject project, Team team)

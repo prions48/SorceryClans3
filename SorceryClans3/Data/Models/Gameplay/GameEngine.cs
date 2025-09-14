@@ -1,5 +1,5 @@
 using Microsoft.Identity.Client;
-
+using SorceryClans3.Data.Abstractions;
 namespace SorceryClans3.Data.Models
 {
     public class GameEngine
@@ -52,13 +52,13 @@ namespace SorceryClans3.Data.Models
         public void StartMission(Mission mission, Team team)
         {
             mission.AttemptingTeam = team;
-            team.MissionID = mission.ID;
+            team.AssignMission(mission);
             Events.Add(new(mission, Settings.MissionEndTime(mission)));
         }
         public void StartContractMission(MissionContract mission, Team team, bool first = false)
         {
             mission.AttemptingTeam = team;
-            team.MissionID = mission.ID;
+            team.AssignMission(mission);
             Events.Add(new(mission, Settings.MissionEndTime(mission), false));
             if (first)
                 Events.Add(new(mission, Settings.PayDay(mission),true));
@@ -66,12 +66,12 @@ namespace SorceryClans3.Data.Models
         public void AssignDefense(Team team, DefenseStructure structure)
         {
             structure.Team = team;
-            team.MissionID = structure.ID;
+            team.AssignMission(structure);
             Events.Add(new(team, MissionType.Defending, Settings.DefenseDate(structure.Type), structure));
         }
         public void StartHunt(Team team, Spell spell, Soldier? target = null)
         {
-            team.MissionID = spell.ID;
+            team.AssignMission(spell);
             Events.Add(new(team, spell, target, Settings.HuntDate(spell)));
         }
         public void UnassignDefense(DefenseStructure structure)
@@ -79,7 +79,7 @@ namespace SorceryClans3.Data.Models
             if (structure.Team != null)
             {
                 List<GameEvent> events = Events.Where(e => e.TeamInTransit?.ID == structure.Team.ID && e.Type == MissionType.Defending).ToList();
-                structure.Team.MissionID = null;
+                structure.Team.ClearMission();
                 structure.Team = null;
                 int ctr = 0;
                 while (ctr < Events.Count) //remove cycling missions
@@ -102,32 +102,32 @@ namespace SorceryClans3.Data.Models
         {
             team.Resources.TransferResources(city.Resources);
             Events.Add(new(team, Settings.TravelCompletion(city, team), city, roundtrip));
-                team.MissionID = Guid.Empty;
+            team.AssignMission(Assignment.Travel);
             if (!roundtrip)
             {
-                team.MissionID = Guid.Empty;
                 team.Location = null;
                 city.RemoveTeam(team);
             }
         }
         public void StartRescueMission(Team rescuer, Team rescuee, MapLocation location)
         {
-            rescuer.MissionID = rescuee.ID;
-            Events.Add(new(rescuer, rescuee, location, Settings.TravelCompletion(rescuer.Location ?? MapLocation.HomeBase, location, rescuer.DScore)));
+            RescueMission mission = new RescueMission(rescuer, rescuee);
+            rescuer.AssignMission(mission);
+            Events.Add(new(mission, location, Settings.TravelCompletion(rescuer.Location ?? MapLocation.HomeBase, location, rescuer.DScore)));
         }
         public void StartTrainingMission(Team team, Soldier soldier)
         {
-            team.MissionID = soldier.ID;
+            team.AssignMission(new Assignment(MissionType.LeadershipTraining));
             Events.Add(new(team, MissionType.LeadershipTraining, Settings.TrainingDate(), soldier));
         }
         public void StartMedTrainMission(Team team, Soldier medic)
         {
-            team.MissionID = medic.ID;
+            team.AssignMission(new Assignment(MissionType.MedicalTraining));
             Events.Add(new(team, MissionType.MedicalTraining, Settings.TrainingDate(), medic));
         }
         public void StartStyleTrainMission(Team team, Soldier teacher, StyleTemplate template)
         {
-            team.MissionID = teacher.ID;
+            team.AssignMission(new Assignment(template));
             Events.Add(new(team, MissionType.StyleTraining, Settings.TrainingDate(), teacher, template));
         }
         public List<DefenseType> InProgressBuildings(DefenseType? type = null)
@@ -156,7 +156,10 @@ namespace SorceryClans3.Data.Models
                         city.Teams.Add(team);
                 }
             }
-            team.MissionID = returning ? Guid.Empty : city.ID;
+            if (returning)
+                team.AssignMission(Assignment.Travel);
+            else
+                team.AssignMission(city);
             Events.Add(new(team, Settings.TravelCompletion(MapLocation.HomeBase, /*this needs cleanup later*/ city.Location, team.DScore), liaison && !returning ? MissionType.LiaisonAtLocation : MissionType.TravelToLocation, returning ? MapLocation.HomeBase : city.Location));
         }
         public List<GameEvent> IncrementTime() //called internally
@@ -283,7 +286,7 @@ namespace SorceryClans3.Data.Models
                         //remove? or only if !failed?... for now only 1 try
                         //could allow retries on certain missions, do that logic here
                         merc.DisplayMission!.Client.FinishMission(merc);
-                        merc.DisplayTeam!.MissionID = Guid.Empty;
+                        merc.DisplayTeam!.AssignMission(Assignment.Travel);
                         displays.Add(merc);
                         if (merc.DisplayTeam.GetAllSoldiers.Any(e => e.IsAlive))
                         {
@@ -302,7 +305,7 @@ namespace SorceryClans3.Data.Models
                         var toll = merc2.DisplayMission!.Client.TollContract(merc2);
                         if (toll != null)
                         {
-                            merc2.DisplayTeam!.MissionID = Guid.Empty;
+                            merc2.DisplayTeam!.AssignMission(Assignment.Travel);
                             Events.Add(new GameEvent(merc2.DisplayTeam, Settings.MissionTravelTime(merc2.DisplayMission!), MissionType.TravelToLocation, merc2.DisplayTeam!.Location ?? MapLocation.HomeBase));
                             displays.Add(toll);
                         }

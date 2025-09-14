@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
+using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
-    public class ResearchFacility
+    public class ResearchFacility : IMission
     {
         [Key] public Guid ID { get; set; }
+        public Guid MissionID => ID;
+        public string MissionName => $"Ready at {FacilityName}";
         public int NumTeams { get; set; } = 1;
         public List<Team> Teams { get; set; } = [];
         public List<SpellCastMission> SpellCastMissions { get; set; } = [];
@@ -21,6 +24,19 @@ namespace SorceryClans3.Data.Models
                 return size + ", " + Project.GetColor.ToString() + " research with " + Project.TeamIDs.Count + " Team" + (Project.TeamIDs.Count == 1 ? "" : "s");
             }
         }
+        private string FacilityName
+        {
+            get
+            {
+                MagicColor? color = Project?.GetColor;
+                switch (color)
+                {
+                    case null: return "Empty Facility";
+                    case MagicColor.None: return "Open Research Facility";
+                    default: return $"{color} Magic Research Facility";
+                }
+            }
+        }
         public ResearchFacility(Action callback)
         {
             ID = Guid.NewGuid();
@@ -29,13 +45,13 @@ namespace SorceryClans3.Data.Models
         public void AddTeam(Team team)
         {
             Teams.Add(team);
-            team.MissionID = ID;
+            team.AssignMission(this);
             AddTeamKnowledge.Invoke();
         }
         public void RemoveTeam(Team team)
         {
             if (Teams.Remove(team))
-                team.MissionID = null;
+                team.ClearMission();
         }
         public void StartCastSpell(Team team, Spell spell, Soldier? caster = null, Soldier? target = null, int? quantity = null)
         {
@@ -43,7 +59,7 @@ namespace SorceryClans3.Data.Models
             {
                 SpellCastMission mission = new(spell, team, caster, target, quantity);
                 SpellCastMissions.Add(mission);
-                team.MissionID = mission.ID;
+                team.AssignMission(mission);
             }
         }
         public List<SpellCastMission> IncrementDay()
@@ -56,7 +72,7 @@ namespace SorceryClans3.Data.Models
                 if (result != null)
                 {
                     spellmissions.Add(result);
-                    SpellCastMissions[ctr].CastingTeam.MissionID = ID;
+                    SpellCastMissions[ctr].CastingTeam.AssignMission(this);
                     SpellCastMissions.RemoveAt(ctr);
                 }
                 else

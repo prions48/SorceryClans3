@@ -866,7 +866,7 @@
                         Snackbar.Add(SpellMissions[j].TargetSoldier!.SoldierName + " has become " + spell.GreaterDemon.DemonName, Severity.Success);
                         spell.GreaterDemon.Apply(SpellMissions[j].TargetSoldier!);
                     }
-                    SpellMissions[j].CastingTeam.MissionID = null;
+                    //SpellMissions[j].CastingTeam.MissionID = null;
                     if (SpellMissions[j].TargetSoldier?.Team != null)
                         UnBusy.Add(SpellMissions[j].TargetSoldier!.Team!);
                     SpellMissions.RemoveAt(j);
@@ -887,8 +887,8 @@
                         break;
                     }
                 }
-                if (!found)
-                    team.MissionID = null;
+                //if (!found)
+                    //team.MissionID = null;
             }
         }
     }
@@ -1019,7 +1019,7 @@
                         {
                             if (soldier.Team != null)//always true in tutorial
                             {
-                                soldier.Team.MissionID = Guid.Empty;
+                                //soldier.Team.MissionID = Guid.Empty;
                             }
                             SpellMissions.Add(new SpellCastMission(spell, team, caster, soldier, quantity));
                         }
@@ -1104,7 +1104,7 @@
                         huntermission.TargetID = spell.Beast.ID;
                         huntermission.HunterID = soldier.ID;
                         HunterMissions.Add(huntermission);
-                        team.MissionID = huntermission.ID;
+                        //team.MissionID = huntermission.ID;
                         //huntermission.StartMission(team);
                         spell.Consumables--;
                     }
