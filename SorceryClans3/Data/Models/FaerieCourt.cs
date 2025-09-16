@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SorceryClans3.Data.Abstractions;
 using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
@@ -28,11 +29,12 @@ namespace SorceryClans3.Data.Models
             return faerie;
         }
     }
-    public class FaerieCourt
+    public class FaerieCourt : IMap
     {
         [Key] public Guid ID { get; set; }
         public FaerieSeason Season { get; set; }
-        public string CourtName { get; set;}
+        public string CourtName { get; set; }
+        public string TooltipText => CourtName;
         public int CourtPower { get; set; }
         public int CourtLevel { get; set; }
         public int NumFaeries { get; set; }

@@ -41,7 +41,7 @@ namespace SorceryClans3.Data.Models
         }
         public FaerieCourt? GetRandomCourt(double limdist = 100, double nullpct = 0)
         {
-            return GetRandomCourt(new MapLocation(0,0), nullpct);
+            return GetRandomCourt(new MapLocation(0,0), limdist, nullpct);
         }
         public FaerieCourt? GetRandomCourt(MapLocation loc, double limdist = 100, double nullpct = 0)
         {

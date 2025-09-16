@@ -3,6 +3,7 @@
 @using System.Timers
 @using SorceryClans3.Data.Users
 @using SorceryClans3.Components.Pages.Dialogs
+@using SorceryClans3.Components.Maps
 @inject ISnackbar Snackbar
 @inject IDialogService dialogService
 
@@ -184,6 +185,7 @@
     <MudTabPanel Text="Assignments">
         <MudTabs Position="Position.Top">
             <MudTabPanel Text="Clients">
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="ClientMap">View Map</MudButton>
                 <MudTable Items="Engine.Clients" Striped Bordered>
                     <HeaderContent>
                         <MudTh>Name</MudTh>
@@ -1667,4 +1669,24 @@
         var dialog = dialogService.Show<SoldierInspectorDialog>(pet.BeastName, parameters, options);
         var result = await dialog.Result;
     }
+
+    #region Map Experiments
+    private async Task ClientMap()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        //var maps = Engine.Clients.Select(e => e as IMap).ToList();
+        var maps = new List<IMap>();
+        maps.Add(new ClientCity(0) { CityName = "Home Base", Location = MapLocation.HomeBase});
+        maps.Add(new ClientCity(0) { CityName = "West", Location = new MapLocation(-50.0, 0.0)});
+        maps.Add(new ClientCity(0) { CityName = "East", Location = new MapLocation(50.0, 0.0)});
+        maps.Add(new ClientCity(0) { CityName = "North", Location = new MapLocation(0.0, 50.0)});
+        maps.Add(new ClientCity(0) { CityName = "South", Location = new MapLocation(0.0, -50.0)});
+        parameters.Add(nameof(MapDialog.Icons), maps);
+        var dialog = dialogService.Show<MapDialog>("Client Map", parameters, options);
+        var result = await dialog.Result;
+    }
+    #endregion
 }
