@@ -2,16 +2,20 @@ using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
 {
-    public class SpiritWeather : Artifact
+    public class SpiritWeather : Artifact, IMapZone
     {
         public Guid ID { get; set; }
         public Guid TypeID { get; set; }
         public string WeatherName { get { return EffectAdj + " " + EffectName; } }
+        public string TooltipName => WeatherName;
         public string EffectName { get; set; } = string.Empty;
         public string EffectAdj { get; set; } = string.Empty;
         public MapLocation Location { get; set; }
         public double EffectiveMajorRange { get; set; }
         public double EffectiveMinorRange { get; set; }
+        public double SmallRadius => EffectiveMajorRange;
+        public double LargeRadius => EffectiveMinorRange;
+        public MudBlazor.Color Color => MudBlazor.Color.Info;
         public double StealthOnly { get; set; }
         private int EffectScale { get; set; } = 1;//larger area
         private int EffectScope { get; set; } = 1;//larger power

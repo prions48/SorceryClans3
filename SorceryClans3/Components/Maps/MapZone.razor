@@ -1,0 +1,52 @@
+@namespace SorceryClans3.Components.Maps
+<div class="@($"circle1{rand}")"></div>
+<div class="@($"circle2{rand}")"></div>
+@code {
+    [Parameter, EditorRequired] public IMapZone MapData { get; set; }
+    [Parameter] public double MagFactor { get; set; } = 2.0;
+    [Parameter] public int XFrame { get; set; } = 0;
+    [Parameter] public int YFrame { get; set; } = 0;
+    private double Xcoord => 200 + (MapData.X * MagFactor) - XFrame;
+    private double Ycoord => 200 - (MapData.Y * MagFactor) + YFrame;
+    private Guid rand = Guid.NewGuid();
+    private string IconColor
+    {
+        get
+        {
+            switch (MapData.Color)
+            {
+                case MudBlazor.Color.Info: return "blue";
+                case MudBlazor.Color.Success: return "green";
+                case MudBlazor.Color.Warning: return "orange";
+                case MudBlazor.Color.Error: return "red";
+                case MudBlazor.Color.Dark: return "black";
+                case MudBlazor.Color.Primary: return "purple";
+                case MudBlazor.Color.Secondary: return "fuchsia";
+                default: return "black";
+            }
+        }
+    }
+}
+
+<style>
+    @($".circle1{rand}") {
+        width: @($"{(MapData.SmallRadius * 2 * MagFactor).ToString("N2")}")px;
+        height: @($"{(MapData.SmallRadius * 2 * MagFactor).ToString("N2")}")px;
+        position: absolute;
+        top:@($"{Ycoord - MapData.SmallRadius * MagFactor}")px;
+        left:@($"{Xcoord - MapData.SmallRadius * MagFactor}")px;
+        background-color: @IconColor;
+        border-radius: 50%;
+        opacity: 25%;
+    }
+    @($".circle2{rand}") {
+        width: @($"{(MapData.LargeRadius * 2 * MagFactor).ToString("N2")}")px;
+        height: @($"{(MapData.LargeRadius * 2 * MagFactor).ToString("N2")}")px;
+        position: absolute;
+        top:@($"{Ycoord - MapData.LargeRadius * MagFactor}")px;
+        left:@($"{Xcoord - MapData.LargeRadius * MagFactor}")px;
+        background-color: @IconColor;
+        border-radius: 50%;
+        opacity: 25%;
+    }
+</style>

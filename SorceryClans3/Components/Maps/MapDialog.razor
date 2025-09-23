@@ -1,30 +1,47 @@
 @namespace SorceryClans3.Components.Maps
 @using SorceryClans3.Data.Abstractions
+@using System.Runtime.Versioning
 <MudDialog>
     <DialogContent>
-        <MudStack Row Justify="Justify.SpaceBetween">
-            <MudTextField Value="TooltipText1" ReadOnly />
-            <MudTextField Value="TooltipText2" ReadOnly />
-        </MudStack>
         <MudContainer Style="width: 400px; height: 400px; border-width: 2px; border-style: solid; border-color: black;">
+            @if (IsInFrame(HomeIcon.Location))
+            {
+                <div @onmouseenter="() => SetText(HomeIcon)">
+                    <MapIcon MapData="HomeIcon" Shape="MapShape.Square" MagFactor="MagFactor" XFrame="XFrame" YFrame="YFrame" />
+                </div>
+            }
             @foreach (IMap map in Icons)
             {
-                @if (IsInFrame(map))
+                @if (IsInFrame(map.Location))
                 {
                     <div @onmouseenter="() => SetText(map)">
-                        <MapIcon MapData="map" Shape="MapShape.Triangle" MagFactor="MagFactor" XFrame="XFrame" YFrame="YFrame" />
+                        <MapIcon MapData="map" Shape="GetShape(map)" MagFactor="MagFactor" XFrame="XFrame" YFrame="YFrame" />
+                    </div>
+                }
+            }
+            @foreach (IMapZone zone in MapZones)
+            {
+                @if (IsInFrame(zone.Location))
+                {
+                    <div @onmouseenter="() => SetText(zone)">
+                        <MapZone MapData="zone" MagFactor="MagFactor" XFrame="XFrame" YFrame="YFrame" />
                     </div>
                 }
             }
         </MudContainer>
+        <MudStack Row Justify="Justify.SpaceBetween">
+            <MudTextField Value="TooltipText1" ReadOnly Label="Map Object" />
+            <MudTextField Value="TooltipText2" ReadOnly Label="Coordinates" />
+        </MudStack>
         <MudStack Row Justify="Justify.Center">
             <MudIconButton OnClick="MoveLeft" Icon="@(MudBlazor.Icons.Material.Filled.ArrowCircleLeft)" Color="Color.Info" />
             <MudIconButton OnClick="MoveRight" Icon="@(MudBlazor.Icons.Material.Filled.ArrowCircleRight)" Color="Color.Info" />
             <MudIconButton OnClick="MoveUp" Icon="@(MudBlazor.Icons.Material.Filled.ArrowCircleUp)" Color="Color.Info" />
             <MudIconButton OnClick="MoveDown" Icon="@(MudBlazor.Icons.Material.Filled.ArrowCircleDown)" Color="Color.Info" />
-            <MudIconButton OnClick="FactorUp" Icon="@(MudBlazor.Icons.Material.Filled.ExposurePlus1)" Color="Color.Info" />
-            <MudIconButton OnClick="FactorDown" Icon="@(MudBlazor.Icons.Material.Filled.ExposureNeg1)" Color="Color.Info" />
+            <MudIconButton OnClick="FactorUp" Icon="@(MudBlazor.Icons.Material.Filled.ZoomIn)" Color="Color.Info" />
+            <MudIconButton OnClick="FactorDown" Icon="@(MudBlazor.Icons.Material.Filled.ZoomOut)" Color="Color.Info" />
         </MudStack>
+        @*<MudNumericField HideSpinButtons @bind-Value="Step" Min="1" />*@
     </DialogContent>
 </MudDialog>
 
@@ -32,11 +49,21 @@
     //[Parameter, EditorRequired] public GameSettings Settings { get; set; } = default!;//?
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public List<IMap> Icons { get; set; } = [];
+    [Parameter] public List<IMapZone> MapZones { get; set; } = [];
+    [Parameter] public MapLocation? Center { get; set; }
     private string? TooltipText1 { get; set; }
     private string? TooltipText2 { get; set; }
-    private double MagFactor { get; set; } = 2.0;
+    private double MagFactor { get; set; } = 5.0;
     private int XFrame { get; set; } = 0;
     private int YFrame { get; set; } = 0;
+    protected override void OnInitialized()
+    {
+        if (Center != null)
+        {
+            XFrame = (int)(Center.X * MagFactor);
+            YFrame = (int)(Center.Y * MagFactor);
+        }
+    }
     private void Close()
     {
         MudDialog.Close(DialogResult.Cancel());
@@ -46,29 +73,35 @@
         TooltipText1 = map.TooltipText;
         TooltipText2 = $"{map.X.ToString("N2")} {map.Y.ToString("N2")}";
     }
-    private bool IsInFrame(IMap map)
+    private void SetText(IMapZone mapZone)
     {
-        bool ret = map.X * MagFactor > -200 + XFrame;
-        ret = ret && map.X * MagFactor < 200 + XFrame;
-        ret = ret && map.Y * MagFactor > -200 + YFrame;
-        ret = ret && map.Y * MagFactor < 200 + YFrame;
+        TooltipText1 = mapZone.TooltipName + $" {mapZone.LargeRadius:N1} {mapZone.SmallRadius:N1}";
+        TooltipText2 = $"{mapZone.X.ToString("N2")} {mapZone.Y.ToString("N2")}";
+    }
+    private bool IsInFrame(MapLocation loc)
+    {
+        bool ret = loc.X * MagFactor > -180 + XFrame;
+        ret = ret && loc.X * MagFactor <= 200 + XFrame;
+        ret = ret && loc.Y * MagFactor >= -180 + YFrame;
+        ret = ret && loc.Y * MagFactor < 200 + YFrame;
         return ret;
     }
+    private int Step { get; set; } = 50;
     private void MoveLeft()
     {
-        XFrame -= 50;
+        XFrame -= Step;
     }
     private void MoveRight()
     {
-        XFrame += 50;
+        XFrame += Step;
     }
     private void MoveUp()
     {
-        YFrame += 50;
+        YFrame += Step;
     }
     private void MoveDown()
     {
-        YFrame -= 50;
+        YFrame -= Step;
     }
     private void FactorUp()
     {
@@ -83,5 +116,16 @@
             MagFactor /= 2;
         else
             MagFactor -= 1.0;
+    }
+    private PlainMapIcon HomeIcon = new();
+    private MapShape GetShape(IMap map)
+    {
+        switch (map)
+        {
+            case Mission: return MapShape.Triangle;
+            case ClientCity: return MapShape.Square;
+            case PlainMapIcon: return MapShape.Square;
+            default: return MapShape.Circle;
+        }
     }
 }

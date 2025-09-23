@@ -1,6 +1,6 @@
 @namespace SorceryClans3.Components.Maps
 <span style="@($"position: absolute; top:{Ycoord}px; left:{Xcoord}px; color:{IconColor};")">
-    <div class="@ShapeString"></div>
+    <div class="@($"{ShapeString}{rand}")"></div>
 </span>
 @code {
     [Parameter, EditorRequired] public IMap MapData { get; set; }
@@ -8,20 +8,40 @@
     [Parameter] public double MagFactor { get; set; } = 2.0;
     [Parameter] public int XFrame { get; set; } = 0;
     [Parameter] public int YFrame { get; set; } = 0;
+    private Guid rand = Guid.NewGuid();
     private double Xcoord => 200 + (MapData.X * MagFactor) - XFrame;
     private double Ycoord => 200 - (MapData.Y * MagFactor) + YFrame;
+    private char HexChar(int num)
+    {
+        return num > 9 ? (char)(num + 55) : (char)(num + 48);
+    }
     private string IconColor
     {
         get
         {
+            if (MapData is Mission mission)
+            {
+                int level = mission.PowerGain();
+                //normalize to 256 then change to hex
+                double scale = level * 256.0 / 1000000; //normalize to 1 million for now
+                if (scale > 255)
+                    scale = 255;
+                int firstplace = 15 - (int)(scale % 16);
+                int secondplace = 15 - (int)(scale / 16);
+                char first = HexChar(firstplace);
+                char second = HexChar(secondplace);
+                return $"#FF{second}{first}00";
+            }
             switch (MapData.Color)
             {
                 case MudBlazor.Color.Info: return "blue";
                 case MudBlazor.Color.Success: return "green";
                 case MudBlazor.Color.Warning: return "orange";
                 case MudBlazor.Color.Error: return "red";
-                //case MudBlazor.Color.Dark: return "black";
-                default: return "red";//"black";
+                case MudBlazor.Color.Dark: return "black";
+                case MudBlazor.Color.Primary: return "purple";
+                case MudBlazor.Color.Secondary: return "fuchsia";
+                default: return "black";
             }
         }
     }
@@ -41,22 +61,22 @@
 }
 
 <style>
-    .square {
-        width: 30px;
-        height: 30px;
+    @($".square{rand}") {
+        width: 20px;
+        height: 20px;
         background-color: @IconColor;
     }
-    .circle {
-        width: 30px;
-        height: 30px;
+    @($".circle{rand}") {
+        width: 20px;
+        height: 20px;
         background-color: @IconColor;
         border-radius: 50%;
     }
-    .triangle {
+    @($".triangle{rand}") {
         width: 0;
         height: 0;
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
-        border-bottom: 30px solid @IconColor;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 20px solid @IconColor;
     }
 </style>

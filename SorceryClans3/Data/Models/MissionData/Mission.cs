@@ -4,7 +4,7 @@ using SorceryClans3.Data.Abstractions;
 
 namespace SorceryClans3.Data.Models
 {
-    public class Mission : IMission
+    public class Mission : IMission, IMap
     {
         public Guid ID { get; set; } = Guid.NewGuid();
         public Guid MissionID => ID;
@@ -13,7 +13,9 @@ namespace SorceryClans3.Data.Models
         public MissionType Type { get; set; } = MissionType.Mercenary;
         public ClientCity Client { get; set; } = new(0);
         public string MissionName => $"Mercenary Mission for {Client.CityName}";
-        public MapLocation? Location { get; set; }
+        public MapLocation Location { get; set; }
+        public string TooltipText => MissionName;
+        public MudBlazor.Color Color => MudBlazor.Color.Secondary;
         public ClientImportance Importance { get; set; }
         public DateTime ExpirationDate { get; set; }
         public List<SpiritWeather> StatMods { get; set; } = [];
