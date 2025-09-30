@@ -40,6 +40,7 @@
             <MudIconButton OnClick="MoveDown" Icon="@(MudBlazor.Icons.Material.Filled.ArrowCircleDown)" Color="Color.Info" />
             <MudIconButton OnClick="FactorUp" Icon="@(MudBlazor.Icons.Material.Filled.ZoomIn)" Color="Color.Info" />
             <MudIconButton OnClick="FactorDown" Icon="@(MudBlazor.Icons.Material.Filled.ZoomOut)" Color="Color.Info" />
+            <MudIconButton OnClick="Normalize" Icon="@(MudBlazor.Icons.Material.Filled.Fullscreen)" Color="Color.Info" />
         </MudStack>
         @*<MudNumericField HideSpinButtons @bind-Value="Step" Min="1" />*@
     </DialogContent>
@@ -116,6 +117,14 @@
             MagFactor /= 2;
         else
             MagFactor -= 1.0;
+    }
+    private void Normalize()
+    {
+        List<ILocated> locations = [];
+        foreach (IMap map in Icons)
+            if (map is ILocated loc)
+                locations.Add(loc);
+        locations.NormalizeLocations();
     }
     private PlainMapIcon HomeIcon = new();
     private MapShape GetShape(IMap map)

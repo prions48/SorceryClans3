@@ -89,38 +89,5 @@ namespace SorceryClans3.Data.Models
             }
             return faerie;
         }
-        public void NormalizeLocations()
-        {
-            //map normalizing algorithm lol
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < Courts.Count; j++)
-                {
-                    double closest = 500;
-                    int closestindex = -1;
-                    for (int k = 0; k < Courts.Count; k++)
-                    {
-                        if (j == k)
-                            continue;
-                        double distance = Courts[j].Location.GetDistance(Courts[k].Location);
-                        if (distance < closest)
-                        {
-                            closest = distance;
-                            closestindex = k;
-                        }
-                    }
-                    if (closestindex == -1)
-                        continue;
-                    Direction dir = Courts[j].Location.GetDirection(Courts[closestindex].Location);
-                    switch (dir)
-                    {
-                        case Direction.Ypos: Courts[j].Location.MoveDown(); break;
-                        case Direction.Yneg: Courts[j].Location.MoveUp(); break;
-                        case Direction.Xpos: Courts[j].Location.MoveLeft(); break;
-                        case Direction.Xneg: Courts[j].Location.MoveRight(); break;
-                    }
-                }
-            }
-        }
     }
 }

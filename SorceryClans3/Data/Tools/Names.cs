@@ -49,15 +49,14 @@ namespace SorceryClans3.Data.Tools
             }
             return "Sharingan";
         }
-        
-        
         private static string NameCase(this string s)
         {
-            return s.Substring(0,1).ToUpper() + s.Substring(1);
+			if (string.IsNullOrEmpty(s))
+				return "";
+            return s.Substring(0, 1).ToUpper() + s.Substring(1);
         }
         private static string Syllable(bool first = false)
         {
-            
             string tempsyl = "";
 			int vowel = r.Next(9);
 			switch (vowel) {

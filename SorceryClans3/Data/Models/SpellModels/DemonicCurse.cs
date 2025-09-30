@@ -35,7 +35,6 @@ namespace SorceryClans3.Data.Models
 
         //attackpower scaling:
         //1 is a very minimal curse, 40 is mighty, 75 is maximum annihilation
-
         public DemonicCurse(int pl)
         {
             Random r = new();

@@ -4,7 +4,7 @@ using SorceryClans3.Data.Tools;
 
 namespace SorceryClans3.Data.Models
 {
-    public class ClientCity : IMission, IMap
+    public class ClientCity : IMission, IMap, ILocated
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public Guid MissionID => ID;

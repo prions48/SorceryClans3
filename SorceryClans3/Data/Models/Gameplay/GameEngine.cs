@@ -36,10 +36,29 @@ namespace SorceryClans3.Data.Models
         public Resources Resources { get; set; } = new(); //home base resources
         public Defenses Defenses { get; set; } = new();
         public Research Research { get; set; }
+        public List<Rival> Rivals { get; set; } = [];
         private Random r = new();
         public GameEngine()
         {
             Research = new(CreateSoldiers, AddArtifact);
+            for (int i = 0; i <= 20; i++)
+            {
+                ClientCity city = new(i);
+                city.NewMissionCycle(Settings);
+                Clients.Add(city);
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                Rivals.Add(new(i, Rivals));
+                for (int j = 0; j < r.Next(5 - i / 2); j++)
+                    Rivals.Add(new(i, Rivals));
+            }
+            List<ILocated> locations = [];
+            foreach (ClientCity city in Clients)
+                locations.Add(city);
+            foreach (Rival rival in Rivals)
+                locations.Add(rival);
+            locations.NormalizeLocations(5);
         }
         private void CreateSoldiers(List<Soldier> soldiers)
         {

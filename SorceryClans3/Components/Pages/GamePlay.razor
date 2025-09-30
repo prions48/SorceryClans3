@@ -517,7 +517,25 @@
             </tbody>
         </MudSimpleTable>
     </MudTabPanel>
-    <MudTabPanel Text="Defenses"></MudTabPanel>
+    <MudTabPanel Text="Defenses">
+        <MudTabs Position="Position.Top">
+            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="RivalMap">View Rivals</MudButton>
+            <MudTabPanel Text="Rivals">
+                <MudTable Items="Rivals" Striped Bordered>
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh># Teams</MudTh>
+                        <MudTh>Distance</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.rname</MudTd>
+                        <MudTd>@context.Teams.Count</MudTd>
+                        <MudTd></MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudTabPanel>
+        </MudTabs>
+    </MudTabPanel>
 </MudTabs>
 
 <MudDialog @bind-Visible="ShowEventDialog" Options="new DialogOptions() { CloseOnEscapeKey=false, BackdropClick=false, FullWidth=true, MaxWidth=MaxWidth.ExtraLarge }">
@@ -587,6 +605,7 @@
     private GameEngine Engine { get; set; } = new();
     private List<GameEventDisplay> DisplayEvents { get; set; } = [];
     private List<GameEventDisplay> HistoryEvents { get; set; } = [];
+    private List<Rival> Rivals => Engine.Rivals;
     private string TSFormat
     {
         get
@@ -678,14 +697,6 @@
         foreach (Soldier s in TopSoldiers)
             Engine.Teams.First().AddSoldier(s);
         //END: team for testing only
-        for (int i = 0; i <= 5; i++)
-        {
-            ClientCity city = new(i);
-            city.NewMissionCycle(Engine.Settings);
-            Engine.Clients.Add(city);
-        }
-        //Engine.Clients.First().Liaisons.Add(Engine.Teams.First());
-        //Engine.Teams.First().MissionID = Engine.Clients.First().ID;
     }
     private async Task CreateTeam()
     {
@@ -1715,4 +1726,18 @@
         var result = await dialog.Result;
     }
     #endregion
+    private async Task RivalMap()
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        List<IMap> maps = new();
+        maps.Add(new PlainMapIcon());
+        foreach (Rival rival in Rivals)
+            maps.Add(rival);
+        parameters.Add(nameof(MapDialog.Icons), maps);
+        var dialog = dialogService.Show<MapDialog>("Rival Map", parameters, options);
+        var result = await dialog.Result;
+    }
 }
