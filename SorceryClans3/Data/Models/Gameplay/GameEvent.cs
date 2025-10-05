@@ -61,6 +61,16 @@ namespace SorceryClans3.Data.Models
             City = city;
             RoundTrip = roundtrip;
         }
+        public GameEvent(RivalAttackMission mission)
+        {
+            MissionToComplete = mission;
+            TeamInTransit = mission.AttackingTeam;
+            Visible = true;
+            FixedDate = false;
+            Destination = mission.Rival.Location;
+            Type = MissionType.AttackRivalBase;
+            EventCompleted = DateTime.MaxValue; //this might not save in a SQL DB, just watch out
+        }
         public GameEvent(Team team, MissionType type, DateTime duedate, Soldier soldier, StyleTemplate? style = null)
         {
             //training missions
@@ -301,6 +311,13 @@ namespace SorceryClans3.Data.Models
             {
                 Deads = Deads
             };
+        }
+        public GameEventDisplay ResolveRivalTeamCombat(Rival rival, RivalTeam rteam)
+        {
+            if (TeamInTransit == null)
+                throw new Exception("Rival team combat configuration error");
+            rival.AttackTeam(TeamInTransit, rteam);
+            return new("", EventCompleted);
         }
     }
 }

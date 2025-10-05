@@ -525,12 +525,16 @@
                     <HeaderContent>
                         <MudTh>Name</MudTh>
                         <MudTh># Teams</MudTh>
+                        <MudTh>Rank</MudTh>
                         <MudTh>Distance</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.rname</MudTd>
+                        <MudTd>@context.RivalName</MudTd>
                         <MudTd>@context.Teams.Count</MudTd>
-                        <MudTd></MudTd>
+                        <MudTd>@context.rank</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Handyman" Color="Color.Error" OnClick="() => AttackRival(context)" />
+                        </MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudTabPanel>
@@ -1739,5 +1743,25 @@
         parameters.Add(nameof(MapDialog.Icons), maps);
         var dialog = dialogService.Show<MapDialog>("Rival Map", parameters, options);
         var result = await dialog.Result;
+    }
+    private async Task AttackRival(Rival rival)
+    {
+        var options = new DialogOptions();
+        options.CloseOnEscapeKey = true;
+        options.MaxWidth = MaxWidth.ExtraLarge;
+        var parameters = new DialogParameters();
+        parameters.Add(nameof(TeamPicker.AvailableTeams), Teams.Where(e => e.MissionID == null).ToList());
+        parameters.Add(nameof(TeamPicker.CScore), true);
+        parameters.Add(nameof(TeamPicker.MScore), true);
+        parameters.Add(nameof(TeamPicker.SScore), true);
+        parameters.Add(nameof(TeamPicker.KScore), true);
+        var dialog = dialogService.Show<TeamPicker>("Select Team", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Canceled == false)
+        {
+            Team? team = result.Data as Team;
+            if (team != null)
+                Engine.StartRivalAttack(rival, team);
+        }
     }
 }

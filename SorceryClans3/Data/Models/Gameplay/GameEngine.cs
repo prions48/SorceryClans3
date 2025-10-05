@@ -37,6 +37,7 @@ namespace SorceryClans3.Data.Models
         public Defenses Defenses { get; set; } = new();
         public Research Research { get; set; }
         public List<Rival> Rivals { get; set; } = [];
+        public List<RivalAttackMission> AttackMissions { get; set; } = []; //probably a better place to put these later....
         private Random r = new();
         public GameEngine()
         {
@@ -148,6 +149,13 @@ namespace SorceryClans3.Data.Models
         {
             team.AssignMission(new Assignment(template));
             Events.Add(new(team, MissionType.StyleTraining, Settings.TrainingDate(), teacher, template));
+        }
+        public void StartRivalAttack(Rival rival, Team team)
+        {
+            RivalAttackMission mission = new(rival, team, Settings);
+            AttackMissions.Add(mission);
+            team.AssignMission(mission);
+            Events.Add(new(mission));//just for show, iterated differently
         }
         public List<DefenseType> InProgressBuildings(DefenseType? type = null)
         {
@@ -395,6 +403,41 @@ namespace SorceryClans3.Data.Models
                     merc.OpenRescueDialog = true;
                 }
             }
+
+            //rival attacks...
+            int z = 0;
+            while (z < AttackMissions.Count)
+            {
+                RivalAttackMission mission = AttackMissions[z];
+                var result = mission.Iterate();
+                displays.AddRange(result.Item1);
+                if (result.Item2 != null || !mission.AttackingTeam.GetAllSoldiers.Any(e => e.IsAlive))
+                {
+                    if (result.Item2 == null)
+                        displays.Add(new($"Team {mission.AttackingTeam.TeamName} has been wiped out!", Settings.CurrentTime));
+                    else
+                        displays.Add(result.Item2);
+                    //sometime soon I'd like to dream up a "triggerable" game event that fires on some condition being met
+                    //that can do away with this clunky bit of work
+                    int x = 0;
+                    while (x < Events.Count) //remove the "for show" event
+                    {
+                        if (Events[x].MissionToComplete?.MissionID == mission.ID)
+                            Events.RemoveAt(x);
+                        else
+                            x++;
+                    }
+                    //should probably replace all these pre-timed travels with the MapTravelLocation system
+                    if (mission.AttackingTeam.GetAllSoldiers.Any(e => e.IsAlive))
+                    {
+                        Events.Add(new GameEvent(mission.AttackingTeam, Settings.TravelCompletion(mission.Rival.Location, mission.AttackingTeam.BaseLocation, mission.AttackingTeam.DScore), MissionType.TravelToLocation, mission.AttackingTeam.BaseLocation));
+                        mission.AttackingTeam.Mission = Assignment.Travel;
+                    }
+                    AttackMissions.RemoveAt(z);
+                }
+                else
+                    z++;
+            }
             //research missions are separate for now
             if (Settings.CurrentTime.Hour == 0)
             {
@@ -432,6 +475,14 @@ namespace SorceryClans3.Data.Models
                         a++;
                     }
                 }
+                else
+                    a++;
+            }
+            a = 0;
+            while (a < Teams.Count)
+            {
+                if (Teams[a].SoldierCount == 0)
+                    Teams.RemoveAt(a);
                 else
                     a++;
             }

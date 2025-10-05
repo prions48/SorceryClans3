@@ -7,6 +7,7 @@ namespace SorceryClans3.Data.Models
     {
         [Key] public Guid ID { get; set; } = Guid.NewGuid();
         public string Message { get; set; } = "";
+        public List<string> AdditionalMessages { get; set; } = [];
         public DateTime EventDate { get; set; }
         public Mission? DisplayMission { get; set; }
         public Team? DisplayTeam { get; set; }
@@ -20,7 +21,7 @@ namespace SorceryClans3.Data.Models
         //add more things
         //e.g. results of spells, bandit attacks, etc etc
         //add rewards object?
-
+        public string CompleteMessages => AdditionalMessages.Count == 0 ? Message : Message + "<br />" + string.Join("<br />", AdditionalMessages);
         public GameEventDisplay(string msg, DateTime date)
         {
             Message = msg;
@@ -104,7 +105,7 @@ namespace SorceryClans3.Data.Models
                         }
                     }
                 }
-                return (MarkupString)(Message + add);
+                return (MarkupString)(CompleteMessages + add);
             }
         }
     }

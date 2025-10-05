@@ -9,6 +9,31 @@ namespace SorceryClans3.Data.Models
 
         public Dictionary<Soldier, int> HPDamage { get; set; } = [];
         public List<(Guid, int, bool)> Gains { get; set; } = [];
+        public TeamResult(Dictionary<Soldier, int> damage, List<(Guid, int, bool)> gains, bool success)
+        {
+            HPDamage = damage;
+            Success = success;
+            Gains = gains;
+            foreach (KeyValuePair<Soldier, int> dmg in HPDamage)
+            {
+                dmg.Key.Hurt(dmg.Value);
+            }
+        }
+        public TeamResult(Team team)//for uncontested rival attack, so far
+        {
+            Random r = new();
+            Gains = team.GetAllSoldiers.Select(e => e.GainPower(1000 + r.Next(1000))).ToList();
+            List<Soldier> solds = team.GetAllSoldiers.ToList();
+            HPDamage = solds.ToDictionary(e => e, e => 0);
+            int totdam = r.Next(10);
+            for (int i = 0; i < totdam; i++)
+                HPDamage[solds[r.Next(solds.Count)]]++;
+            foreach (KeyValuePair<Soldier, int> dmg in HPDamage)
+            {
+                dmg.Key.Hurt(dmg.Value);
+            }
+            Success = true;
+        }
         public TeamResult(Team team, List<(Guid, int, bool)> gains, bool success, int diff)
         {
             Success = success;

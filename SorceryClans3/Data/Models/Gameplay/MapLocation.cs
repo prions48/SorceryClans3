@@ -133,6 +133,14 @@ namespace SorceryClans3.Data.Models
         {
             return Math.Atan2(location2.Y - center.Y, location2.X - center.X) - Math.Atan2(location1.Y - center.Y, location1.X - center.X);
         }
+        public static double Angle(this MapLocation loc1, MapLocation loc2)
+        {
+            double yval = loc2.Y - loc1.Y;
+            double xval = loc2.X - loc1.X;
+            //double ret = Math.Atan(yval / xval);
+            double ret2 = Math.Atan2(yval, xval);
+            return ret2;
+        }
         private static double SQ(double x)
         {
             return x * x;

@@ -55,7 +55,7 @@ public class RivalSoldier
     public Guid ID { get; set; } = Guid.NewGuid();
     private int PowerMax { get; set; }
     public int PowerLevel { get; set; }
-    public int HP { get { return _hp; } set { if (_hp <= 0) return; _hp = value; if (_hp > HPMax) _hp = HPMax; } }
+    public int HP { get { return _hp; } set { _hp = value; if (_hp > HPMax) _hp = HPMax; if (_hp < 0) _hp = 0; } }
     private int _hp;
     private int HPMax { get; set; }
     private int ComBase { get; set; }
@@ -104,54 +104,210 @@ public class RivalSoldier
 public class Rival : IMap, ILocated
 {
     public int rank; //1 to 10
-    /************
-	Relative power of rivals
-	rank 1: 8 teams of 100k C, defenses at 100k
-	rank 2: 12 teams of 300k C, defenses at 500k
-	rank 5: 35 teams of 1M C, defenses at 3M
-	rank 10: 100 teams of 5M, defenses at 50M
-	*************/
     public int numteams;
-    private int seed;
     public List<RivalTeam> Teams { get; set; } = [];
     public MapLocation Location { get; set; }
     public MudBlazor.Color Color => MudBlazor.Color.Tertiary;
-    public string TooltipText => $"{rname} ({seed})";
+    public string TooltipText => $"{RivalName} ({rank})";
+    public int PerimeterRange => 2 + (Teams.Count(e => e.Mission?.MissionName == "Perimeter") / 3);
     public int avgpower;
     public int hp;
-
+    public int NumCivilians { get; set; }
+    public double Defenses { get; set; }
+    public int Learning { get; set; }
     public int dispteams;
     public int disppower;
-    public double known;
+    public double known = 0.0;
 
-    public string rname;
-    public string cfname;
+    public string RivalName { get; set; }
+    public string ClanName { get; set; }
 
     public bool Discovered { get; set; }
     public bool AtWar { get; set; }
 
-    public int watchers;
-    public int[] teamwatcher;
+    public List<Team> Spies { get; set; } = [];
 
     private Random r = new();
-    public Rival(int s, List<Rival> rl)
+    public Rival(int seed, List<Rival> rl)
     {
-        seed = s;
+        if (seed < 1)
+            seed = 1;
         Location = new(100, seed > 5 ? 60 : 30);
         AtWar = false;
-        watchers = -1;
-        teamwatcher = new int[10];
         rank = seed;
         hp = seed * 20 + (int)(r.NextDouble() * (20 + 2 * seed));
+        NumCivilians = 50 + (seed * r.Next(10, 20)) + r.Next(100);
         numteams = seed * 2 + seed * seed / 2 + 10 + (int)(r.NextDouble() * 10);
         for (int q = 0; q < numteams; q++)
         {
             Teams.Add(new RivalTeam(seed, r));
         }
-
-        rname = RandomName(rl);
-        cfname = Names.ClanName();
+        Defenses = 1.0 + (r.NextDouble() * (seed / 5.0));
+        Learning = 1000 + r.Next(200 * seed);
+        RivalName = RandomName(rl);
+        ClanName = Names.ClanName();
         known = 0.0;
+        AssignTeams();
+    }
+    public List<TeamResult> AttemptDetect(Team team)
+    {
+        List<TeamResult> results = [];
+        int i = 0;
+        while (i < Teams.Count)
+        {
+            RivalTeam rivalteam = Teams[i];
+            bool destroyed = false;
+            if (rivalteam.Mission?.MissionName == "Perimeter")
+            {
+                if (r.Next(4) == 0) //?????
+                {
+                    if (rivalteam.Subtlety > team.SScore)
+                    {
+                        var result = AttackTeam(team, rivalteam);
+                        results.Add(result.Item1);
+                        destroyed = result.Item2;
+                    }
+                }
+            }
+            if (!destroyed)
+                i++;
+        }
+        return results;
+    }
+    public GameEventDisplay AttackRival(Team team, DateTime currentTime)
+    {
+        List<RivalTeam> defenders = Teams.Where(e => e.Mission?.MissionName == "Perimeter" && r.Next(5) == 0).ToList();
+        RivalTeam? rteam = defenders.Count == 0 ? null : defenders[r.Next(defenders.Count)];
+        if (rteam == null)
+        {
+            return new GameEventDisplay($"Team {team.TeamName} has stormed the gates of {RivalName}!", currentTime) { DisplayTeam = team, DisplayResult = new TeamResult(team), AdditionalMessages = DamageRival(2)};
+        }
+        else
+        {
+            (TeamResult,bool) result = AttackTeam(team, rteam, Defenses);
+            List<string> msgs = [];
+            if (result.Item1.Success)
+            {
+                //random damage for now
+                 msgs = DamageRival(1);
+            }
+            return new GameEventDisplay($"Team {team.TeamName} has battled a rival team at the gates of {RivalName} {(result.Item1.Success ? $"{(result.Item2 ? "and destroyed the team utterly" : "and triumphed")}!" : "and been defeated!")}", currentTime)
+            {
+                DisplayResult = result.Item1,
+                DisplayTeam = team,
+                AdditionalMessages = msgs
+            };
+        }
+    }
+    public (TeamResult,bool) AttackTeam(Team team, RivalTeam rteam, double boost = 1.0)
+    {
+        bool destroyed = false;
+        bool breakout = false;
+        List<Soldier> solds = team.GetAllSoldiers.ToList();
+        Dictionary<Soldier, int> damage = team.GetAllSoldiers.ToDictionary(x => x, x => 0);
+        bool? winning = null;
+        int rds = 0;
+        while (!breakout)
+        {
+            rds++;
+            int rdmg = 0, tdmg = 0;
+            double pct = rteam.Combat * boost / team.CScore;
+            if (pct > 0.95 && pct < 1.05)
+            {
+                int tac = team.TacticsScore;
+                int balance = tac > r.Next(20) ? 3 : -3;
+                rdmg += r.Next(3) + balance;
+                tdmg += r.Next(3) - balance;
+            }
+            else if (rteam.Combat * boost >= team.CScore)
+            {
+                int diff = rteam.Combat - team.CScore;
+                int factor = 1;
+                while (diff > 0)
+                {
+                    if (r.Next(5) == 0)
+                        rdmg++;
+                    tdmg++;
+                    diff -= factor * 100;
+                    factor *= 2;
+                }
+                breakout = team.TacticsScore > r.Next(100) || r.Next(10) == 0;
+                if (breakout)
+                    winning = false;
+            }
+            else //duh, winning
+            {
+                int diff = team.CScore - (int)(rteam.Combat * boost);
+                int factor = 1;
+                while (diff > 0)
+                {
+                    if (r.Next(5) == 0)
+                        tdmg++;
+                    rdmg++;
+                    diff -= factor * 100;
+                    factor *= 2;
+                }
+                breakout = r.Next(team.Leaders.Sum(e => e.Tactics)) > 10 || r.Next(10) == 0;
+                if (breakout)
+                    winning = true;
+            }
+            rteam.Damage(r, rdmg);
+            destroyed = destroyed || Clean();
+            for (int i = 0; i < tdmg; i++)
+                damage[solds[r.Next(solds.Count)]]++;
+            breakout = breakout || team.SoldierCount == 0 || rteam.SoldierCount == 0;
+        }
+        List<(Guid, int, bool)> gains = team.BoostSoldiers(300 + 200 * rds + r.Next(rds * 500));
+        return (new TeamResult(damage, gains, winning == true), destroyed);
+    }
+    private List<string> DamageRival(int iter)
+    {
+        List<string> ret = [];
+        double defdmg = 0;
+        int civdead = 0, learn = 0;
+        for (int i = 0; i < iter; i++)
+        {
+            defdmg += r.NextDouble() * 0.1;
+            civdead += r.Next(10);
+            learn += r.Next(100);
+        }
+        if (Defenses - defdmg < 1.0)
+            defdmg = Defenses - 1.0;
+        Defenses -= defdmg;
+        if (NumCivilians - civdead < 0)
+            civdead = NumCivilians;
+        NumCivilians -= civdead;
+        if (Learning - learn < 0)
+            learn = Learning;
+        Learning -= learn;
+        if (civdead > 0)
+            ret.Add($"{civdead} civilian{(civdead == 1 ? " was" : "s were")} killed in the attack.");
+        if (defdmg > 0)
+            ret.Add($"The defenses were damaged!");
+        if (learn > 0)
+            ret.Add("Some of the knowledge and secrets were destroyed."); //stolen?  later.... :3
+        return ret;
+    }
+    private bool Clean()
+    {
+        int i = 0;
+        bool any = false;
+        while (i < Teams.Count)
+        {
+            if (Teams[i].SoldierCount == 0)
+            {
+                any = true;
+                Teams.RemoveAt(i);
+            }
+            else
+                i++;
+        }
+        return any;
+    }
+    private void AssignTeams()
+    {
+        foreach (RivalTeam team in Teams)
+            team.SetAssign();
     }
 
     public void monthlyDrift()
@@ -176,8 +332,6 @@ public class Rival : IMap, ILocated
             known += inc;
         disppower += (int)((avgpower - disppower) * (inc / (1.0 - preknown)));
     }
-
-    
 
     public bool StillAlive() //this was a triumph?
     {
@@ -251,9 +405,10 @@ public class Rival : IMap, ILocated
             case 26: temp = temp + "Armored "; break;
             default: temp = temp + "Silly "; break;
         }
-        String noun = GetNoun();
-        while (ContainsName(rl, noun))
-            noun = GetNoun();
+        string noun = Names.RivalNoun();
+        if (rl.Count < 35)
+            while (ContainsName(rl, noun))
+                noun = Names.RivalNoun();
         temp = temp + noun;
         return temp;
     }
@@ -261,54 +416,9 @@ public class Rival : IMap, ILocated
     public bool ContainsName(List<Rival> list, string s)
     {
         for (int i = 0; i < list.Count; i++)
-            if (list[i] != null && list[i].rname.Contains(s))
+            if (list[i] != null && list[i].RivalName.Contains(s))
                 return true;
         return false;
-    }
-
-    public string GetNoun()
-    {
-        string temp = "";
-        switch ((int)(r.NextDouble() * 36)) {
-            case 0: temp = temp + "Dragons"; break;
-            case 1: temp = temp + "Dreams"; break;
-            case 2: temp = temp + "Ice"; break;
-            case 3: temp = temp + "Storms"; break;
-            case 4: temp = temp + "Towers"; break;
-            case 5: temp = temp + "Lights"; break;
-            case 6: temp = temp + "Stone"; break;
-            case 7: temp = temp + "Jaws"; break;
-            case 8: temp = temp + "Eyes"; break;
-            case 9: temp = temp + "Pain"; break;
-            case 10: temp = temp + "Nails"; break;
-            case 11: temp = temp + "Horns"; break;
-            case 12: temp = temp + "Claws"; break;
-            case 13: temp = temp + "Walls"; break;
-            case 14: temp = temp + "Veils"; break;
-            case 15: temp = temp + "Fires"; break;
-            case 16: temp = temp + "Clouds"; break;
-            case 17: temp = temp + "Arms"; break;
-            case 18: temp = temp + "Demons"; break;
-            case 19: temp = temp + "Spirits"; break;
-            case 20: temp = temp + "Jewels"; break;
-            case 21: temp = temp + "Anvils"; break;
-            case 22: temp = temp + "Feathers"; break;
-            case 23: temp = temp + "Sands"; break;
-            case 24: temp = temp + "Trees"; break;
-            case 25: temp = temp + "Horses"; break;
-            case 26: temp = temp + "Tigers"; break;
-            case 27: temp = temp + "Trumpets"; break;
-            case 28: temp = temp + "Mountains"; break;
-            case 29: temp = temp + "Blades"; break;
-            case 30: temp = temp + "Spears"; break;
-            case 31: temp = temp + "Lanterns"; break;
-            case 32: temp = temp + "Crowns"; break;
-            case 33: temp = temp + "Nights"; break;
-            case 34: temp = temp + "Watchers"; break;
-            case 35: temp = temp + "Spies"; break;
-            default: temp = temp + "Teletubbies"; break;
-        }
-        return temp;
     }
 
     public static int onefive(int num)
@@ -347,7 +457,6 @@ public class Rival : IMap, ILocated
         foreach (RivalTeam team in Teams)
             team.XPGain(r);
         hp++;
-
     }
 
 

@@ -12,6 +12,7 @@ namespace SorceryClans3.Data.Models
         public void ClearMission() => Mission = null;
         public void AssignMission(IMission mission) => Mission = mission;
         public string MissionName => Mission?.MissionName ?? "Idle";
+        public MapTravelLocation? TravelLocation { get; set; }
         public MapLocation? Location { get; set; } = null;
         public MapLocation BaseLocation { get { return Location ?? MapLocation.HomeBase; } }
         public Resources Resources { get; set; } = new();
@@ -209,6 +210,13 @@ namespace SorceryClans3.Data.Models
                 if (min < 1)
                     min = 1;
                 return min + boost;
+            }
+        }
+        public int TacticsScore
+        {
+            get
+            {
+                return (int)Math.Round(Leaders.Sum(e => (e.LeadershipXP > 0 ? e.Tactics : e.RevTac) * e.LeadershipXP) * Teamwork * SubTeamSizeFactor);
             }
         }
         private double ComTeamSizeFactor
@@ -569,6 +577,16 @@ namespace SorceryClans3.Data.Models
                 Leaders.Remove(soldier);
                 Soldiers.Add(soldier);
             }
+        }
+        public void HurtSoldiers(int tdmg)
+        {
+            Random r = new();
+            List<Soldier> solds = GetAllSoldiers;
+            Dictionary<Soldier, int> dmg = solds.ToDictionary(e => e, e => 0);
+            for (int i = 0; i < tdmg; i++)
+                dmg[solds[r.Next(solds.Count)]]++;
+            foreach (var kvp in dmg)
+                kvp.Key.Hurt(kvp.Value);
         }
         public void Cleanup()
         {

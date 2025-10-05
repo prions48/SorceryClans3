@@ -275,7 +275,7 @@ namespace SorceryClans3.Data.Models
                 return 0;
             }
         }
-        private int RevTac
+        public int RevTac
         {
             get
             {
@@ -612,13 +612,15 @@ namespace SorceryClans3.Data.Models
         }
         public void Hurt(int hp)
         {
+            if (hp == 0)
+                return;
             double pcthurt = hp * 1.0 / HPMax;
             HPCurrent -= hp;
             //if ((pcthurt - 0.1) / 0.7 > r.NextDouble())
             //Health = Health.Hurt(r.Next(2)+1);
             if (HPCurrent * 1.0 / HPMax < (1.0 - ((int)(Health + 1) * .25)))
                 Health = Health.Hurt();
-            if (hp * r.NextDouble() > 3.0)
+            if (hp * r.NextDouble() > 3.0 || pcthurt > .35)
                 Health = Health.Hurt();
             if (HPCurrent > 0 && Health == HealthLevel.Dead)
                 Health = HealthLevel.Critical;
